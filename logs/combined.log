@@ -1,0 +1,180 @@
+{"level":"info","message":"--- AI TEST START ---","service":"ascendpath-api","timestamp":"2026-05-02 12:35:23"}
+{"level":"info","message":"Test 1: First call (Should miss cache and hit provider)","service":"ascendpath-api","timestamp":"2026-05-02 12:35:23"}
+{"level":"info","message":"AI Provider Call [Tokens: ~37]","service":"ascendpath-api","timestamp":"2026-05-02 12:35:23"}
+{"level":"info","message":"AI Response Success [Latency: 358ms]","service":"ascendpath-api","timestamp":"2026-05-02 12:35:23"}
+{"level":"info","message":"Test 1: Second call (Should hit cache, latency ~0ms)","service":"ascendpath-api","timestamp":"2026-05-02 12:35:23"}
+{"level":"info","message":"AI Cache Hit [Tokens: ~37]","service":"ascendpath-api","timestamp":"2026-05-02 12:35:23"}
+{"level":"info","message":"Test 2: Roadmap Generation","service":"ascendpath-api","timestamp":"2026-05-02 12:35:23"}
+{"level":"info","message":"AI Provider Call [Tokens: ~27]","service":"ascendpath-api","timestamp":"2026-05-02 12:35:23"}
+{"level":"info","message":"AI Response Success [Latency: 588ms]","service":"ascendpath-api","timestamp":"2026-05-02 12:35:24"}
+{"level":"info","message":"Test 3: Token Guard (Extremely long input)","service":"ascendpath-api","timestamp":"2026-05-02 12:35:24"}
+{"level":"info","message":"AI Provider Call [Tokens: ~149]","service":"ascendpath-api","timestamp":"2026-05-02 12:35:24"}
+{"level":"info","message":"AI Response Success [Latency: 404ms]","service":"ascendpath-api","timestamp":"2026-05-02 12:35:24"}
+{"level":"info","message":"--- AI TEST END ---","service":"ascendpath-api","timestamp":"2026-05-02 12:35:24"}
+{"level":"error","message":"ServerError: Cannot set property query of #<IncomingMessage> which has only a getter","path":"/api/v1/auth/me","service":"ascendpath-api","stack":"TypeError: Cannot set property query of #<IncomingMessage> which has only a getter\n    at C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\express-mongo-sanitize\\index.js:113:18\n    at Array.forEach (<anonymous>)\n    at C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\express-mongo-sanitize\\index.js:110:44\n    at Layer.handleRequest (C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\router\\index.js:342:13)\n    at C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\router\\index.js:297:9\n    at processParams (C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\router\\index.js:582:12)\n    at next (C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\router\\index.js:291:5)\n    at read (C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\body-parser\\lib\\read.js:53:5)\n    at jsonParser (C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\body-parser\\lib\\types\\json.js:88:5)","timestamp":"2026-05-02 14:09:26"}
+{"level":"error","message":"ServerError: Cannot set property query of #<IncomingMessage> which has only a getter","path":"/api/v1/auth/me","service":"ascendpath-api","stack":"TypeError: Cannot set property query of #<IncomingMessage> which has only a getter\n    at C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\express-mongo-sanitize\\index.js:113:18\n    at Array.forEach (<anonymous>)\n    at C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\express-mongo-sanitize\\index.js:110:44\n    at Layer.handleRequest (C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\router\\index.js:342:13)\n    at C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\router\\index.js:297:9\n    at processParams (C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\router\\index.js:582:12)\n    at next (C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\router\\index.js:291:5)\n    at read (C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\body-parser\\lib\\read.js:53:5)\n    at jsonParser (C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\body-parser\\lib\\types\\json.js:88:5)","timestamp":"2026-05-02 14:09:26"}
+{"level":"error","message":"ServerError: Cannot set property query of #<IncomingMessage> which has only a getter","path":"/api/v1/auth/login","service":"ascendpath-api","stack":"TypeError: Cannot set property query of #<IncomingMessage> which has only a getter\n    at C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\express-mongo-sanitize\\index.js:113:18\n    at Array.forEach (<anonymous>)\n    at C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\express-mongo-sanitize\\index.js:110:44\n    at Layer.handleRequest (C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\router\\index.js:342:13)\n    at C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\router\\index.js:297:9\n    at processParams (C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\router\\index.js:582:12)\n    at next (C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\router\\index.js:291:5)\n    at C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\body-parser\\lib\\read.js:171:5\n    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)","timestamp":"2026-05-02 14:09:35"}
+{"level":"error","message":"ServerError: Cannot set property query of #<IncomingMessage> which has only a getter","path":"/api/v1/auth/login","service":"ascendpath-api","stack":"TypeError: Cannot set property query of #<IncomingMessage> which has only a getter\n    at C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\express-mongo-sanitize\\index.js:113:18\n    at Array.forEach (<anonymous>)\n    at C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\express-mongo-sanitize\\index.js:110:44\n    at Layer.handleRequest (C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\router\\index.js:342:13)\n    at C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\router\\index.js:297:9\n    at processParams (C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\router\\index.js:582:12)\n    at next (C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\router\\index.js:291:5)\n    at C:\\PROJECTSPACE\\WorkSpace\\ascendPath\\node_modules\\body-parser\\lib\\read.js:171:5\n    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)","timestamp":"2026-05-02 14:11:47"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 14:13:57"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 14:13:57"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-02 14:13:57"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-02 14:13:57"}
+{"level":"warn","message":"ServerError: Invalid email or password","path":"/api/v1/auth/login","service":"ascendpath-api","timestamp":"2026-05-02 14:14:04"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-02 14:14:04"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 14:16:13"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 14:16:13"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-02 14:16:13"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-02 14:16:13"}
+{"level":"warn","message":"ServerError: Invalid email or password","path":"/api/v1/auth/login","service":"ascendpath-api","timestamp":"2026-05-02 14:16:52"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-02 14:16:52"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 14:18:56"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 14:18:56"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-02 14:18:56"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-02 14:18:56"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 14:49:50"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 14:49:50"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-02 14:49:50"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-02 14:49:50"}
+{"level":"warn","message":"ServerError: Invalid email or password","path":"/api/v1/auth/login","service":"ascendpath-api","timestamp":"2026-05-02 14:49:57"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-02 14:49:57"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 15:35:56"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 15:35:56"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-02 15:35:56"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-02 15:35:56"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 15:37:41"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 15:37:41"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-02 15:37:41"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-02 15:37:41"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 15:38:42"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 15:38:42"}
+{"level":"warn","message":"ValidationError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 10,\n    \"inclusive\": true,\n    \"path\": [\n      \"body\",\n      \"content\"\n    ],\n    \"message\": \"Content must be at least 10 characters long\"\n  }\n]","path":"/api/v1/posts","service":"ascendpath-api","timestamp":"2026-05-02 15:38:54"}
+{"level":"warn","message":"ValidationError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 10,\n    \"inclusive\": true,\n    \"path\": [\n      \"body\",\n      \"content\"\n    ],\n    \"message\": \"Content must be at least 10 characters long\"\n  }\n]","path":"/api/v1/posts","service":"ascendpath-api","timestamp":"2026-05-02 15:38:56"}
+{"level":"warn","message":"ValidationError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 10,\n    \"inclusive\": true,\n    \"path\": [\n      \"body\",\n      \"content\"\n    ],\n    \"message\": \"Content must be at least 10 characters long\"\n  }\n]","path":"/api/v1/posts","service":"ascendpath-api","timestamp":"2026-05-02 15:38:57"}
+{"level":"warn","message":"ValidationError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 10,\n    \"inclusive\": true,\n    \"path\": [\n      \"body\",\n      \"content\"\n    ],\n    \"message\": \"Content must be at least 10 characters long\"\n  }\n]","path":"/api/v1/posts","service":"ascendpath-api","timestamp":"2026-05-02 15:38:58"}
+{"level":"warn","message":"ValidationError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 10,\n    \"inclusive\": true,\n    \"path\": [\n      \"body\",\n      \"content\"\n    ],\n    \"message\": \"Content must be at least 10 characters long\"\n  }\n]","path":"/api/v1/posts","service":"ascendpath-api","timestamp":"2026-05-02 15:38:58"}
+{"level":"warn","message":"ValidationError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 10,\n    \"inclusive\": true,\n    \"path\": [\n      \"body\",\n      \"content\"\n    ],\n    \"message\": \"Content must be at least 10 characters long\"\n  }\n]","path":"/api/v1/posts","service":"ascendpath-api","timestamp":"2026-05-02 15:38:58"}
+{"level":"warn","message":"ValidationError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 10,\n    \"inclusive\": true,\n    \"path\": [\n      \"body\",\n      \"content\"\n    ],\n    \"message\": \"Content must be at least 10 characters long\"\n  }\n]","path":"/api/v1/posts","service":"ascendpath-api","timestamp":"2026-05-02 15:38:58"}
+{"level":"warn","message":"ValidationError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 10,\n    \"inclusive\": true,\n    \"path\": [\n      \"body\",\n      \"content\"\n    ],\n    \"message\": \"Content must be at least 10 characters long\"\n  }\n]","path":"/api/v1/posts","service":"ascendpath-api","timestamp":"2026-05-02 15:38:58"}
+{"level":"warn","message":"ValidationError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 10,\n    \"inclusive\": true,\n    \"path\": [\n      \"body\",\n      \"content\"\n    ],\n    \"message\": \"Content must be at least 10 characters long\"\n  }\n]","path":"/api/v1/posts","service":"ascendpath-api","timestamp":"2026-05-02 15:38:58"}
+{"level":"warn","message":"ValidationError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 10,\n    \"inclusive\": true,\n    \"path\": [\n      \"body\",\n      \"content\"\n    ],\n    \"message\": \"Content must be at least 10 characters long\"\n  }\n]","path":"/api/v1/posts","service":"ascendpath-api","timestamp":"2026-05-02 15:38:58"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 15:51:42"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 15:51:42"}
+{"level":"warn","message":"ServerError: Vote must be 1 or -1","path":"/api/v1/posts/69f5d04cede66d836b6de506/vote","service":"ascendpath-api","timestamp":"2026-05-02 15:52:21"}
+{"level":"warn","message":"ServerError: Vote must be 1 or -1","path":"/api/v1/posts/69f5d04cede66d836b6de506/vote","service":"ascendpath-api","timestamp":"2026-05-02 15:52:23"}
+{"level":"warn","message":"ServerError: Vote must be 1 or -1","path":"/api/v1/posts/69f5d04cede66d836b6de506/vote","service":"ascendpath-api","timestamp":"2026-05-02 15:52:24"}
+{"level":"warn","message":"ServerError: Vote must be 1 or -1","path":"/api/v1/posts/69f5d04cede66d836b6de506/vote","service":"ascendpath-api","timestamp":"2026-05-02 15:52:24"}
+{"level":"warn","message":"ServerError: Vote must be 1 or -1","path":"/api/v1/posts/69f5d04cede66d836b6de506/vote","service":"ascendpath-api","timestamp":"2026-05-02 15:52:24"}
+{"level":"warn","message":"ServerError: Vote must be 1 or -1","path":"/api/v1/posts/69f5d04cede66d836b6de506/vote","service":"ascendpath-api","timestamp":"2026-05-02 15:52:25"}
+{"level":"warn","message":"ServerError: Vote must be 1 or -1","path":"/api/v1/posts/69f5d04cede66d836b6de506/vote","service":"ascendpath-api","timestamp":"2026-05-02 15:52:25"}
+{"level":"warn","message":"ServerError: Vote must be 1 or -1","path":"/api/v1/posts/69f5d04cede66d836b6de506/vote","service":"ascendpath-api","timestamp":"2026-05-02 15:52:25"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 16:14:46"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 16:14:46"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 16:15:27"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 16:15:27"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 16:15:57"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 16:15:57"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 16:16:27"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 16:16:27"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/pings/inbox","service":"ascendpath-api","timestamp":"2026-05-02 16:19:10"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/sessions/me","service":"ascendpath-api","timestamp":"2026-05-02 16:19:10"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 16:27:21"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 16:27:21"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 16:27:43"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 16:27:43"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/pings/inbox","service":"ascendpath-api","timestamp":"2026-05-02 16:28:13"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/sessions/me","service":"ascendpath-api","timestamp":"2026-05-02 16:28:13"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 16:32:33"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 16:32:33"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 16:32:39"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-02 16:32:39"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-20 23:40:47"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-20 23:40:47"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-20 23:40:47"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-20 23:40:47"}
+{"level":"warn","message":"ServerError: Invalid email or password","path":"/api/v1/auth/login","service":"ascendpath-api","timestamp":"2026-05-20 23:41:06"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-20 23:41:06"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-20 23:50:33"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-20 23:50:33"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-20 23:50:33"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-20 23:50:33"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:07:03"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:07:03"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:08:04"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:08:04"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:08:04"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:08:04"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:08:05"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:08:05"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:08:05"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:08:05"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:08:06"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:08:06"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:08:06"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:08:06"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:08:06"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:08:06"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:08:06"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:08:06"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:08:07"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:08:07"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:08:07"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:08:07"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:08:07"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:08:07"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:08:07"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:08:07"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:08:07"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:08:07"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:08:07"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:08:07"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:09:04"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:09:04"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:09:04"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:09:04"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:09:04"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:09:04"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:09:04"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:09:04"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:09:41"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:09:41"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:09:41"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:09:41"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:09:41"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:09:41"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:09:41"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:09:41"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:09:42"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:09:42"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:09:42"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:09:42"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:09:42"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:09:42"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:09:42"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:09:42"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:12:02"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:12:02"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:12:02"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:12:02"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:12:02"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:12:02"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:12:02"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:12:02"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:13:26"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:13:26"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:13:26"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:13:26"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:33:54"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:33:54"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:33:54"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:33:54"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:33:58"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 00:33:58"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:33:58"}
+{"level":"warn","message":"ServerError: Refresh token not found","path":"/api/v1/auth/refresh","service":"ascendpath-api","timestamp":"2026-05-21 00:33:58"}
+{"level":"warn","message":"AuthError: Not authorized, token failed","path":"/api/v1/notifications/unread","service":"ascendpath-api","timestamp":"2026-05-21 00:57:38"}
+{"level":"warn","message":"AuthError: Not authorized, token failed","path":"/api/v1/notifications","service":"ascendpath-api","timestamp":"2026-05-21 00:57:38"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 01:08:38"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 01:08:38"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 01:27:02"}
+{"level":"warn","message":"AuthError: Not authorized, no token provided","path":"/api/v1/auth/me","service":"ascendpath-api","timestamp":"2026-05-21 01:27:03"}
+{"level":"warn","message":"AuthError: Not authorized, token failed","path":"/api/v1/notifications/unread","service":"ascendpath-api","timestamp":"2026-05-21 01:27:06"}
