@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { userRepository } from '../modules/users/user.repository';
+import { requireRole } from './rbac';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_do_not_use_in_prod';
 
@@ -35,6 +36,11 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         throw new Error('Your account has been permanently banned');
       }
 
+      if (user.suspendedUntil && user.suspendedUntil > new Date()) {
+        res.status(403);
+        throw new Error('Your account is temporarily suspended');
+      }
+
       // Exclude passwordHash from user object
       const userObj = user.toObject();
       delete userObj.passwordHash;
@@ -65,3 +71,5 @@ export const authorize = (...roles: string[]) => {
     next();
   };
 };
+
+export { requireRole };

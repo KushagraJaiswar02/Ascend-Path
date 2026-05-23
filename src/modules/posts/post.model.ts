@@ -25,6 +25,9 @@ export interface IPost extends Document {
   solutionReplyId?: mongoose.Types.ObjectId;
   isPinned: boolean;
   isLocked: boolean;
+  moderationStatus: 'visible' | 'hidden' | 'deleted';
+  hiddenAt?: Date;
+  deletedAt?: Date;
   viewCount: number;
   createdAt: Date;
   updatedAt: Date;
@@ -54,6 +57,9 @@ const postSchema = new Schema<IPost>(
     solutionReplyId: { type: Schema.Types.ObjectId, ref: 'Reply' },
     isPinned: { type: Boolean, default: false },
     isLocked: { type: Boolean, default: false },
+    moderationStatus: { type: String, enum: ['visible', 'hidden', 'deleted'], default: 'visible' },
+    hiddenAt: { type: Date },
+    deletedAt: { type: Date },
     viewCount: { type: Number, default: 0 },
   },
   { timestamps: true }
@@ -63,5 +69,6 @@ const postSchema = new Schema<IPost>(
 postSchema.index({ category: 1, createdAt: -1 });
 postSchema.index({ tags: 1 });
 postSchema.index({ authorId: 1 });
+postSchema.index({ moderationStatus: 1, createdAt: -1 });
 
 export const Post = mongoose.model<IPost>('Post', postSchema);

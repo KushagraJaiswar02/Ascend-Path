@@ -8,6 +8,9 @@ export interface IReply extends Document {
   upvotes: number;
   downvotes: number;
   voters: IVote[];
+  moderationStatus: 'visible' | 'hidden' | 'deleted';
+  hiddenAt?: Date;
+  deletedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,6 +22,9 @@ const replySchema = new Schema<IReply>(
     content: { type: String, required: true },
     upvotes: { type: Number, default: 0 },
     downvotes: { type: Number, default: 0 },
+    moderationStatus: { type: String, enum: ['visible', 'hidden', 'deleted'], default: 'visible' },
+    hiddenAt: { type: Date },
+    deletedAt: { type: Date },
     voters: [
       {
         userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
@@ -33,5 +39,6 @@ const replySchema = new Schema<IReply>(
 // Index for getting replies for a post
 replySchema.index({ postId: 1, createdAt: 1 });
 replySchema.index({ authorId: 1 });
+replySchema.index({ moderationStatus: 1, createdAt: -1 });
 
 export const Reply = mongoose.model<IReply>('Reply', replySchema);

@@ -34,15 +34,25 @@ export const errorHandler = (
 
   // Log the error
   if (statusCode >= 500) {
-    logger.error(`${errorType}: ${message}`, { stack: err.stack, path: req.path });
+    logger.error(`${errorType}: ${message}`, {
+      stack: err.stack,
+      path: req.path,
+      requestId: req.requestId,
+      userId: (req as any).user?._id,
+    });
   } else {
-    logger.warn(`${errorType}: ${message}`, { path: req.path });
+    logger.warn(`${errorType}: ${message}`, {
+      path: req.path,
+      requestId: req.requestId,
+      userId: (req as any).user?._id,
+    });
   }
 
   res.status(statusCode).json({
     success: false,
     error: message,
     type: errorType,
+    requestId: req.requestId,
     ...(env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 };

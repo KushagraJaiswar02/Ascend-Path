@@ -25,7 +25,7 @@ export const userService = {
       name: data.name,
       email: data.email,
       passwordHash,
-      role: Role.EXPLORER,
+      role: Role.USER,
       educationLevel: data.educationLevel,
       bio: data.bio,
       domains: data.domains || [],
@@ -57,9 +57,9 @@ export const userService = {
     if (!user) return;
 
     // PATHFINDER auto-unlock threshold
-    if (user.respectPoints >= 500 && user.role === Role.EXPLORER) {
-      await userRepository.updateUser(userId, { role: Role.PATHFINDER });
-      this.onRoleUpgrade(userId, Role.PATHFINDER);
+    if (user.respectPoints >= 500 && [Role.USER, Role.EXPLORER].includes(user.role)) {
+      await userRepository.updateUser(userId, { role: Role.GUIDE });
+      this.onRoleUpgrade(userId, Role.GUIDE);
     }
   },
 

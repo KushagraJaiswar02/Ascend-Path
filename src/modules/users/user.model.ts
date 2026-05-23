@@ -1,9 +1,13 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export enum Role {
+  USER = 'user',
   EXPLORER = 'explorer',
   PATHFINDER = 'pathfinder',
   GUIDE = 'guide',
+  MODERATOR = 'moderator',
+  ADMIN = 'admin',
+  SUPER_ADMIN = 'super_admin',
   SENTINEL = 'sentinel',
   ARCHITECT = 'architect',
 }
@@ -42,6 +46,8 @@ export interface IUser extends Document {
   avatar?: string;
   isVerified: boolean;
   isBanned: boolean;
+  suspendedUntil?: Date;
+  moderatorNotes?: string;
   mutedUntil?: Date;
   pingAvailable: boolean;
   oauthProvider?: string;
@@ -78,7 +84,7 @@ const userSchema = new Schema<IUser>(
     role: {
       type: String,
       enum: Object.values(Role),
-      default: Role.EXPLORER,
+      default: Role.USER,
     },
     respectPoints: { type: Number, default: 0 },
     fameScore: { type: Number, default: 0 },
@@ -104,6 +110,8 @@ const userSchema = new Schema<IUser>(
     avatar: { type: String },
     isVerified: { type: Boolean, default: false },
     isBanned: { type: Boolean, default: false },
+    suspendedUntil: { type: Date },
+    moderatorNotes: { type: String },
     mutedUntil: { type: Date },
     pingAvailable: { type: Boolean, default: true },
     oauthProvider: { type: String },
@@ -132,6 +140,7 @@ const userSchema = new Schema<IUser>(
 
 // High-performance production indexes
 userSchema.index({ role: 1, profileVisibility: 1 });
+userSchema.index({ isBanned: 1, suspendedUntil: 1 });
 userSchema.index({ domains: 1 });
 userSchema.index({ 'skills.name': 1 });
 userSchema.index({ averageRating: -1 });

@@ -17,6 +17,9 @@ export interface ICareerRoadmap extends Document {
   prerequisites: string[];
   learningOutcomes: string[];
   visibility: 'public' | 'private' | 'unlisted';
+  moderationStatus: 'visible' | 'hidden' | 'deleted';
+  hiddenAt?: Date;
+  deletedAt?: Date;
   // Legacy fields kept for backward compatibility
   targetRole?: string;
   domain?: string;
@@ -43,6 +46,9 @@ const careerRoadmapSchema = new Schema<ICareerRoadmap>(
     prerequisites: { type: [String], default: [] },
     learningOutcomes: { type: [String], default: [] },
     visibility: { type: String, enum: ['public', 'private', 'unlisted'], default: 'public' },
+    moderationStatus: { type: String, enum: ['visible', 'hidden', 'deleted'], default: 'visible' },
+    hiddenAt: { type: Date },
+    deletedAt: { type: Date },
     // Legacy fields kept for compatibility
     targetRole: { type: String },
     domain: { type: String },
@@ -56,6 +62,7 @@ const careerRoadmapSchema = new Schema<ICareerRoadmap>(
 careerRoadmapSchema.index({ slug: 1 }, { unique: true });
 careerRoadmapSchema.index({ domains: 1, difficulty: 1, isPublished: 1 });
 careerRoadmapSchema.index({ createdBy: 1 });
+careerRoadmapSchema.index({ moderationStatus: 1, createdAt: -1 });
 
 export const CareerRoadmap = mongoose.model<ICareerRoadmap>('CareerRoadmap', careerRoadmapSchema);
 
