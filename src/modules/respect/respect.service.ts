@@ -77,4 +77,42 @@ export const respectService = {
     
     return 0; // Already granted
   },
+
+  async assignOneTimePoints(
+    granterId: string,
+    targetUserId: string,
+    sourceId: string,
+    reason: RespectReason,
+    points: number
+  ) {
+    if (granterId === targetUserId) {
+      throw new Error('Cannot grant points to yourself');
+    }
+
+    const existingVote = await respectRepository.findVote(granterId, sourceId, reason);
+    if (existingVote && existingVote.targetUserId.toString() === targetUserId && existingVote.points === points) {
+      return 0;
+    }
+
+    if (existingVote) {
+      await userRepository.incrementRespectPoints(existingVote.targetUserId.toString(), -existingVote.points);
+      await userService.evaluateUserRole(existingVote.targetUserId.toString());
+    }
+
+    await respectRepository.upsertVote(granterId, targetUserId, sourceId, reason, points);
+    await userRepository.incrementRespectPoints(targetUserId, points);
+    await userService.evaluateUserRole(targetUserId);
+
+    return existingVote ? points - existingVote.points : points;
+  },
+
+  async revokeOneTimePoints(granterId: string, sourceId: string, reason: RespectReason) {
+    const existingVote = await respectRepository.findVote(granterId, sourceId, reason);
+    if (!existingVote) return 0;
+
+    await respectRepository.deleteVote(granterId, sourceId, reason);
+    await userRepository.incrementRespectPoints(existingVote.targetUserId.toString(), -existingVote.points);
+    await userService.evaluateUserRole(existingVote.targetUserId.toString());
+    return -existingVote.points;
+  },
 };

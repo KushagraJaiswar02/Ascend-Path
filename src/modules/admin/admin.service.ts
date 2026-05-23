@@ -10,6 +10,8 @@ import { Report, ReportStatus } from '../moderation/report.model';
 import { Review } from '../reviews/review.model';
 import { CareerRoadmap } from '../roadmaps/roadmap.model';
 import { UserProgress } from '../roadmaps/userProgress.model';
+import { sessionReflectionService } from '../sessions/sessionReflection.service';
+import { sessionRepository } from '../sessions/session.repository';
 
 const protectedRoles = new Set<Role>([Role.ADMIN, Role.SUPER_ADMIN, Role.ARCHITECT]);
 
@@ -178,7 +180,7 @@ export const adminService = {
   },
 
   async getAnalyticsOverview() {
-    const [growth, topMentors, roadmapCompletion, engagementByCategory, abuseSpikes, retention, reviewVolume] =
+    const [growth, topMentors, roadmapCompletion, engagementByCategory, abuseSpikes, retention, reviewVolume, reflectionAnalytics, sessionExecutionAnalytics] =
       await Promise.all([
         User.aggregate([
           { $match: { createdAt: { $gte: subDays(30) } } },
@@ -222,6 +224,8 @@ export const adminService = {
           { $sort: { _id: 1 } },
           { $project: { _id: 0, date: '$_id', count: 1 } },
         ]),
+        sessionReflectionService.getAnalytics(),
+        sessionRepository.getSessionExecutionAnalytics(),
       ]);
 
     return {
@@ -232,6 +236,8 @@ export const adminService = {
       abuseSpikes,
       retention: { last7: retention[0], last30: retention[1], last90: retention[2], total: retention[3] },
       reviewVolume,
+      reflectionAnalytics,
+      sessionExecutionAnalytics,
       sessionBookingsLast30Days: await Session.countDocuments({
         status: { $in: [SessionStatus.BOOKED, SessionStatus.COMPLETED] },
         createdAt: { $gte: subDays(30) },

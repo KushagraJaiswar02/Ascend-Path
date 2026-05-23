@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { roadmapService } from './roadmap.service';
+import { roadmapCommunityService } from './roadmapCommunity.service';
 
 export const roadmapController = {
   // --- Roadmap Controller Actions ---
@@ -54,6 +55,46 @@ export const roadmapController = {
       const idOrSlug = req.params.id as string;
       const roadmap = await roadmapService.getRoadmapById(idOrSlug);
       res.status(200).json({ success: true, data: { roadmap } });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getRoadmapCommunity(req: Request, res: Response, next: NextFunction) {
+    try {
+      const community = await roadmapCommunityService.getRoadmapCommunity(req.params.id as string);
+      res.status(200).json({ success: true, data: { community } });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getRoadmapActiveLearners(req: Request, res: Response, next: NextFunction) {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+      const result = await roadmapCommunityService.getActiveLearners(req.params.id as string, page, limit);
+      res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getTrendingRoadmaps(req: Request, res: Response, next: NextFunction) {
+    try {
+      const limit = parseInt(req.query.limit as string) || 6;
+      const roadmaps = await roadmapCommunityService.getTrendingRoadmaps(limit);
+      res.status(200).json({ success: true, data: { roadmaps } });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getMyRoadmapMomentum(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).user._id;
+      const momentum = await roadmapCommunityService.getDashboardMomentumForUser(userId);
+      res.status(200).json({ success: true, data: { momentum } });
     } catch (error) {
       next(error);
     }

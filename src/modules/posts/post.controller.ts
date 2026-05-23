@@ -19,8 +19,23 @@ export const postController = {
       const category = typeof req.query.category === 'string' ? req.query.category : undefined;
       const tags = typeof req.query.tags === 'string' ? req.query.tags : undefined;
       const search = typeof req.query.search === 'string' ? req.query.search : undefined;
+      const resolution =
+        req.query.resolution === 'resolved' || req.query.resolution === 'unresolved'
+          ? req.query.resolution
+          : undefined;
 
-      const result = await postService.getPosts(page, limit, category, tags, search);
+      const result = await postService.getPosts(page, limit, category, tags, search, resolution);
+      res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getResolvedPosts(req: Request, res: Response, next: NextFunction) {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+      const result = await postService.getResolvedPosts(page, limit);
       res.status(200).json({ success: true, data: result });
     } catch (error) {
       next(error);
@@ -91,6 +106,26 @@ export const postController = {
       const userId = (req as any).user._id;
       const { replyId } = req.body;
       const post = await postService.markSolution(userId, req.params.id as string, replyId);
+      res.status(200).json({ success: true, data: { post } });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async acceptAnswer(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).user._id.toString();
+      const post = await postService.acceptAnswer(userId, req.params.postId as string, req.params.replyId as string);
+      res.status(200).json({ success: true, data: { post } });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async unacceptAnswer(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).user._id.toString();
+      const post = await postService.unacceptAnswer(userId, req.params.postId as string);
       res.status(200).json({ success: true, data: { post } });
     } catch (error) {
       next(error);

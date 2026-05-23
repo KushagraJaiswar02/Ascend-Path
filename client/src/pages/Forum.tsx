@@ -1,5 +1,5 @@
-import React from 'react';
-import { usePosts } from '../features/posts/hooks/usePosts';
+import React, { useState } from 'react';
+import { usePosts, type ResolutionFilter } from '../features/posts/hooks/usePosts';
 import { PostCard } from '../features/posts/components/PostCard';
 import { CreatePostForm } from '../features/posts/components/CreatePostForm';
 import { useAuthStore } from '../store/useAuthStore';
@@ -12,7 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
 export const Forum: React.FC = () => {
-  const { data, isLoading, isError } = usePosts();
+  const [resolution, setResolution] = useState<ResolutionFilter>('all');
+  const { data, isLoading, isError } = usePosts(1, 10, undefined, resolution);
   const { isAuthenticated } = useAuthStore();
 
   return (
@@ -51,9 +52,23 @@ export const Forum: React.FC = () => {
       <div className="space-y-md">
         <div className="flex items-center justify-between pb-xs border-b border-border/65">
           <h2 className="text-body-md font-bold text-foreground">Recent Discussions</h2>
-          <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground bg-muted px-2 py-0.5 rounded">
-            {data?.posts?.length || 0} posts
-          </span>
+          <div className="flex items-center gap-xs">
+            {(['all', 'resolved', 'unresolved'] as ResolutionFilter[]).map((value) => (
+              <Button
+                key={value}
+                type="button"
+                variant={resolution === value ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setResolution(value)}
+                className="h-7 px-2 text-[10px] capitalize"
+              >
+                {value === 'all' ? 'All' : value === 'resolved' ? 'Solved' : 'Open'}
+              </Button>
+            ))}
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground bg-muted px-2 py-0.5 rounded">
+              {data?.posts?.length || 0} posts
+            </span>
+          </div>
         </div>
 
         {isLoading && (
@@ -111,4 +126,3 @@ export const Forum: React.FC = () => {
     </PageContainer>
   );
 };
-

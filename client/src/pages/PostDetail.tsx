@@ -11,8 +11,9 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, ThumbsUp, ThumbsDown, Eye, MessageSquare, Clock, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, ThumbsUp, ThumbsDown, Eye, MessageSquare, Clock } from 'lucide-react';
 import { formatRelativeTime } from '@/lib/utils';
+import { SolvedThreadIndicator } from '@/features/posts/components/SolvedThreadIndicator';
 
 export const PostDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -79,6 +80,7 @@ export const PostDetail: React.FC = () => {
   const currentCategory = categoryStyles[post.category] || { label: post.category, variant: 'outline' };
   const voteCount = post.upvotes - post.downvotes;
   const isPostAuthor = isAuthenticated && user?._id === post.authorId?._id;
+  const solved = post.isResolved || post.isSolved;
 
   const handleVote = (voteType: 'upvote' | 'downvote') => {
     if (!isAuthenticated) return alert("You must be logged in to vote.");
@@ -105,12 +107,7 @@ export const PostDetail: React.FC = () => {
               <Badge variant={currentCategory.variant} className="capitalize text-[10px] px-2 py-0.5 font-bold tracking-wider">
                 {currentCategory.label}
               </Badge>
-              {post.isSolved && (
-                <Badge variant="success" className="text-[10px] px-2 py-0.5 font-extrabold flex items-center gap-0.5 shadow-subtle animate-pulse">
-                  <CheckCircle2 className="h-3 w-3 shrink-0" />
-                  Solved
-                </Badge>
-              )}
+              <SolvedThreadIndicator solved={solved} />
             </div>
             
             <h1 className="text-heading-sm sm:text-heading-md font-bold tracking-tight text-foreground leading-snug mt-xs">

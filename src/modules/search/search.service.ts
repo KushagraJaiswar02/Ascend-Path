@@ -127,13 +127,25 @@ export const searchService = {
       query.tags = { $in: tagsArray };
     }
 
-    if (filters.isSolved) {
-      query.isSolved = filters.isSolved === 'true';
+    if (filters.isSolved || filters.resolution) {
+      const resolution = filters.resolution || (filters.isSolved === 'true' ? 'resolved' : 'unresolved');
+      if (resolution === 'resolved') {
+        query.$and = [...(query.$and || []), { $or: [{ isResolved: true }, { isSolved: true }] }];
+      }
+      if (resolution === 'unresolved') {
+        query.$and = [
+          ...(query.$and || []),
+          { $or: [{ isResolved: false }, { isResolved: { $exists: false } }] },
+          { isSolved: { $ne: true } },
+        ];
+      }
     }
 
     // Sorting
-    let sortObj: any = { createdAt: -1 }; // Default: most recent
+    let sortObj: any = { isResolved: -1, isSolved: -1, upvotes: -1, createdAt: -1 };
     if (sort === 'popular' || sort === 'highest_rated') sortObj = { upvotes: -1 };
+    if (sort === 'recent') sortObj = { createdAt: -1 };
+    if (sort === 'resolved') sortObj = { isResolved: -1, resolvedAt: -1, upvotes: -1 };
 
     const posts = await Post.find(query)
       .populate('authorId', 'name role respectPoints')

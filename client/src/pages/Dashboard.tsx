@@ -5,6 +5,8 @@ import { RecentPosts } from '../features/dashboard/components/RecentPosts';
 import { RecentPings } from '../features/dashboard/components/RecentPings';
 import { UpcomingSessions } from '../features/dashboard/components/UpcomingSessions';
 import { RoadmapProgress } from '../features/dashboard/components/RoadmapProgress';
+import { MentorRecommendations } from '../features/dashboard/components/MentorRecommendations';
+import { LearnerMomentumCard } from '../features/roadmaps/components/LearnerMomentumCard';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -171,6 +173,15 @@ export const Dashboard: React.FC = () => {
           <UpcomingSessions sessions={data?.upcomingSessions || []} />
         </div>
         <div className="h-full">
+          <MentorRecommendations reflections={data?.mentorRecommendations || []} />
+        </div>
+        <div className="h-full lg:col-span-2">
+          <LearnerMomentumCard
+            momentum={data?.roadmapMomentum || []}
+            trending={data?.trendingRoadmaps || []}
+          />
+        </div>
+        <div className="h-full lg:col-span-2">
           <RoadmapProgress />
         </div>
       </div>

@@ -24,6 +24,9 @@ const validate = (schema: any) => (req: Request, res: Response, next: NextFuncti
 // Post Routes
 router.post('/', authMiddleware, validate(createPostSchema), postController.createPost);
 router.get('/', postController.getPosts);
+router.get('/resolved', postController.getResolvedPosts);
+router.post('/:postId/accept/:replyId', authMiddleware, postController.acceptAnswer);
+router.delete('/:postId/accept', authMiddleware, postController.unacceptAnswer);
 router.post('/:id/view', postController.incrementPostView);
 router.get('/:id', postController.getPostById);
 router.put('/:id', authMiddleware, validate(updatePostSchema), postController.updatePost);

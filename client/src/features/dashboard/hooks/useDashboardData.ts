@@ -1,10 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../../services/apiClient';
+import type { SessionReflection } from '../../sessions/types';
+import type { RoadmapMomentumItem, TrendingRoadmapSignal } from '../../roadmaps/types';
 
 export interface DashboardData {
   recentPosts: any[];
   pendingPings: any[];
   upcomingSessions: any[];
+  mentorRecommendations: SessionReflection[];
+  pendingReflections: SessionReflection[];
+  roadmapMomentum: RoadmapMomentumItem[];
+  trendingRoadmaps: TrendingRoadmapSignal[];
 }
 
 export const useDashboardData = () => {
@@ -12,10 +18,13 @@ export const useDashboardData = () => {
     queryKey: ['dashboardData'],
     queryFn: async (): Promise<DashboardData> => {
       // Execute all requests in parallel
-      const [postsRes, pingsRes, sessionsRes] = await Promise.allSettled([
+      const [postsRes, pingsRes, sessionsRes, reflectionsRes, momentumRes, trendingRes] = await Promise.allSettled([
         apiClient.get('/posts?limit=3'),
         apiClient.get('/pings/inbox'),
-        apiClient.get('/sessions/me')
+        apiClient.get('/sessions/me'),
+        apiClient.get('/me/reflections?limit=8'),
+        apiClient.get('/me/roadmaps/momentum'),
+        apiClient.get('/roadmaps/trending?limit=4')
       ]);
 
       // Safely extract data, falling back to empty arrays if endpoints fail
@@ -26,14 +35,30 @@ export const useDashboardData = () => {
       const allInboxPings = pingsRes.status === 'fulfilled' ? pingsRes.value.data.data.pings : [];
       const pendingPings = allInboxPings.filter((p: any) => p.status === 'pending').slice(0, 3);
       
-      // Filter sessions for only 'scheduled'
+      // Surface live and upcoming execution sessions first.
       const allSessions = sessionsRes.status === 'fulfilled' ? sessionsRes.value.data.data.sessions : [];
-      const upcomingSessions = allSessions.filter((s: any) => s.status === 'scheduled').slice(0, 3);
+      const upcomingSessions = allSessions
+        .filter((s: any) => s.status === 'booked' || ['waiting', 'active'].includes(s.attendanceStatus))
+        .sort((a: any, b: any) => {
+          const aLive = ['waiting', 'active'].includes(a.attendanceStatus) ? 0 : 1;
+          const bLive = ['waiting', 'active'].includes(b.attendanceStatus) ? 0 : 1;
+          return aLive - bLive || new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime();
+        })
+        .slice(0, 3);
+      const reflections = reflectionsRes.status === 'fulfilled' ? reflectionsRes.value.data.data.reflections : [];
+      const mentorRecommendations = reflections.filter((r: SessionReflection) => r.mentorFollowup?.submittedAt).slice(0, 3);
+      const pendingReflections = reflections.filter((r: SessionReflection) => !r.menteeReflection?.submittedAt).slice(0, 3);
+      const roadmapMomentum = momentumRes.status === 'fulfilled' ? momentumRes.value.data.data.momentum : [];
+      const trendingRoadmaps = trendingRes.status === 'fulfilled' ? trendingRes.value.data.data.roadmaps : [];
 
       return {
         recentPosts: recentPosts.slice(0, 3), // Ensure max 3
         pendingPings,
-        upcomingSessions
+        upcomingSessions,
+        mentorRecommendations,
+        pendingReflections,
+        roadmapMomentum,
+        trendingRoadmaps
       };
     },
     // Cache for 5 minutes since dashboard data is a summary

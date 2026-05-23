@@ -301,6 +301,13 @@ export const roadmapService = {
 
     // Emit domain events asynchronously
     if (completed) {
+      eventEmitter.emit('ROADMAP_STEP_COMPLETED', {
+        roadmapId: step.roadmapId.toString(),
+        stepId: step._id.toString(),
+        userId,
+        stepTitle: step.title || 'Curriculum Step',
+        progressPercentage: savedProgress.progressPercentage,
+      });
       eventEmitter.emit('STEP_COMPLETED', {
         roadmapId: step.roadmapId.toString(),
         stepId: step._id.toString(),

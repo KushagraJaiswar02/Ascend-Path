@@ -21,6 +21,10 @@ export interface IPost extends Document {
   upvotes: number;
   downvotes: number;
   voters: IVote[];
+  acceptedReplyId?: mongoose.Types.ObjectId;
+  resolvedAt?: Date;
+  resolvedBy?: mongoose.Types.ObjectId;
+  isResolved: boolean;
   isSolved: boolean;
   solutionReplyId?: mongoose.Types.ObjectId;
   isPinned: boolean;
@@ -53,6 +57,10 @@ const postSchema = new Schema<IPost>(
         _id: false,
       },
     ],
+    acceptedReplyId: { type: Schema.Types.ObjectId, ref: 'Reply' },
+    resolvedAt: { type: Date },
+    resolvedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+    isResolved: { type: Boolean, default: false },
     isSolved: { type: Boolean, default: false },
     solutionReplyId: { type: Schema.Types.ObjectId, ref: 'Reply' },
     isPinned: { type: Boolean, default: false },
@@ -70,5 +78,7 @@ postSchema.index({ category: 1, createdAt: -1 });
 postSchema.index({ tags: 1 });
 postSchema.index({ authorId: 1 });
 postSchema.index({ moderationStatus: 1, createdAt: -1 });
+postSchema.index({ isResolved: 1, resolvedAt: -1 });
+postSchema.index({ isResolved: 1, upvotes: -1, createdAt: -1 });
 
 export const Post = mongoose.model<IPost>('Post', postSchema);

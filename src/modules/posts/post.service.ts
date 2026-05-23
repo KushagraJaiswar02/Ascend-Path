@@ -4,8 +4,10 @@ import { IPost, PostCategory } from './post.model';
 import { respectService } from '../respect/respect.service';
 import { RespectReason } from '../respect/respectVote.model';
 import { userRepository } from '../users/user.repository';
+import { reputationService } from '../reputation/reputation.service';
 import { eventEmitter } from '../../utils/eventEmitter';
 import { logger } from '../../utils/logger';
+import { PostDomainEvent } from './post.events';
 
 export const postService = {
   async createPost(userId: string, data: CreatePostInput) {
@@ -15,12 +17,17 @@ export const postService = {
     });
   },
 
-  async getPosts(page: number, limit: number, category?: string, tags?: string, search?: string) {
+  async getPosts(page: number, limit: number, category?: string, tags?: string, search?: string, resolution?: 'resolved' | 'unresolved') {
     return await postRepository.getPosts(page, limit, {
       category: category as PostCategory,
       tags,
       search,
+      resolution,
     });
+  },
+
+  async getResolvedPosts(page: number, limit: number) {
+    return await postRepository.getResolvedPosts(page, limit);
   },
 
   async getPostById(id: string) {
@@ -100,38 +107,129 @@ export const postService = {
     return await postRepository.getRepliesByPost(postId, page, limit);
   },
 
-  async markSolution(userId: string, postId: string, replyId: string) {
+  async acceptAnswer(userId: string, postId: string, replyId: string, options?: { actorRole?: string; reason?: string; moderatorOverride?: boolean }) {
     const post = await postRepository.getPostById(postId);
     if (!post) throw new Error('Post not found');
 
-    if (post.authorId._id.toString() !== userId) {
-      throw new Error('Only the author can mark a solution');
+    const postAuthorId = (post.authorId as any)._id?.toString() || post.authorId.toString();
+    if (!options?.moderatorOverride && postAuthorId !== userId) {
+      throw new Error('Only the author can accept an answer');
     }
 
     const reply = await postRepository.getReplyById(replyId);
-    if (!reply || reply.postId.toString() !== postId) {
-      throw new Error('Reply not found or does not belong to this post');
+    if (!reply || reply.postId.toString() !== postId || reply.moderationStatus !== 'visible') {
+      throw new Error('Reply not found, hidden, or does not belong to this post');
     }
 
+    const previousAcceptedReplyId =
+      post.acceptedReplyId?.toString() || post.solutionReplyId?.toString() || undefined;
+    const previousAcceptedReply =
+      previousAcceptedReplyId && previousAcceptedReplyId !== replyId
+        ? await postRepository.getReplyById(previousAcceptedReplyId)
+        : null;
+    const acceptedAt = new Date();
     const result = await postRepository.updatePost(postId, {
-      isSolved: true,
+      acceptedReplyId: replyId as any,
       solutionReplyId: replyId as any,
+      isResolved: true,
+      isSolved: true,
+      resolvedAt: acceptedAt,
+      resolvedBy: userId as any,
     });
 
-    // Award +20 points to the reply author for providing a solution
+    const replyAuthorId = reply.authorId.toString();
     try {
-      await respectService.grantOneTimePoints(
-        userId,
-        reply.authorId._id.toString(),
+      await respectService.assignOneTimePoints(
+        postAuthorId,
+        replyAuthorId,
         postId,
         RespectReason.SOLUTION_MARKED,
         20
       );
+      await reputationService.recalculateFameScore(replyAuthorId);
+      if (previousAcceptedReply) {
+        await reputationService.recalculateFameScore(previousAcceptedReply.authorId.toString());
+      }
     } catch (e) {
-      // Ignored if it was already marked or they marked their own solution
+      logger.warn('Answer accepted without reputation award:', e);
     }
 
+    const [postAuthor, replyAuthor] = await Promise.all([
+      userRepository.findUserById(userId),
+      userRepository.findUserById(replyAuthorId),
+    ]);
+
+    if (replyAuthorId !== userId) {
+      eventEmitter.emit(PostDomainEvent.ANSWER_ACCEPTED, {
+        postId,
+        replyId,
+        actorId: userId,
+        recipientId: replyAuthorId,
+        postTitle: post.title || 'A forum post',
+        actorName: postAuthor?.name || 'The post author',
+      });
+    }
+
+    eventEmitter.emit(PostDomainEvent.POST_RESOLVED, {
+      postId,
+      replyId,
+      actorId: userId,
+      recipientId: postAuthorId,
+      postTitle: post.title || 'A forum post',
+      acceptedAuthorName: replyAuthor?.name || 'A contributor',
+      previousAcceptedReplyId,
+      moderatorOverride: !!options?.moderatorOverride,
+      reason: options?.reason,
+    });
+
     return result;
+  },
+
+  async unacceptAnswer(userId: string, postId: string, options?: { moderatorOverride?: boolean; reason?: string }) {
+    const post = await postRepository.getPostById(postId);
+    if (!post) throw new Error('Post not found');
+
+    const postAuthorId = (post.authorId as any)._id?.toString() || post.authorId.toString();
+    if (!options?.moderatorOverride && postAuthorId !== userId) {
+      throw new Error('Only the author can unaccept an answer');
+    }
+
+    const previousAcceptedReplyId = post.acceptedReplyId?.toString() || post.solutionReplyId?.toString();
+    const previousAcceptedReply = previousAcceptedReplyId ? await postRepository.getReplyById(previousAcceptedReplyId) : null;
+    const result = await postRepository.updatePost(postId, {
+      acceptedReplyId: null as any,
+      solutionReplyId: null as any,
+      isResolved: false,
+      isSolved: false,
+      resolvedAt: null as any,
+      resolvedBy: null as any,
+    });
+
+    try {
+      await respectService.revokeOneTimePoints(postAuthorId, postId, RespectReason.SOLUTION_MARKED);
+      if (previousAcceptedReply) {
+        await reputationService.recalculateFameScore(previousAcceptedReply.authorId.toString());
+      }
+    } catch (e) {
+      logger.warn('Accepted-answer reputation revoke failed:', e);
+    }
+
+    eventEmitter.emit(PostDomainEvent.POST_RESOLVED, {
+      postId,
+      actorId: userId,
+      recipientId: postAuthorId,
+      postTitle: post.title || 'A forum post',
+      previousAcceptedReplyId,
+      cleared: true,
+      moderatorOverride: !!options?.moderatorOverride,
+      reason: options?.reason,
+    });
+
+    return result;
+  },
+
+  async markSolution(userId: string, postId: string, replyId: string) {
+    return await this.acceptAnswer(userId, postId, replyId);
   },
 
   async handleVote(voters: IPost['voters'], currentUpvotes: number, currentDownvotes: number, userId: string, voteValue: 1 | -1) {

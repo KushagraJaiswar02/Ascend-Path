@@ -18,6 +18,9 @@ export const useRateSession = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['sessions', 'me'] });
       queryClient.invalidateQueries({ queryKey: ['session', variables.sessionId] });
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+      queryClient.invalidateQueries({ queryKey: ['reputation'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
   });
 };

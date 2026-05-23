@@ -43,6 +43,8 @@ const review_routes_1 = require("./modules/reviews/review.routes");
 const admin_routes_1 = require("./modules/admin/admin.routes");
 const mentorApplication_routes_1 = require("./modules/mentor-applications/mentorApplication.routes");
 const onboarding_routes_1 = require("./modules/onboarding/onboarding.routes");
+const sessionReflection_controller_1 = require("./modules/sessions/sessionReflection.controller");
+const auth_middleware_1 = require("./middleware/auth.middleware");
 // Register Module Routes Here
 app.use('/api/v1/users', user_routes_1.userRoutes);
 app.use('/api/v1/auth', auth_routes_1.authRoutes);
@@ -53,6 +55,7 @@ app.use('/api/v1/sections', roadmap_routes_1.sectionRoutes);
 app.use('/api/v1/steps', roadmap_routes_1.stepRoutes);
 app.use('/api/v1/me/roadmaps', roadmap_routes_1.meRoadmapRoutes);
 app.use('/api/v1/sessions', session_routes_1.sessionRoutes);
+app.get('/api/v1/me/reflections', auth_middleware_1.authMiddleware, sessionReflection_controller_1.sessionReflectionController.getMyReflections);
 app.use('/api/v1/search', search_routes_1.searchRoutes);
 app.use('/api/v1/notifications', notification_routes_1.notificationRoutes);
 app.use('/api/v1/moderation', report_routes_1.reportRoutes);

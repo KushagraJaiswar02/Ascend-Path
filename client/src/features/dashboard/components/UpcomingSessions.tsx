@@ -1,14 +1,23 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Calendar, Clock } from 'lucide-react';
+import { Calendar, Clock, Video } from 'lucide-react';
 
 interface UpcomingSessionsProps {
   sessions: any[];
 }
 
 export const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({ sessions }) => {
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
   return (
     <Card className="flex flex-col h-full border border-border bg-card text-card-foreground shadow-subtle overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between p-md border-b border-border/50 bg-muted/20">
@@ -47,6 +56,8 @@ export const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({ sessions }) 
               const guideInitials = session.guideId?.name
                 ? session.guideId.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)
                 : 'G';
+              const isLive = ['waiting', 'active'].includes(session.attendanceStatus);
+              const canJoin = session.status === 'booked' && scheduledDate.getTime() <= now && !session.endedAt;
 
               return (
                 <li 
@@ -64,9 +75,12 @@ export const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({ sessions }) 
                   </div>
                   
                   <div className="min-w-0 flex-1 space-y-xs">
-                    <h3 className="text-body-sm font-bold text-foreground truncate">
-                      {session.topic || 'Mentorship Session'}
-                    </h3>
+                    <div className="flex items-center gap-xs min-w-0">
+                      <h3 className="text-body-sm font-bold text-foreground truncate">
+                        {session.topic || 'Mentorship Session'}
+                      </h3>
+                      {isLive && <Badge variant="success">Live</Badge>}
+                    </div>
                     <div className="flex flex-wrap items-center gap-x-md gap-y-xs text-muted-xs text-muted-foreground">
                       <div className="flex items-center gap-xs">
                         <Avatar className="h-4 w-4">
@@ -82,6 +96,14 @@ export const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({ sessions }) 
                       </div>
                     </div>
                   </div>
+                  {(canJoin || isLive) && (
+                    <Button asChild variant={isLive ? 'primary' : 'outline'} size="sm" className="shrink-0">
+                      <Link to={`/sessions/${session._id}`}>
+                        <Video className="h-3.5 w-3.5 mr-1.5" />
+                        Join
+                      </Link>
+                    </Button>
+                  )}
                 </li>
               );
             })}
@@ -91,4 +113,3 @@ export const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({ sessions }) 
     </Card>
   );
 };
-

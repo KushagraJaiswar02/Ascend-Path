@@ -7,6 +7,9 @@ import { userRepository } from '../users/user.repository';
 import { eventEmitter } from '../../utils/eventEmitter';
 import mongoose from 'mongoose';
 import { logger } from '../../utils/logger';
+import { hasVerifiedAttendance } from '../sessions/sessionExecution.dto';
+
+const getId = (value: any) => value?._id?.toString?.() || value?.toString?.() || '';
 
 export const reviewService = {
   /**
@@ -23,11 +26,15 @@ export const reviewService = {
     }
 
     // 2. Enforce Verification and Attendance checks
-    if (session.status !== SessionStatus.COMPLETED) {
-      throw { statusCode: 400, message: 'You can only review sessions that are fully completed' };
+    if (session.status !== SessionStatus.COMPLETED || !hasVerifiedAttendance(session)) {
+      throw { statusCode: 400, message: 'You can only review sessions with verified attendance and completion' };
     }
 
-    if (!session.clientId || session.clientId._id.toString() !== userId) {
+    const actorId = getId(userId);
+    const clientId = getId(session.clientId);
+    const guideId = getId(session.guideId);
+
+    if (!clientId || clientId !== actorId) {
       throw { statusCode: 403, message: 'Only the learner who attended this session can submit a review' };
     }
 
@@ -47,7 +54,7 @@ export const reviewService = {
     }
 
     // 5. Enforce Anti-Self-Review block
-    if (session.guideId._id.toString() === userId) {
+    if (guideId === actorId) {
       throw { statusCode: 400, message: 'Guides cannot submit reviews for themselves' };
     }
 
@@ -57,7 +64,7 @@ export const reviewService = {
     // 7. Create Review record
     const review = await reviewRepository.createReview({
       reviewerId: clientObjectId as any,
-      guideId: session.guideId._id as any,
+      guideId: new mongoose.Types.ObjectId(guideId) as any,
       sessionId: new mongoose.Types.ObjectId(sessionId) as any,
       rating,
       reviewText,
@@ -75,14 +82,14 @@ export const reviewService = {
     });
 
     // 9. Centralized Reputation updates
-    await reputationService.recalculateFameScore(session.guideId._id.toString());
+    await reputationService.recalculateFameScore(guideId);
 
     // 10. Notify Guide asynchronously by emitting a domain event
     userRepository.findUserById(userId).then((reviewer) => {
       eventEmitter.emit('REVIEW_RECEIVED', {
         reviewId: review._id.toString(),
         reviewerId: userId,
-        guideId: session.guideId._id.toString(),
+        guideId,
         rating,
         reviewerName: reviewer?.name || 'A student',
       });

@@ -10,8 +10,95 @@ export interface Reply {
   upvotes: number;
   downvotes: number;
   isSolution: boolean;
+  isAccepted?: boolean;
   createdAt: string;
 }
+
+export const useAcceptAnswer = (postId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (replyId: string) => {
+      const { data } = await apiClient.post(`/posts/${postId}/accept/${replyId}`);
+      return data.data.post as Post;
+    },
+    onMutate: async (replyId) => {
+      await queryClient.cancelQueries({ queryKey: ['post', postId] });
+      const previousData = queryClient.getQueryData<{ post: Post; replies: Reply[] }>(['post', postId]);
+
+      queryClient.setQueryData<{ post: Post; replies: Reply[] }>(['post', postId], (currentData) => {
+        if (!currentData) return currentData;
+        const replies = currentData.replies
+          .map((reply) => ({ ...reply, isAccepted: reply._id === replyId, isSolution: reply._id === replyId }))
+          .sort((a, b) => {
+            if (a._id === replyId) return -1;
+            if (b._id === replyId) return 1;
+            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          });
+
+        return {
+          post: {
+            ...currentData.post,
+            isSolved: true,
+            isResolved: true,
+            acceptedReplyId: replyId,
+            solutionReplyId: replyId,
+            resolvedAt: new Date().toISOString(),
+          },
+          replies,
+        };
+      });
+
+      return { previousData };
+    },
+    onError: (_err, _replyId, context) => {
+      if (context?.previousData) queryClient.setQueryData(['post', postId], context.previousData);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['post', postId] });
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+    },
+  });
+};
+
+export const useUnacceptAnswer = (postId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const { data } = await apiClient.delete(`/posts/${postId}/accept`);
+      return data.data.post as Post;
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['post', postId] });
+      const previousData = queryClient.getQueryData<{ post: Post; replies: Reply[] }>(['post', postId]);
+
+      queryClient.setQueryData<{ post: Post; replies: Reply[] }>(['post', postId], (currentData) => {
+        if (!currentData) return currentData;
+        return {
+          post: {
+            ...currentData.post,
+            isSolved: false,
+            isResolved: false,
+            acceptedReplyId: undefined,
+            solutionReplyId: undefined,
+            resolvedAt: undefined,
+          },
+          replies: currentData.replies.map((reply) => ({ ...reply, isAccepted: false, isSolution: false })),
+        };
+      });
+
+      return { previousData };
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previousData) queryClient.setQueryData(['post', postId], context.previousData);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['post', postId] });
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+    },
+  });
+};
 
 
 export const usePost = (postId: string) => {

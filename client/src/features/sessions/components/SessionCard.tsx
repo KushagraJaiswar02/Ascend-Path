@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, Clock, Timer } from 'lucide-react';
 import type { Session } from '../types';
 import { BookSessionButton } from './BookSessionButton';
+import { useAuthStore } from '../../../store/useAuthStore';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -27,6 +28,7 @@ export const SessionCard: React.FC<SessionCardProps> = memo(({
   session,
   showBookingAction = true,
 }) => {
+  const { user } = useAuthStore();
   const dateObj = new Date(session.scheduledAt);
   const formattedDate = dateObj.toLocaleDateString(undefined, {
     weekday: 'short',
@@ -45,6 +47,7 @@ export const SessionCard: React.FC<SessionCardProps> = memo(({
     .join('')
     .toUpperCase()
     .slice(0, 2);
+  const isOwnSession = user?._id === session.guideId._id;
 
   return (
     <Card className={cn('flex flex-col hover:shadow-medium transition-shadow duration-200')}>
@@ -109,6 +112,7 @@ export const SessionCard: React.FC<SessionCardProps> = memo(({
             status={session.status}
             price={session.price}
             topic={session.topic}
+            isOwnSession={isOwnSession}
           />
         </CardFooter>
       )}

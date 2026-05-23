@@ -18,6 +18,8 @@ router.post('/bulk', requirePermission('reports:bulk'), reportController.bulkAct
 
 router.post('/content/hide', requirePermission('content:moderate'), reportController.hideContent);
 router.post('/content/delete', requirePermission('content:moderate'), reportController.softDeleteContent);
+router.post('/posts/:postId/accept/:replyId', requirePermission('content:moderate'), reportController.overrideAcceptedAnswer);
+router.delete('/posts/:postId/accept', requirePermission('content:moderate'), reportController.clearAcceptedAnswer);
 
 router.post('/users/:id/warn', requirePermission('users:moderate'), reportController.warnUser);
 router.post('/users/:id/mute', requirePermission('users:moderate'), reportController.muteUser);

@@ -33,5 +33,9 @@ const userProgressSchema = new Schema<IUserProgress>(
 
 // Prevent duplicate progress tracking for the same user and roadmap
 userProgressSchema.index({ userId: 1, roadmapId: 1 }, { unique: true });
+userProgressSchema.index({ roadmapId: 1, lastActiveAt: -1 });
+userProgressSchema.index({ roadmapId: 1, completedAt: -1 });
+userProgressSchema.index({ lastActiveAt: -1 });
+userProgressSchema.index({ createdAt: -1 });
 
 export const UserProgress = mongoose.model<IUserProgress>('UserProgress', userProgressSchema);
