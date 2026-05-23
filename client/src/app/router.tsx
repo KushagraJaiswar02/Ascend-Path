@@ -4,6 +4,7 @@ import { Landing } from '../pages/Landing';
 import { Login } from '../pages/auth/Login';
 import { Register } from '../pages/auth/Register';
 import { ProtectedRoute } from '../components/ProtectedRoute';
+import { AdminRoute } from '../components/AdminRoute';
 import { MainLayout } from '../layouts/MainLayout';
 import { PageLoadingFallback } from '../components/ui/PageLoadingFallback';
 
@@ -20,6 +21,11 @@ const Pings        = lazy(() => import('../pages/Pings').then(m => ({ default: m
 const ProfileDetail = lazy(() => import('../pages/ProfileDetail').then(m => ({ default: m.ProfileDetail })));
 const RoadmapDetail = lazy(() => import('../pages/RoadmapDetail').then(m => ({ default: m.RoadmapDetail })));
 const RoadmapBuilder = lazy(() => import('../pages/RoadmapBuilder').then(m => ({ default: m.RoadmapBuilder })));
+const Admin = lazy(() => import('../pages/Admin').then(m => ({ default: m.Admin })));
+const AdminModeration = lazy(() => import('../pages/AdminModeration').then(m => ({ default: m.AdminModeration })));
+const AdminUsers = lazy(() => import('../pages/AdminUsers').then(m => ({ default: m.AdminUsers })));
+const AdminAudit = lazy(() => import('../pages/AdminAudit').then(m => ({ default: m.AdminAudit })));
+const AdminHealth = lazy(() => import('../pages/AdminHealth').then(m => ({ default: m.AdminHealth })));
 
 // Thin Suspense wrapper so every lazy route gets the same fallback treatment
 const Lazy = ({ children }: { children: React.ReactNode }) => (
@@ -90,6 +96,33 @@ export const router = createBrowserRouter([
           {
             path: '/roadmaps/builder/:id',
             element: <Lazy><RoadmapBuilder /></Lazy>,
+          },
+          {
+            element: <AdminRoute />,
+            children: [
+              {
+                path: '/admin',
+                element: <Lazy><Admin /></Lazy>,
+                children: [
+                  {
+                    path: '/admin/moderation',
+                    element: <Lazy><AdminModeration /></Lazy>,
+                  },
+                  {
+                    path: '/admin/users',
+                    element: <Lazy><AdminUsers /></Lazy>,
+                  },
+                  {
+                    path: '/admin/audit',
+                    element: <Lazy><AdminAudit /></Lazy>,
+                  },
+                  {
+                    path: '/admin/health',
+                    element: <Lazy><AdminHealth /></Lazy>,
+                  },
+                ],
+              },
+            ],
           },
         ],
       },
