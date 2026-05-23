@@ -29,7 +29,17 @@ export const userRepository = {
     const skip = (page - 1) * limit;
     
     // Force role filter to GUIDE
-    const queryFilters = { ...filters, role: Role.GUIDE };
+    const queryFilters = {
+      ...filters,
+      $or: [
+        { role: Role.GUIDE },
+        { roles: Role.GUIDE },
+        { capabilities: 'discover:listed' },
+      ],
+      mentorProfileStatus: 'approved',
+      profileVisibility: true,
+      isBanned: false,
+    };
 
     const guides = await User.find(queryFilters)
       .select('-passwordHash')

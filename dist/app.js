@@ -41,6 +41,8 @@ const report_routes_1 = require("./modules/moderation/report.routes");
 const guide_routes_1 = require("./modules/guides/guide.routes");
 const review_routes_1 = require("./modules/reviews/review.routes");
 const admin_routes_1 = require("./modules/admin/admin.routes");
+const mentorApplication_routes_1 = require("./modules/mentor-applications/mentorApplication.routes");
+const onboarding_routes_1 = require("./modules/onboarding/onboarding.routes");
 // Register Module Routes Here
 app.use('/api/v1/users', user_routes_1.userRoutes);
 app.use('/api/v1/auth', auth_routes_1.authRoutes);
@@ -56,9 +58,13 @@ app.use('/api/v1/notifications', notification_routes_1.notificationRoutes);
 app.use('/api/v1/moderation', report_routes_1.reportRoutes);
 app.use('/api/v1/guides', guide_routes_1.guideRoutes);
 app.use('/api/v1/reviews', review_routes_1.reviewRoutes);
+app.use('/api/v1/mentor-applications', mentorApplication_routes_1.mentorApplicationRoutes);
+app.use('/api/v1/onboarding', onboarding_routes_1.onboardingRoutes);
+app.use('/api/v1/admin/mentor-applications', mentorApplication_routes_1.adminMentorApplicationRoutes);
 app.use('/api/v1/admin', admin_routes_1.adminRoutes);
 // Global Error Handler
 app.use(errorHandler_1.errorHandler);
 // Bootstrap Notification Listeners
 require("./modules/notifications/notification.listener");
+require("./modules/mentor-applications/mentorApplication.events");
 exports.default = app;

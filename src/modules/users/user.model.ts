@@ -35,6 +35,9 @@ export interface IUser extends Document {
   email: string;
   passwordHash: string;
   role: Role;
+  roles: Role[];
+  capabilities: string[];
+  mentorProfileStatus?: string;
   respectPoints: number;
   fameScore: number;
   guideRank: GuideRank;
@@ -65,6 +68,14 @@ export interface IUser extends Document {
   totalReviews: number;
   profileVisibility: boolean;
   onboardingCompleted: boolean;
+  onboarding?: {
+    primaryGoal?: string;
+    experienceLevel?: string;
+    targetRole?: string;
+    interestedDomains: string[];
+    preferredLearningStyle?: string;
+    weeklyCommitmentHours?: number;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -85,6 +96,18 @@ const userSchema = new Schema<IUser>(
       type: String,
       enum: Object.values(Role),
       default: Role.USER,
+    },
+    roles: {
+      type: [String],
+      enum: Object.values(Role),
+      default: [Role.USER],
+    },
+    capabilities: { type: [String], default: [] },
+    mentorProfileStatus: {
+      type: String,
+      enum: ['none', 'pending', 'under_review', 'approved', 'rejected', 'changes_requested'],
+      default: 'none',
+      index: true,
     },
     respectPoints: { type: Number, default: 0 },
     fameScore: { type: Number, default: 0 },
@@ -134,17 +157,29 @@ const userSchema = new Schema<IUser>(
     totalReviews: { type: Number, default: 0 },
     profileVisibility: { type: Boolean, default: true },
     onboardingCompleted: { type: Boolean, default: false },
+    onboarding: {
+      primaryGoal: { type: String, trim: true },
+      experienceLevel: { type: String, trim: true },
+      targetRole: { type: String, trim: true },
+      interestedDomains: { type: [String], default: [] },
+      preferredLearningStyle: { type: String, trim: true },
+      weeklyCommitmentHours: { type: Number, min: 1, max: 80 },
+    },
   },
   { timestamps: true }
 );
 
 // High-performance production indexes
 userSchema.index({ role: 1, profileVisibility: 1 });
+userSchema.index({ roles: 1, profileVisibility: 1 });
+userSchema.index({ capabilities: 1, mentorProfileStatus: 1 });
 userSchema.index({ isBanned: 1, suspendedUntil: 1 });
 userSchema.index({ domains: 1 });
 userSchema.index({ 'skills.name': 1 });
 userSchema.index({ averageRating: -1 });
 userSchema.index({ fameScore: -1 });
 userSchema.index({ createdAt: -1 });
+userSchema.index({ onboardingCompleted: 1, 'onboarding.interestedDomains': 1 });
+userSchema.index({ 'onboarding.targetRole': 1, 'onboarding.experienceLevel': 1 });
 
 export const User = mongoose.model<IUser>('User', userSchema);

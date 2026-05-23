@@ -1,6 +1,6 @@
 import { sessionRepository } from './session.repository';
 import { userRepository } from '../users/user.repository';
-import { Role } from '../users/user.model';
+import { canActAsGuide, hasCapability, UserCapability } from '../users/userCapabilities';
 import { SessionStatus } from './session.model';
 import { CreateSessionInput, UpdateSessionInput, RateSessionInput } from './session.validation';
 import { respectService } from '../respect/respect.service';
@@ -14,8 +14,8 @@ export const sessionService = {
     const user = await userRepository.findUserById(userId);
     if (!user) throw new Error('User not found');
 
-    if (user.role !== Role.GUIDE) {
-      throw new Error('Only Guides can create availability sessions');
+    if (!canActAsGuide(user) || !hasCapability(user, UserCapability.SESSIONS_HOST) || user.mentorProfileStatus !== 'approved') {
+      throw new Error('Only approved mentors can create availability sessions');
     }
 
     return await sessionRepository.createSession({

@@ -11,10 +11,18 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Award, Star, AlertCircle, RefreshCw } from 'lucide-react';
+import { BecomeMentorCTA } from '../features/mentorApplications/components/BecomeMentorCTA';
+import { MentorApplicationStatusCard } from '../features/mentorApplications/components/MentorApplicationStatusCard';
+import { useMyMentorApplication } from '../features/mentorApplications/hooks/useMentorApplications';
+import { PersonalizedWelcomeBanner } from '../features/onboarding/components/PersonalizedWelcomeBanner';
+import { RecommendationPreview } from '../features/onboarding/components/RecommendationPreview';
+import { useOnboardingRecommendations } from '../features/onboarding/hooks/useOnboarding';
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuthStore();
   const { data, isLoading, isError, refetch } = useDashboardData();
+  const mentorApplication = useMyMentorApplication();
+  const onboardingRecommendations = useOnboardingRecommendations();
 
   // 1. High-fidelity Loading Skeleton Grid
   if (isLoading) {
@@ -123,6 +131,7 @@ export const Dashboard: React.FC = () => {
             <span className="text-foreground font-bold">{user?.respectPoints || 0}</span>
           </div>
           
+          {user?.role !== 'guide' && <BecomeMentorCTA />}
           {user?.role === 'guide' && (
             <div className="inline-flex items-center gap-xs px-sm py-[3px] bg-warning/10 border border-warning/20 rounded-full shadow-subtle text-warning-foreground text-body-xs font-semibold transition-colors hover:bg-warning/15">
               <Star className="h-3.5 w-3.5 text-warning shrink-0" />
@@ -132,6 +141,23 @@ export const Dashboard: React.FC = () => {
           )}
         </div>
       </div>
+
+      <PersonalizedWelcomeBanner
+        recommendations={onboardingRecommendations.data}
+        isLoading={onboardingRecommendations.isLoading}
+      />
+
+      {onboardingRecommendations.data?.onboardingCompleted && (
+        <div className="mb-lg">
+          <RecommendationPreview recommendations={onboardingRecommendations.data} />
+        </div>
+      )}
+
+      {user?.role !== 'guide' && (
+        <div className="mb-lg">
+          <MentorApplicationStatusCard application={mentorApplication.data} isLoading={mentorApplication.isLoading} />
+        </div>
+      )}
 
       {/* 4. Balanced 2x2 Dashboard Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-lg items-stretch">
@@ -151,4 +177,3 @@ export const Dashboard: React.FC = () => {
     </PageContainer>
   );
 };
-

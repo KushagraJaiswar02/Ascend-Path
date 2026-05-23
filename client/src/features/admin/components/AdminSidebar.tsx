@@ -1,10 +1,11 @@
-import { Activity, ClipboardList, FileClock, Gauge, Shield, Users } from 'lucide-react';
+import { Activity, ClipboardList, FileClock, Gauge, Shield, ShieldCheck, Users } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '../../../lib/utils';
 
 const navItems = [
   { to: '/admin', label: 'Operations', icon: Gauge },
   { to: '/admin/moderation', label: 'Queue', icon: ClipboardList },
+  { to: '/admin/mentor-applications', label: 'Mentors', icon: ShieldCheck },
   { to: '/admin/users', label: 'Users', icon: Users },
   { to: '/admin/audit', label: 'Audit', icon: FileClock },
   { to: '/admin/health', label: 'Health', icon: Activity },

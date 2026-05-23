@@ -23,7 +23,14 @@ export const guideRepository = {
     
     // Core query for visible, unbanned guides
     const query: any = {
-      role: Role.GUIDE,
+      $and: [{
+        $or: [
+          { role: Role.GUIDE },
+          { roles: Role.GUIDE },
+          { capabilities: 'discover:listed' },
+        ],
+      }],
+      mentorProfileStatus: 'approved',
       profileVisibility: true,
       isBanned: false,
     };
@@ -31,12 +38,12 @@ export const guideRepository = {
     // Text search (fuzzy search across name, bio, domains, skills)
     if (filters.search) {
       const searchRegex = new RegExp(filters.search.trim(), 'i');
-      query.$or = [
+      query.$and.push({ $or: [
         { name: { $regex: searchRegex } },
         { bio: { $regex: searchRegex } },
         { domains: { $regex: searchRegex } },
         { 'skills.name': { $regex: searchRegex } },
-      ];
+      ]});
     }
 
     // Domain filtering (match any specified domains)
@@ -70,10 +77,10 @@ export const guideRepository = {
 
     // Beginner Friendly (regex on bio or skills levels)
     if (filters.isBeginnerFriendly) {
-      query.$or = [
+      query.$and.push({ $or: [
         { bio: { $regex: /beginner|basic|junior|start|intro/i } },
         { 'skills.level': { $regex: /beginner|junior/i } },
-      ];
+      ]});
     }
 
     // Top Rated (avgRating >= 4.5)
@@ -125,7 +132,12 @@ export const guideRepository = {
   async findPublicGuideById(id: string) {
     return await User.findOne({
       _id: id,
-      role: Role.GUIDE,
+      $or: [
+        { role: Role.GUIDE },
+        { roles: Role.GUIDE },
+        { capabilities: 'discover:listed' },
+      ],
+      mentorProfileStatus: 'approved',
       profileVisibility: true,
       isBanned: false,
     }).select('-passwordHash');

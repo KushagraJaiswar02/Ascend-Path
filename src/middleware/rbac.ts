@@ -9,7 +9,9 @@ export type Permission =
   | 'users:moderate'
   | 'users:roles'
   | 'analytics:read'
-  | 'audit:read';
+  | 'audit:read'
+  | 'mentor_applications:read'
+  | 'mentor_applications:review';
 
 const roleRank: Record<string, number> = {
   [Role.USER]: 10,
@@ -28,8 +30,8 @@ const rolePermissions: Record<string, Permission[]> = {
   [Role.EXPLORER]: [],
   [Role.PATHFINDER]: [],
   [Role.GUIDE]: [],
-  [Role.MODERATOR]: ['reports:read', 'reports:write', 'content:moderate', 'users:moderate'],
-  [Role.SENTINEL]: ['reports:read', 'reports:write', 'content:moderate', 'users:moderate'],
+  [Role.MODERATOR]: ['reports:read', 'reports:write', 'content:moderate', 'users:moderate', 'mentor_applications:read', 'mentor_applications:review'],
+  [Role.SENTINEL]: ['reports:read', 'reports:write', 'content:moderate', 'users:moderate', 'mentor_applications:read', 'mentor_applications:review'],
   [Role.ADMIN]: [
     'reports:read',
     'reports:write',
@@ -38,6 +40,8 @@ const rolePermissions: Record<string, Permission[]> = {
     'users:moderate',
     'analytics:read',
     'audit:read',
+    'mentor_applications:read',
+    'mentor_applications:review',
   ],
   [Role.ARCHITECT]: [
     'reports:read',
@@ -48,6 +52,8 @@ const rolePermissions: Record<string, Permission[]> = {
     'users:roles',
     'analytics:read',
     'audit:read',
+    'mentor_applications:read',
+    'mentor_applications:review',
   ],
   [Role.SUPER_ADMIN]: [
     'reports:read',
@@ -58,6 +64,8 @@ const rolePermissions: Record<string, Permission[]> = {
     'users:roles',
     'analytics:read',
     'audit:read',
+    'mentor_applications:read',
+    'mentor_applications:review',
   ],
 };
 

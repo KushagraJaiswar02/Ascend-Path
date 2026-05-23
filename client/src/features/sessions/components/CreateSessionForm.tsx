@@ -24,10 +24,11 @@ export const CreateSessionForm: React.FC = () => {
 
     createMutation.mutate(
       {
+        title: topic,
         topic,
         description,
         scheduledAt: new Date(scheduledAt).toISOString(),
-        duration,
+        durationMinutes: duration,
         price,
       },
       {

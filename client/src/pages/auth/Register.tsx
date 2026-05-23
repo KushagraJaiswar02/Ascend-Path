@@ -21,7 +21,7 @@ export const Register: React.FC = () => {
       return data;
     },
     onSuccess: () => {
-      setSuccessMsg('Account created successfully! Redirecting to login...');
+      setSuccessMsg('Account created successfully! Redirecting to login so you can personalize your path...');
       setTimeout(() => {
         navigate('/auth/login');
       }, 2000);
@@ -122,4 +122,3 @@ export const Register: React.FC = () => {
     </div>
   );
 };
-

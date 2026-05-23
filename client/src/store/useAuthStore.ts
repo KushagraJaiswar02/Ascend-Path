@@ -10,6 +10,15 @@ export interface User {
   avatar?: string;
   respectPoints?: number;
   fameScore?: number;
+  onboardingCompleted?: boolean;
+  onboarding?: {
+    primaryGoal?: string;
+    experienceLevel?: string;
+    targetRole?: string;
+    interestedDomains?: string[];
+    preferredLearningStyle?: string;
+    weeklyCommitmentHours?: number;
+  };
 }
 
 interface AuthState {
