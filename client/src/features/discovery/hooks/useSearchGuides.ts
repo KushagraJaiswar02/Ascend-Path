@@ -6,10 +6,10 @@ export const useSearchGuides = (params: SearchGuidesParams, enabled = true) => {
   return useQuery({
     queryKey: ['search', 'guides', params],
     queryFn: async () => {
-      const { data } = await apiClient.get('/search/guides', { params });
-      return data;
+      const { data } = await apiClient.get('/guides', { params });
+      return data.data; // Returns { total, page, totalPages, guides }
     },
     enabled,
-    staleTime: 60 * 1000, // 1 min — search results can tolerate brief staleness
+    staleTime: 60 * 1000,
   });
 };

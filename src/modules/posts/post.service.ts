@@ -1,10 +1,10 @@
 import { postRepository } from './post.repository';
 import { CreatePostInput, UpdatePostInput, CreateReplyInput } from './post.validation';
-import { PostCategory } from './post.model';
+import { IPost, PostCategory } from './post.model';
 import { respectService } from '../respect/respect.service';
 import { RespectReason } from '../respect/respectVote.model';
-import { notificationService } from '../notifications/notification.service';
-import { NotificationType } from '../notifications/notification.model';
+import { userRepository } from '../users/user.repository';
+import { eventEmitter } from '../../utils/eventEmitter';
 import { logger } from '../../utils/logger';
 
 export const postService = {
@@ -28,8 +28,14 @@ export const postService = {
     if (!post) {
       throw new Error('Post not found');
     }
-    // Increment view count asynchronously
-    postRepository.incrementViewCount(id).catch((e) => logger.error('Failed to increment view count:', e));
+    return post;
+  },
+
+  async incrementPostView(id: string) {
+    const post = await postRepository.incrementViewCount(id);
+    if (!post) {
+      throw new Error('Post not found');
+    }
     return post;
   },
 
@@ -73,14 +79,18 @@ export const postService = {
       content: data.content,
     });
 
-    // Notify post author if they are not the ones replying
+    // Notify post author if they are not the ones replying by emitting a domain event
     if (post.authorId._id.toString() !== userId) {
-      notificationService.createNotification({
-        userId: post.authorId._id.toString(),
-        type: NotificationType.POST_REPLY,
-        message: `Someone replied to your post.`,
-        link: `/forum/post/${postId}`
-      }).catch((e) => logger.error('Failed to notify post author of reply:', e));
+      userRepository.findUserById(userId).then((author) => {
+        eventEmitter.emit('POST_REPLY', {
+          postId: postId,
+          replyId: newReply._id.toString(),
+          authorId: userId,
+          recipientId: post.authorId._id.toString(),
+          postTitle: post.title || 'Your forum post',
+          authorName: author?.name || 'Someone',
+        });
+      }).catch((e) => logger.error('Failed to emit POST_REPLY event:', e));
     }
 
     return newReply;
@@ -124,20 +134,17 @@ export const postService = {
     return result;
   },
 
-  async handleVote(voters: any[], currentUpvotes: number, currentDownvotes: number, userId: string, voteValue: 1 | -1) {
+  async handleVote(voters: IPost['voters'], currentUpvotes: number, currentDownvotes: number, userId: string, voteValue: 1 | -1) {
     let upvotes = currentUpvotes;
     let downvotes = currentDownvotes;
-    const existingVoteIndex = voters.findIndex((v) => v.userId.toString() === userId);
+    const existingVote = voters.find((v) => v.userId.toString() === userId);
+    const otherVoters = voters.filter((v) => v.userId.toString() !== userId);
 
-    if (existingVoteIndex !== -1) {
-      const existingVote = voters[existingVoteIndex];
+    if (existingVote) {
       if (existingVote.vote === voteValue) {
-        // Remove vote if clicking the same button
         if (voteValue === 1) upvotes -= 1;
         else downvotes -= 1;
-        voters.splice(existingVoteIndex, 1);
       } else {
-        // Change vote
         if (voteValue === 1) {
           upvotes += 1;
           downvotes -= 1;
@@ -145,16 +152,19 @@ export const postService = {
           upvotes -= 1;
           downvotes += 1;
         }
-        voters[existingVoteIndex].vote = voteValue;
+        otherVoters.push({ userId: userId as any, vote: voteValue });
       }
     } else {
-      // New vote
       if (voteValue === 1) upvotes += 1;
       else downvotes += 1;
-      voters.push({ userId, vote: voteValue });
+      otherVoters.push({ userId: userId as any, vote: voteValue });
     }
 
-    return { voters, upvotes, downvotes };
+    return {
+      voters: otherVoters,
+      upvotes: Math.max(0, upvotes),
+      downvotes: Math.max(0, downvotes),
+    };
   },
 
   async votePost(userId: string, postId: string, vote: 1 | -1) {
@@ -173,6 +183,20 @@ export const postService = {
 
     const result = await this.handleVote(post.voters, post.upvotes, post.downvotes, userId, vote);
     await postRepository.votePost(postId, result.voters, result.upvotes, result.downvotes);
+
+    // Emit POST_UPVOTED domain event asynchronously on upvote
+    if (vote === 1 && post.authorId._id.toString() !== userId) {
+      userRepository.findUserById(userId).then((upvoter) => {
+        eventEmitter.emit('POST_UPVOTED', {
+          postId,
+          upvoterId: userId,
+          recipientId: post.authorId._id.toString(),
+          postTitle: post.title || 'Your forum post',
+          upvoterName: upvoter?.name || 'Someone',
+        });
+      }).catch((e) => logger.error('Failed to emit POST_UPVOTED event:', e));
+    }
+
     return result;
   },
 

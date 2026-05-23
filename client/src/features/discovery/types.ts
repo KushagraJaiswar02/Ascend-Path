@@ -1,9 +1,17 @@
 export interface SearchGuidesParams {
-  q?: string;
-  domain?: string;
+  search?: string;
+  domains?: string; // Comma-separated list
+  skills?: string; // Comma-separated list
+  minRating?: number;
   minFameScore?: number;
-  isFree?: boolean;
+  minSessions?: number;
+  isBeginnerFriendly?: boolean;
+  isTopRated?: boolean;
+  isMostActive?: boolean;
+  availability?: string;
   page?: number;
+  limit?: number;
+  sortBy?: string;
 }
 
 export interface SearchRoadmapsParams {

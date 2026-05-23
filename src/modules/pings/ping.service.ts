@@ -6,8 +6,7 @@ import { PingStatus } from './ping.model';
 import { respectService } from '../respect/respect.service';
 import { RespectReason } from '../respect/respectVote.model';
 import { fameService } from '../users/fame.service';
-import { notificationService } from '../notifications/notification.service';
-import { NotificationType } from '../notifications/notification.model';
+import { eventEmitter } from '../../utils/eventEmitter';
 import { logger } from '../../utils/logger';
 
 export const pingService = {
@@ -30,13 +29,16 @@ export const pingService = {
       context: data.context,
     });
 
-    // Notify the recipient asynchronously
-    notificationService.createNotification({
-      userId: data.toUserId,
-      type: NotificationType.PING_RECEIVED,
-      message: `You have received a new ping request.`,
-      link: `/pings/${newPing._id}`
-    }).catch((e) => logger.error('Failed to notify recipient of ping:', e));
+    // Notify the recipient asynchronously by emitting a domain event
+    userRepository.findUserById(fromUserId).then((sender) => {
+      eventEmitter.emit('PING_RECEIVED', {
+        pingId: newPing._id.toString(),
+        senderId: fromUserId,
+        recipientId: data.toUserId,
+        message: data.question,
+        senderName: sender?.name || 'A learner',
+      });
+    }).catch((e) => logger.error('Failed to emit PING_RECEIVED event:', e));
 
     return newPing;
   },
@@ -65,13 +67,16 @@ export const pingService = {
     // Update fame score asynchronously
     fameService.updateFameScore(ping.toUserId._id.toString()).catch((e) => logger.error('Failed to update fame score:', e));
 
-    // Notify the sender asynchronously
-    notificationService.createNotification({
-      userId: ping.fromUserId._id.toString(),
-      type: NotificationType.PING_ANSWERED,
-      message: `Your ping was answered by the Guide.`,
-      link: `/pings/${updatedPing?._id}`
-    }).catch((e) => logger.error('Failed to notify sender of ping answer:', e));
+    // Notify the sender asynchronously by emitting a domain event
+    userRepository.findUserById(userId).then((responder) => {
+      eventEmitter.emit('PING_ANSWERED', {
+        pingId: updatedPing?._id.toString() || pingId,
+        senderId: userId,
+        recipientId: ping.fromUserId._id.toString(),
+        answer: data.response,
+        senderName: responder?.name || 'Your guide',
+      });
+    }).catch((e) => logger.error('Failed to emit PING_ANSWERED event:', e));
 
     return updatedPing;
   },

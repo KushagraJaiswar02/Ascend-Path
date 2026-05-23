@@ -16,7 +16,8 @@ export const useVote = (postId?: string) => {
         ? `/posts/${targetId}/vote` 
         : `/posts/replies/${targetId}/vote`;
         
-      const { data } = await apiClient.post(url, { voteType });
+      const vote = voteType === 'upvote' ? 1 : -1;
+      const { data } = await apiClient.post(url, { vote });
       return data;
     },
     onMutate: async (newVote) => {

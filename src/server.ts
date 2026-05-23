@@ -1,6 +1,8 @@
 import app from "./app";
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import http from 'http';
+import { socketService } from './modules/realtime/socket';
 
 dotenv.config();
 
@@ -12,7 +14,10 @@ const startServer = async () => {
     await mongoose.connect(mongoUri);
     console.log('✅ Connected to MongoDB');
 
-    app.listen(PORT, () => {
+    const server = http.createServer(app);
+    socketService.init(server);
+
+    server.listen(PORT, () => {
       console.log(`🚀 Server is running on port ${PORT}`);
     });
   } catch (error) {
@@ -22,3 +27,4 @@ const startServer = async () => {
 };
 
 startServer();
+

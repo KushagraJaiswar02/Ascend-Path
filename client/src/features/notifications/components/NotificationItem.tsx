@@ -54,6 +54,7 @@ const getTypeStyling = (type: string) => {
         ),
       };
     case 'session_booked':
+    case 'session_accepted':
       return {
         bg: 'bg-teal-50 border-teal-100 dark:bg-teal-950/20 dark:border-teal-900/50',
         text: 'text-teal-600 dark:text-teal-400',
@@ -63,13 +64,43 @@ const getTypeStyling = (type: string) => {
           </svg>
         ),
       };
-    case 'session_reminder':
+    case 'session_completed':
       return {
-        bg: 'bg-amber-50 border-amber-100 dark:bg-amber-950/20 dark:border-amber-900/50',
-        text: 'text-amber-600 dark:text-amber-400',
+        bg: 'bg-green-50 border-green-100 dark:bg-green-950/20 dark:border-green-900/50',
+        text: 'text-green-600 dark:text-green-400',
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+          </svg>
+        ),
+      };
+    case 'review_received':
+      return {
+        bg: 'bg-yellow-50 border-yellow-100 dark:bg-yellow-950/20 dark:border-yellow-900/50',
+        text: 'text-yellow-600 dark:text-yellow-400',
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+          </svg>
+        ),
+      };
+    case 'roadmap_completed':
+      return {
+        bg: 'bg-purple-50 border-purple-100 dark:bg-purple-950/20 dark:border-purple-900/50',
+        text: 'text-purple-600 dark:text-purple-400',
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+          </svg>
+        ),
+      };
+    case 'step_completed':
+      return {
+        bg: 'bg-cyan-50 border-cyan-100 dark:bg-cyan-950/20 dark:border-cyan-900/50',
+        text: 'text-cyan-600 dark:text-cyan-400',
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
           </svg>
         ),
       };
@@ -83,23 +114,23 @@ const getTypeStyling = (type: string) => {
           </svg>
         ),
       };
-    case 'respect_milestone':
+    case 'post_upvoted':
       return {
-        bg: 'bg-rose-50 border-rose-100 dark:bg-rose-950/20 dark:border-rose-900/50',
-        text: 'text-rose-600 dark:text-rose-400',
+        bg: 'bg-orange-50 border-orange-100 dark:bg-orange-950/20 dark:border-orange-900/50',
+        text: 'text-orange-600 dark:text-orange-400',
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 15l7-7 7 7" />
           </svg>
         ),
       };
-    case 'role_upgrade':
+    case 'guide_followed':
       return {
-        bg: 'bg-fuchsia-50 border-fuchsia-100 dark:bg-fuchsia-950/20 dark:border-fuchsia-900/50',
-        text: 'text-fuchsia-600 dark:text-fuchsia-400',
+        bg: 'bg-pink-50 border-pink-100 dark:bg-pink-950/20 dark:border-pink-900/50',
+        text: 'text-pink-600 dark:text-pink-400',
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 11l3-3m0 0l3 3m-3-3v8m0-13a9 9 0 110 18 9 9 0 010-18z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
         ),
       };
@@ -134,7 +165,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = memo(
     const navigate = useNavigate();
 
     const handleNotificationClick = () => {
-      if (!notification.isRead) {
+      if (!notification.read) {
         onMarkRead(notification._id);
       }
 
@@ -142,18 +173,26 @@ export const NotificationItem: React.FC<NotificationItemProps> = memo(
         onItemClick();
       }
 
-      if (notification.link) {
-        navigate(notification.link);
+      // Navigate based on entityType and entityId if available
+      if (notification.entityType && notification.entityId) {
+        const entityType = notification.entityType;
+        const entityId = notification.entityId;
+        if (entityType === 'Ping') navigate(`/pings`);
+        else if (entityType === 'Session') navigate(`/sessions`);
+        else if (entityType === 'Review') navigate(`/`);
+        else if (entityType === 'Roadmap') navigate(`/roadmaps/${entityId}`);
+        else if (entityType === 'Post') navigate(`/forum/post/${entityId}`);
       }
     };
 
     const style = getTypeStyling(notification.type);
+    const actorName = notification.actorId?.name;
 
     return (
       <div
         onClick={handleNotificationClick}
-        className={`group flex items-start gap-4 p-4 rounded-xl border transition-all cursor-pointer select-none ${
-          notification.isRead
+        className={`group flex items-start gap-3 p-3.5 rounded-xl border transition-all cursor-pointer select-none ${
+          notification.read
             ? 'bg-white hover:bg-gray-50/80 border-gray-100 hover:border-gray-200 dark:bg-gray-900 dark:border-gray-800 dark:hover:bg-gray-800/50'
             : 'bg-blue-50/50 hover:bg-blue-50 border-blue-100/70 hover:border-blue-200/80 dark:bg-blue-950/10 dark:border-blue-900/30 dark:hover:bg-blue-950/20'
         }`}
@@ -164,24 +203,34 @@ export const NotificationItem: React.FC<NotificationItemProps> = memo(
         </div>
 
         {/* Message and Metadata content */}
-        <div className="flex-grow min-w-0 pr-2">
+        <div className="flex-grow min-w-0 pr-1">
+          {/* Title row */}
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <p className={`text-[11px] font-bold uppercase tracking-wide ${style.text}`}>
+              {notification.title}
+            </p>
+            {actorName && (
+              <span className="text-[10px] text-muted-foreground font-medium">· {actorName}</span>
+            )}
+          </div>
+          {/* Message body */}
           <p
-            className={`text-sm leading-relaxed mb-1 break-words transition-colors ${
-              notification.isRead
-                ? 'text-gray-600 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-200'
-                : 'text-gray-850 font-semibold group-hover:text-gray-950 dark:text-gray-200 dark:group-hover:text-white'
+            className={`text-sm leading-snug break-words transition-colors ${
+              notification.read
+                ? 'text-gray-500 group-hover:text-gray-800 dark:text-gray-400 dark:group-hover:text-gray-200'
+                : 'text-gray-800 font-medium group-hover:text-gray-950 dark:text-gray-200 dark:group-hover:text-white'
             }`}
           >
             {notification.message}
           </p>
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-medium text-gray-400 dark:text-gray-500">
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-[10px] font-medium text-gray-400 dark:text-gray-500">
               {formatRelativeTime(notification.createdAt)}
             </span>
-            {!notification.isRead && (
+            {!notification.read && (
               <>
                 <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600"></span>
-                <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 tracking-wide uppercase">
+                <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 tracking-widest uppercase">
                   New
                 </span>
               </>
@@ -190,9 +239,9 @@ export const NotificationItem: React.FC<NotificationItemProps> = memo(
         </div>
 
         {/* Unread dot indicator on the right */}
-        {!notification.isRead && (
+        {!notification.read && (
           <div className="flex-shrink-0 pt-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-blue-600 dark:bg-blue-500 shadow-[0_0_8px_rgba(37,99,235,0.4)]"></div>
+            <div className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-500 shadow-[0_0_8px_rgba(37,99,235,0.4)]"></div>
           </div>
         )}
       </div>

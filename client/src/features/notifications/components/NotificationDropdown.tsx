@@ -22,7 +22,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isOp
   if (!isOpen) return null;
 
   const notifications = data?.notifications || [];
-  const hasUnread = notifications.some((n) => !n.isRead);
+  const hasUnread = notifications.some((n) => !n.read);
 
   return (
     <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white dark:bg-gray-950 border border-gray-150 dark:border-gray-800 rounded-2xl shadow-xl overflow-hidden z-50 flex flex-col max-h-[500px]">

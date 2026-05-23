@@ -6,8 +6,7 @@ import { CreateSessionInput, UpdateSessionInput, RateSessionInput } from './sess
 import { respectService } from '../respect/respect.service';
 import { RespectReason } from '../respect/respectVote.model';
 import { fameService } from '../users/fame.service';
-import { notificationService } from '../notifications/notification.service';
-import { NotificationType } from '../notifications/notification.model';
+import { eventEmitter } from '../../utils/eventEmitter';
 import { logger } from '../../utils/logger';
 
 export const sessionService = {
@@ -91,12 +90,18 @@ export const sessionService = {
     });
 
     if (updatedSession) {
-      notificationService.createNotification({
-        userId: session.guideId._id.toString(),
-        type: NotificationType.SESSION_BOOKED,
-        message: `Your session has been booked.`,
-        link: `/sessions/${updatedSession._id}`
-      }).catch((e) => logger.error('Failed to notify guide of booking:', e));
+      Promise.all([
+        userRepository.findUserById(userId),
+        userRepository.findUserById(session.guideId._id.toString())
+      ]).then(([client, guide]) => {
+        eventEmitter.emit('SESSION_BOOKED', {
+          sessionId: updatedSession._id.toString(),
+          clientId: userId,
+          guideId: session.guideId._id.toString(),
+          title: session.topic || (session as any).title || 'Mentorship Session',
+          clientName: client?.name || 'A learner',
+        });
+      }).catch((e) => logger.error('Failed to emit SESSION_BOOKED event:', e));
     }
 
     return updatedSession;
@@ -143,6 +148,21 @@ export const sessionService = {
 
     // Asynchronous fame update
     fameService.updateFameScore(session.guideId._id.toString()).catch((e) => logger.error('Failed to update fame score after session complete:', e));
+
+    if (updatedSession) {
+      Promise.all([
+        userRepository.findUserById(session.guideId._id.toString()),
+        userRepository.findUserById(session.clientId?._id.toString() || '')
+      ]).then(([guide, client]) => {
+        eventEmitter.emit('SESSION_COMPLETED', {
+          sessionId: updatedSession._id.toString(),
+          clientId: session.clientId?._id.toString() || '',
+          guideId: session.guideId._id.toString(),
+          title: session.topic || (session as any).title || 'Mentorship Session',
+          guideName: guide?.name || 'Your guide',
+        });
+      }).catch((e) => logger.error('Failed to emit SESSION_COMPLETED event:', e));
+    }
 
     return updatedSession;
   },

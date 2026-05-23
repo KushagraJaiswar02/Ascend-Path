@@ -14,6 +14,12 @@ export const userService = {
     // 2. Hash password (placeholder for actual bcrypt logic in later phase)
     const passwordHash = `hashed_${data.password}`;
 
+    const parsedSkills = data.skills
+      ? data.skills.map((skill: any) =>
+          typeof skill === 'string' ? { name: skill } : skill
+        )
+      : [];
+
     // 3. Create user with defaults
     const newUser = await userRepository.createUser({
       name: data.name,
@@ -22,7 +28,8 @@ export const userService = {
       role: Role.EXPLORER,
       educationLevel: data.educationLevel,
       bio: data.bio,
-      skills: data.skills || [],
+      domains: data.domains || [],
+      skills: parsedSkills,
       interests: data.interests || [],
     });
 

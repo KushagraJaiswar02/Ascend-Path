@@ -36,6 +36,15 @@ export const postController = {
     }
   },
 
+  async incrementPostView(req: Request, res: Response, next: NextFunction) {
+    try {
+      const post = await postService.incrementPostView(req.params.id as string);
+      res.status(200).json({ success: true, data: { viewCount: post.viewCount } });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async updatePost(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = (req as any).user._id;
@@ -90,8 +99,8 @@ export const postController = {
 
   async votePost(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user._id;
-      const { vote } = req.body; // should be 1 or -1
+      const userId = (req as any).user._id.toString();
+      const vote = req.body.vote ?? (req.body.voteType === 'upvote' ? 1 : req.body.voteType === 'downvote' ? -1 : undefined);
       
       if (vote !== 1 && vote !== -1) {
         res.status(400);
@@ -107,8 +116,8 @@ export const postController = {
 
   async voteReply(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user._id;
-      const { vote } = req.body; // should be 1 or -1
+      const userId = (req as any).user._id.toString();
+      const vote = req.body.vote ?? (req.body.voteType === 'upvote' ? 1 : req.body.voteType === 'downvote' ? -1 : undefined);
       
       if (vote !== 1 && vote !== -1) {
         res.status(400);

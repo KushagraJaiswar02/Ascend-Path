@@ -17,6 +17,9 @@ const Sessions     = lazy(() => import('../pages/Sessions').then(m => ({ default
 const SessionDetail = lazy(() => import('../pages/SessionDetail').then(m => ({ default: m.SessionDetail })));
 const Explore      = lazy(() => import('../pages/Explore').then(m => ({ default: m.Explore })));
 const Pings        = lazy(() => import('../pages/Pings').then(m => ({ default: m.Pings })));
+const ProfileDetail = lazy(() => import('../pages/ProfileDetail').then(m => ({ default: m.ProfileDetail })));
+const RoadmapDetail = lazy(() => import('../pages/RoadmapDetail').then(m => ({ default: m.RoadmapDetail })));
+const RoadmapBuilder = lazy(() => import('../pages/RoadmapBuilder').then(m => ({ default: m.RoadmapBuilder })));
 
 // Thin Suspense wrapper so every lazy route gets the same fallback treatment
 const Lazy = ({ children }: { children: React.ReactNode }) => (
@@ -49,6 +52,10 @@ export const router = createBrowserRouter([
         element: <Lazy><PostDetail /></Lazy>,
       },
       {
+        path: '/profile/:id',
+        element: <Lazy><ProfileDetail /></Lazy>,
+      },
+      {
         // Protected Routes Wrapper
         element: <ProtectedRoute />,
         children: [
@@ -71,6 +78,18 @@ export const router = createBrowserRouter([
           {
             path: '/explore',
             element: <Lazy><Explore /></Lazy>,
+          },
+          {
+            path: '/roadmaps/:id',
+            element: <Lazy><RoadmapDetail /></Lazy>,
+          },
+          {
+            path: '/roadmaps/builder',
+            element: <Lazy><RoadmapBuilder /></Lazy>,
+          },
+          {
+            path: '/roadmaps/builder/:id',
+            element: <Lazy><RoadmapBuilder /></Lazy>,
           },
         ],
       },

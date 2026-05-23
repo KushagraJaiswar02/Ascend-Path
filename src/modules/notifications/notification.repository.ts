@@ -2,10 +2,14 @@ import { Notification, INotification, NotificationType } from './notification.mo
 
 export const notificationRepository = {
   async createNotification(data: {
-    userId: string;
+    recipientId: string;
+    actorId?: string;
     type: NotificationType;
+    entityId?: string;
+    entityType?: string;
+    title: string;
     message: string;
-    link?: string;
+    metadata?: Record<string, any>;
   }): Promise<INotification> {
     const notification = new Notification(data);
     return await notification.save();
@@ -14,12 +18,13 @@ export const notificationRepository = {
   async getUserNotifications(userId: string, page: number, limit: number): Promise<any> {
     const skip = (page - 1) * limit;
 
-    const notifications = await Notification.find({ userId })
+    const notifications = await Notification.find({ recipientId: userId })
+      .populate('actorId', 'name avatar')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    const total = await Notification.countDocuments({ userId });
+    const total = await Notification.countDocuments({ recipientId: userId });
 
     return {
       notifications,
@@ -30,18 +35,19 @@ export const notificationRepository = {
   },
 
   async getUnreadCount(userId: string): Promise<number> {
-    return await Notification.countDocuments({ userId, isRead: false });
+    return await Notification.countDocuments({ recipientId: userId, read: false });
   },
 
   async markAsRead(notificationId: string, userId: string): Promise<INotification | null> {
     return await Notification.findOneAndUpdate(
-      { _id: notificationId, userId },
-      { isRead: true },
+      { _id: notificationId, recipientId: userId },
+      { read: true },
       { new: true }
     );
   },
 
   async markAllAsRead(userId: string): Promise<void> {
-    await Notification.updateMany({ userId, isRead: false }, { isRead: true });
+    await Notification.updateMany({ recipientId: userId, read: false }, { read: true });
   },
 };
+

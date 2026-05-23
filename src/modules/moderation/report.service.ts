@@ -2,9 +2,8 @@ import { reportRepository } from './report.repository';
 import { TargetType, ReportReason, ReportStatus } from './report.model';
 import { AuditAction } from './auditLog.model';
 import { userRepository } from '../users/user.repository';
-import { notificationService } from '../notifications/notification.service';
-import { NotificationType } from '../notifications/notification.model';
 import { postRepository } from '../posts/post.repository';
+import { eventEmitter } from '../../utils/eventEmitter';
 import { logger } from '../../utils/logger';
 
 export const reportService = {
@@ -53,13 +52,12 @@ export const reportService = {
       `Warned for: ${reason}`
     );
 
-    // Notify User
-    notificationService.createNotification({
+    // Notify User by emitting warning event
+    eventEmitter.emit('WARNING_ISSUED', {
       userId,
-      type: NotificationType.WARNING_ISSUED,
-      message: `You have received a formal warning: ${reason}`,
-      link: `/profile`
-    }).catch((e) => logger.error('Failed to notify user of warning:', e));
+      reason,
+      type: 'warning',
+    });
   },
 
   async muteUser(userId: string, hours: number, sentinelId: string) {
@@ -79,12 +77,12 @@ export const reportService = {
       `Muted for ${hours} hours`
     );
 
-    // Notify User
-    notificationService.createNotification({
+    // Notify User by emitting mute event
+    eventEmitter.emit('WARNING_ISSUED', {
       userId,
-      type: NotificationType.WARNING_ISSUED,
-      message: `Your account has been temporarily muted for ${hours} hours.`,
-    }).catch((e) => logger.error('Failed to notify user of mute:', e));
+      reason: `Temporary mute issued for ${hours} hours.`,
+      type: 'mute',
+    });
   },
 
   async deleteContent(targetType: TargetType, targetId: string, sentinelId: string) {
