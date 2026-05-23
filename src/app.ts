@@ -43,6 +43,8 @@ import { reportRoutes } from './modules/moderation/report.routes';
 import { guideRoutes } from './modules/guides/guide.routes';
 import { reviewRoutes } from './modules/reviews/review.routes';
 import { adminRoutes } from './modules/admin/admin.routes';
+import { mentorApplicationRoutes, adminMentorApplicationRoutes } from './modules/mentor-applications/mentorApplication.routes';
+import { onboardingRoutes } from './modules/onboarding/onboarding.routes';
 
 // Register Module Routes Here
 app.use('/api/v1/users', userRoutes);
@@ -59,6 +61,9 @@ app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/moderation', reportRoutes);
 app.use('/api/v1/guides', guideRoutes);
 app.use('/api/v1/reviews', reviewRoutes);
+app.use('/api/v1/mentor-applications', mentorApplicationRoutes);
+app.use('/api/v1/onboarding', onboardingRoutes);
+app.use('/api/v1/admin/mentor-applications', adminMentorApplicationRoutes);
 app.use('/api/v1/admin', adminRoutes);
 
 // Global Error Handler
@@ -66,5 +71,6 @@ app.use(errorHandler);
 
 // Bootstrap Notification Listeners
 import './modules/notifications/notification.listener';
+import './modules/mentor-applications/mentorApplication.events';
 
 export default app;

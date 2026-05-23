@@ -1,6 +1,7 @@
 import { roadmapRepository } from './roadmap.repository';
 import { userRepository } from '../users/user.repository';
 import { Role } from '../users/user.model';
+import { canActAsGuide, hasCapability, UserCapability } from '../users/userCapabilities';
 import { CareerRoadmap, RoadmapSection, RoadmapStep } from './roadmap.model';
 import {
   CreateRoadmapInput,
@@ -47,8 +48,13 @@ export const roadmapService = {
     const user = await userRepository.findUserById(userId);
     if (!user) throw { statusCode: 404, message: 'User not found' };
 
-    if (user.role !== Role.PATHFINDER && user.role !== Role.GUIDE && user.role !== Role.ARCHITECT) {
-      throw { statusCode: 403, message: 'Only Pathfinders, Guides, and Architects can create roadmaps' };
+    const canCreateRoadmap =
+      user.role === Role.PATHFINDER ||
+      user.role === Role.ARCHITECT ||
+      (canActAsGuide(user) && hasCapability(user, UserCapability.ROADMAPS_CREATE) && user.mentorProfileStatus === 'approved');
+
+    if (!canCreateRoadmap) {
+      throw { statusCode: 403, message: 'Only Pathfinders and approved mentors can create roadmaps' };
     }
 
     const slug = await generateUniqueSlug(data.title);

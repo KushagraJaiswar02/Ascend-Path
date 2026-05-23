@@ -1,9 +1,9 @@
 import { guideRepository } from './guide.repository';
 import { sanitizePublicGuide } from './guide.dto';
 import { userRepository } from '../users/user.repository';
-import { Role } from '../users/user.model';
 import { GetGuidesQueryInput, UpdateGuideProfileInput } from './guide.validation';
 import { fameService } from '../users/fame.service';
+import { canActAsGuide } from '../users/userCapabilities';
 
 export const guideService = {
   /**
@@ -94,8 +94,8 @@ export const guideService = {
       throw { statusCode: 404, message: 'User not found' };
     }
 
-    if (user.role !== Role.GUIDE) {
-      throw { statusCode: 403, message: 'Only accounts registered as Guides can update guide profiles' };
+    if (!canActAsGuide(user) || user.mentorProfileStatus !== 'approved') {
+      throw { statusCode: 403, message: 'Only approved mentor accounts can update guide profiles' };
     }
 
     // Build update object

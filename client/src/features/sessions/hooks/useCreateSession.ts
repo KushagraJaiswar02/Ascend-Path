@@ -2,10 +2,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../../services/apiClient';
 
 interface CreateSessionPayload {
+  title: string;
   topic: string;
   description: string;
   scheduledAt: string;
-  duration: number;
+  durationMinutes: number;
   price: number;
 }
 

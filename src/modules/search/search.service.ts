@@ -2,18 +2,30 @@ import { User, Role } from '../users/user.model';
 import { CareerRoadmap } from '../roadmaps/roadmap.model';
 import { Post } from '../posts/post.model';
 import { Session, SessionStatus } from '../sessions/session.model';
+import { userRepository } from '../users/user.repository';
 
 export const searchService = {
   async searchGuides(q: string, filters: any, sort: string, page: number, limit: number) {
     const skip = (page - 1) * limit;
-    const query: any = { role: Role.GUIDE };
+    const query: any = {
+      $and: [{
+        $or: [
+          { role: Role.GUIDE },
+          { roles: Role.GUIDE },
+          { capabilities: 'discover:listed' },
+        ],
+      }],
+      mentorProfileStatus: 'approved',
+      profileVisibility: true,
+      isBanned: false,
+    };
 
     // Text search
     if (q) {
-      query.$or = [
+      query.$and.push({ $or: [
         { name: { $regex: q, $options: 'i' } },
         { bio: { $regex: q, $options: 'i' } },
-      ];
+      ]});
     }
 
     // Filters
@@ -46,6 +58,15 @@ export const searchService = {
     const total = await User.countDocuments(query);
 
     return { total, page, data: guides };
+  },
+
+  async searchGuidesForUser(userId: string, q: string, filters: any, sort: string, page: number, limit: number) {
+    const user = await userRepository.findUserById(userId);
+    const preferences = user?.onboarding;
+    if (preferences?.interestedDomains?.length && !filters.domain) {
+      filters.domain = preferences.interestedDomains[0];
+    }
+    return await this.searchGuides(q, filters, sort, page, limit);
   },
 
   async searchRoadmaps(q: string, filters: any, sort: string, page: number, limit: number) {

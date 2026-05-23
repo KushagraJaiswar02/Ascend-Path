@@ -13,6 +13,10 @@ export enum NotificationType {
   POST_UPVOTED = 'post_upvoted',
   GUIDE_FOLLOWED = 'guide_followed',
   WARNING_ISSUED = 'warning_issued',
+  MENTOR_APPLICATION_SUBMITTED = 'mentor_application_submitted',
+  MENTOR_APPLICATION_APPROVED = 'mentor_application_approved',
+  MENTOR_APPLICATION_REJECTED = 'mentor_application_rejected',
+  MENTOR_APPLICATION_CHANGES_REQUESTED = 'mentor_application_changes_requested',
 }
 
 export interface INotification extends Document {
@@ -52,4 +56,3 @@ const notificationSchema = new Schema<INotification>(
 notificationSchema.index({ recipientId: 1, read: 1, createdAt: -1 });
 
 export const Notification = mongoose.model<INotification>('Notification', notificationSchema);
-
