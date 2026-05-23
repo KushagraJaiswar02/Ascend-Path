@@ -1,20 +1,27 @@
 import { Router } from 'express';
 import { reportController } from './report.controller';
-import { authMiddleware, authorize } from '../../middleware/auth.middleware';
-import { Role } from '../users/user.model';
+import { authMiddleware } from '../../middleware/auth.middleware';
+import { requirePermission } from '../../middleware/rbac';
 
 const router = Router();
 
-// Publicly authenticated (Any user can report)
 router.post('/', authMiddleware, reportController.submitReport);
 
-// Sentinel Only Routes
-router.use(authMiddleware, authorize(Role.SENTINEL, Role.ARCHITECT));
+router.use(authMiddleware);
 
-router.get('/', reportController.getPendingReports);
-router.put('/:id', reportController.actionReport);
+router.get('/', requirePermission('reports:read'), reportController.listReports);
+router.get('/:id', requirePermission('reports:read'), reportController.getReport);
+router.put('/:id', requirePermission('reports:write'), reportController.actionReport);
+router.patch('/:id/assign', requirePermission('reports:write'), reportController.assignReport);
+router.patch('/:id/notes', requirePermission('reports:write'), reportController.addModeratorNote);
+router.post('/bulk', requirePermission('reports:bulk'), reportController.bulkAction);
 
-router.post('/users/:id/warn', reportController.warnUser);
-router.post('/users/:id/mute', reportController.muteUser);
+router.post('/content/hide', requirePermission('content:moderate'), reportController.hideContent);
+router.post('/content/delete', requirePermission('content:moderate'), reportController.softDeleteContent);
+
+router.post('/users/:id/warn', requirePermission('users:moderate'), reportController.warnUser);
+router.post('/users/:id/mute', requirePermission('users:moderate'), reportController.muteUser);
+router.post('/users/:id/suspend', requirePermission('users:moderate'), reportController.suspendUser);
+router.post('/users/:id/reputation', requirePermission('users:moderate'), reportController.adjustReputation);
 
 export const reportRoutes = router;

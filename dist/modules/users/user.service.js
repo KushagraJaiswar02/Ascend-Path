@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.userService = void 0;
 const user_repository_1 = require("./user.repository");
 const user_model_1 = require("./user.model");
+const logger_1 = require("../../utils/logger");
 exports.userService = {
     async registerUser(data) {
         // 1. Check if user already exists
@@ -12,15 +13,19 @@ exports.userService = {
         }
         // 2. Hash password (placeholder for actual bcrypt logic in later phase)
         const passwordHash = `hashed_${data.password}`;
+        const parsedSkills = data.skills
+            ? data.skills.map((skill) => typeof skill === 'string' ? { name: skill } : skill)
+            : [];
         // 3. Create user with defaults
         const newUser = await user_repository_1.userRepository.createUser({
             name: data.name,
             email: data.email,
             passwordHash,
-            role: user_model_1.Role.EXPLORER,
+            role: user_model_1.Role.USER,
             educationLevel: data.educationLevel,
             bio: data.bio,
-            skills: data.skills || [],
+            domains: data.domains || [],
+            skills: parsedSkills,
             interests: data.interests || [],
         });
         // 4. Return sanitized user (exclude passwordHash)
@@ -36,5 +41,20 @@ exports.userService = {
         const userObj = user.toObject();
         const { passwordHash: _, ...sanitizedUser } = userObj;
         return sanitizedUser;
+    },
+    async evaluateUserRole(userId) {
+        const user = await user_repository_1.userRepository.findUserById(userId);
+        if (!user)
+            return;
+        // PATHFINDER auto-unlock threshold
+        if (user.respectPoints >= 500 && [user_model_1.Role.USER, user_model_1.Role.EXPLORER].includes(user.role)) {
+            await user_repository_1.userRepository.updateUser(userId, { role: user_model_1.Role.GUIDE });
+            this.onRoleUpgrade(userId, user_model_1.Role.GUIDE);
+        }
+    },
+    onRoleUpgrade(userId, newRole) {
+        // Basic event-like logger for role upgrades
+        logger_1.logger.info(`[EVENT] RoleUpgrade: User ${userId} unlocked ${newRole}`);
+        // Future implementation: eventEmitter.emit('roleUpgrade', { userId, newRole })
     },
 };

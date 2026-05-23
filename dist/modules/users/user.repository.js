@@ -19,4 +19,24 @@ exports.userRepository = {
     async incrementRespectPoints(id, points) {
         return await user_model_1.User.findByIdAndUpdate(id, { $inc: { respectPoints: points } }, { new: true });
     },
+    async getGuides(filters, page, limit) {
+        const skip = (page - 1) * limit;
+        // Force role filter to GUIDE
+        const queryFilters = { ...filters, role: user_model_1.Role.GUIDE };
+        const guides = await user_model_1.User.find(queryFilters)
+            .select('-passwordHash')
+            .skip(skip)
+            .limit(limit)
+            .sort({ fameScore: -1 });
+        const total = await user_model_1.User.countDocuments(queryFilters);
+        return {
+            guides,
+            currentPage: page,
+            totalPages: Math.ceil(total / limit),
+            totalGuides: total,
+        };
+    },
+    async countUsers() {
+        return await user_model_1.User.countDocuments();
+    },
 };

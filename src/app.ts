@@ -5,6 +5,7 @@ import { errorHandler } from './middleware/errorHandler';
 import cookieParser from 'cookie-parser';
 import { env } from './config/env';
 import { globalLimiter } from './middleware/rateLimiter';
+import { requestContext } from './middleware/requestContext';
 
 const app: Application = express();
 
@@ -12,9 +13,11 @@ const app: Application = express();
 app.use(helmet());
 app.use(cors({
   origin: env.CLIENT_URL,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   credentials: true,
 }));
+
+app.use(requestContext);
 
 // Apply Global Rate Limiter
 app.use(globalLimiter);
@@ -39,6 +42,7 @@ import { notificationRoutes } from './modules/notifications/notification.routes'
 import { reportRoutes } from './modules/moderation/report.routes';
 import { guideRoutes } from './modules/guides/guide.routes';
 import { reviewRoutes } from './modules/reviews/review.routes';
+import { adminRoutes } from './modules/admin/admin.routes';
 
 // Register Module Routes Here
 app.use('/api/v1/users', userRoutes);
@@ -55,6 +59,7 @@ app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/moderation', reportRoutes);
 app.use('/api/v1/guides', guideRoutes);
 app.use('/api/v1/reviews', reviewRoutes);
+app.use('/api/v1/admin', adminRoutes);
 
 // Global Error Handler
 app.use(errorHandler);
@@ -63,4 +68,3 @@ app.use(errorHandler);
 import './modules/notifications/notification.listener';
 
 export default app;
-
