@@ -11,7 +11,8 @@ import { logger } from '../../utils/logger';
 
 export const pingService = {
   async createPing(fromUserId: string, data: CreatePingInput) {
-    if (fromUserId === data.toUserId) {
+    const fromUserIdStr = fromUserId.toString();
+    if (fromUserIdStr === data.toUserId.toString()) {
       throw new Error('You cannot ping yourself');
     }
 
@@ -23,17 +24,17 @@ export const pingService = {
     }
 
     const newPing = await pingRepository.createPing({
-      fromUserId: fromUserId as any,
+      fromUserId: fromUserIdStr as any,
       toUserId: data.toUserId as any,
       question: data.question,
       context: data.context,
     });
 
     // Notify the recipient asynchronously by emitting a domain event
-    userRepository.findUserById(fromUserId).then((sender) => {
+    userRepository.findUserById(fromUserIdStr).then((sender) => {
       eventEmitter.emit('PING_RECEIVED', {
         pingId: newPing._id.toString(),
-        senderId: fromUserId,
+        senderId: fromUserIdStr,
         recipientId: data.toUserId,
         message: data.question,
         senderName: sender?.name || 'A learner',
@@ -44,10 +45,14 @@ export const pingService = {
   },
 
   async respondPing(userId: string, pingId: string, data: RespondPingInput) {
+    const userIdStr = userId.toString();
     const ping = await pingRepository.getPingById(pingId);
     if (!ping) throw new Error('Ping not found');
 
-    if (ping.toUserId._id.toString() !== userId) {
+    const fromUserIdStr = ping.fromUserId ? (typeof ping.fromUserId === 'string' ? ping.fromUserId : (ping.fromUserId as any)._id?.toString()) : null;
+    const toUserIdStr = ping.toUserId ? (typeof ping.toUserId === 'string' ? ping.toUserId : (ping.toUserId as any)._id?.toString()) : null;
+
+    if (!toUserIdStr || toUserIdStr !== userIdStr) {
       throw new Error('Only the recipient can respond to this ping');
     }
 
@@ -65,14 +70,16 @@ export const pingService = {
     });
 
     // Update fame score asynchronously
-    fameService.updateFameScore(ping.toUserId._id.toString()).catch((e) => logger.error('Failed to update fame score:', e));
+    if (toUserIdStr) {
+      fameService.updateFameScore(toUserIdStr).catch((e) => logger.error('Failed to update fame score:', e));
+    }
 
     // Notify the sender asynchronously by emitting a domain event
-    userRepository.findUserById(userId).then((responder) => {
+    userRepository.findUserById(userIdStr).then((responder) => {
       eventEmitter.emit('PING_ANSWERED', {
         pingId: updatedPing?._id.toString() || pingId,
-        senderId: userId,
-        recipientId: ping.fromUserId._id.toString(),
+        senderId: userIdStr,
+        recipientId: fromUserIdStr || 'deleted-user',
         answer: data.response,
         senderName: responder?.name || 'Your guide',
       });
@@ -82,10 +89,14 @@ export const pingService = {
   },
 
   async ratePing(userId: string, pingId: string, data: RatePingInput) {
+    const userIdStr = userId.toString();
     const ping = await pingRepository.getPingById(pingId);
     if (!ping) throw new Error('Ping not found');
 
-    if (ping.fromUserId._id.toString() !== userId) {
+    const fromUserIdStr = ping.fromUserId ? (typeof ping.fromUserId === 'string' ? ping.fromUserId : (ping.fromUserId as any)._id?.toString()) : null;
+    const toUserIdStr = ping.toUserId ? (typeof ping.toUserId === 'string' ? ping.toUserId : (ping.toUserId as any)._id?.toString()) : null;
+
+    if (!fromUserIdStr || fromUserIdStr !== userIdStr) {
       throw new Error('Only the sender can rate the response');
     }
 
@@ -99,11 +110,11 @@ export const pingService = {
     });
 
     // Hook into respect system
-    if (data.rating >= 4) {
+    if (data.rating >= 4 && toUserIdStr) {
       try {
         await respectService.grantOneTimePoints(
-          userId,
-          ping.toUserId._id.toString(),
+          userIdStr,
+          toUserIdStr,
           pingId,
           RespectReason.PING_RESPONSE,
           15
@@ -117,10 +128,13 @@ export const pingService = {
   },
 
   async closePing(userId: string, pingId: string) {
+    const userIdStr = userId.toString();
     const ping = await pingRepository.getPingById(pingId);
     if (!ping) throw new Error('Ping not found');
 
-    if (ping.fromUserId._id.toString() !== userId) {
+    const fromUserIdStr = ping.fromUserId ? (typeof ping.fromUserId === 'string' ? ping.fromUserId : (ping.fromUserId as any)._id?.toString()) : null;
+
+    if (!fromUserIdStr || fromUserIdStr !== userIdStr) {
       throw new Error('Only the sender can close the ping');
     }
 
@@ -131,11 +145,11 @@ export const pingService = {
 
   async getPingsSentByUser(userId: string) {
     await pingRepository.autoExpireStalePings();
-    return await pingRepository.getPingsSentByUser(userId);
+    return await pingRepository.getPingsSentByUser(userId.toString());
   },
 
   async getPingsReceivedByUser(userId: string) {
     await pingRepository.autoExpireStalePings();
-    return await pingRepository.getPingsReceivedByUser(userId);
+    return await pingRepository.getPingsReceivedByUser(userId.toString());
   },
 };
