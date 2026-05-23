@@ -55,4 +55,6 @@ export interface RoadmapMomentumItem {
   progressPercentage: number;
   lastActiveAt: string;
   community: RoadmapCommunity;
+  streakCount?: number;
 }
+

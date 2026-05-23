@@ -7,6 +7,8 @@ import { ProtectedRoute } from '../components/ProtectedRoute';
 import { AdminRoute } from '../components/AdminRoute';
 import { MainLayout } from '../layouts/MainLayout';
 import { PageLoadingFallback } from '../components/ui/PageLoadingFallback';
+import { RouteErrorBoundary } from '../components/RouteErrorBoundary';
+
 
 // ─── Lazy-loaded route-level page chunks ─────────────────────────────────────
 // Each page gets its own chunk. The lazily-imported module path must be a
@@ -51,6 +53,7 @@ export const router = createBrowserRouter([
   {
     // Application Shell Layout (Public & Authenticated)
     element: <MainLayout />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       {
         path: '/forum',
