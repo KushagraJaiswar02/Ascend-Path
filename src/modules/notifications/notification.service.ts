@@ -3,14 +3,15 @@ import { NotificationType } from './notification.model';
 
 export const notificationService = {
   async createNotification(data: {
-    userId: string;
+    recipientId: string;
+    actorId?: string;
     type: NotificationType;
+    entityId?: string;
+    entityType?: string;
+    title: string;
     message: string;
-    link?: string;
+    metadata?: Record<string, any>;
   }) {
-    // Avoid sending notification to self (e.g. answering own post)
-    // Wait, caller should handle this, but it's safe to check if needed.
-    // We will just create it here. Caller decides logic.
     return await notificationRepository.createNotification(data);
   },
 
@@ -34,3 +35,4 @@ export const notificationService = {
     await notificationRepository.markAllAsRead(userId);
   },
 };
+

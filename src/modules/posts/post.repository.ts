@@ -102,7 +102,7 @@ export const postRepository = {
     await Reply.findByIdAndUpdate(id, { voters, upvotes, downvotes });
   },
 
-  async incrementViewCount(id: string): Promise<void> {
-    await Post.findByIdAndUpdate(id, { $inc: { viewCount: 1 } });
+  async incrementViewCount(id: string): Promise<IPost | null> {
+    return await Post.findByIdAndUpdate(id, { $inc: { viewCount: 1 } }, { new: true });
   },
 };

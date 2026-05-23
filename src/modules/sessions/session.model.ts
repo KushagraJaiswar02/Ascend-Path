@@ -20,6 +20,7 @@ export interface ISession extends Document {
   meetingLink?: string;
   rating?: number;
   review?: string;
+  reviewId?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -42,6 +43,7 @@ const sessionSchema = new Schema<ISession>(
     meetingLink: { type: String },
     rating: { type: Number, min: 1, max: 5 },
     review: { type: String },
+    reviewId: { type: Schema.Types.ObjectId, ref: 'Review' },
   },
   { timestamps: true }
 );

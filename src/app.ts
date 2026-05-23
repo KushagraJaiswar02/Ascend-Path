@@ -32,12 +32,13 @@ import { userRoutes } from './modules/users/user.routes';
 import { authRoutes } from './modules/auth/auth.routes';
 import { postRoutes } from './modules/posts/post.routes';
 import { pingRoutes } from './modules/pings/ping.routes';
-import { roadmapRoutes } from './modules/roadmaps/roadmap.routes';
+import { roadmapRoutes, sectionRoutes, stepRoutes, meRoadmapRoutes } from './modules/roadmaps/roadmap.routes';
 import { sessionRoutes } from './modules/sessions/session.routes';
 import { searchRoutes } from './modules/search/search.routes';
 import { notificationRoutes } from './modules/notifications/notification.routes';
 import { reportRoutes } from './modules/moderation/report.routes';
-import { adminRoutes } from './modules/admin/admin.routes';
+import { guideRoutes } from './modules/guides/guide.routes';
+import { reviewRoutes } from './modules/reviews/review.routes';
 
 // Register Module Routes Here
 app.use('/api/v1/users', userRoutes);
@@ -45,13 +46,21 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/posts', postRoutes);
 app.use('/api/v1/pings', pingRoutes);
 app.use('/api/v1/roadmaps', roadmapRoutes);
+app.use('/api/v1/sections', sectionRoutes);
+app.use('/api/v1/steps', stepRoutes);
+app.use('/api/v1/me/roadmaps', meRoadmapRoutes);
 app.use('/api/v1/sessions', sessionRoutes);
 app.use('/api/v1/search', searchRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/moderation', reportRoutes);
-app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/guides', guideRoutes);
+app.use('/api/v1/reviews', reviewRoutes);
 
 // Global Error Handler
 app.use(errorHandler);
 
+// Bootstrap Notification Listeners
+import './modules/notifications/notification.listener';
+
 export default app;
+

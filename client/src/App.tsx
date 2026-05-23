@@ -4,6 +4,7 @@ import { router } from './app/router';
 import { useInitializeAuth } from './hooks/useInitializeAuth';
 import { ThemeProvider } from './components/ThemeProvider';
 import { ToastProvider } from './components/ui/toast';
+import { RealtimeDashboardProvider } from './components/RealtimeDashboardProvider';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -29,7 +30,9 @@ function AppContent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <RealtimeDashboardProvider>
+        <RouterProvider router={router} />
+      </RealtimeDashboardProvider>
     </QueryClientProvider>
   );
 }

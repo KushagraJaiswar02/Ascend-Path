@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { usePost } from '../features/posts/hooks/usePost';
+import { usePost, useRegisterPostView } from '../features/posts/hooks/usePost';
 import { useVote } from '../features/posts/hooks/useVote';
 import { ReplyItem } from '../features/posts/components/ReplyItem';
 import { CreateReplyForm } from '../features/posts/components/CreateReplyForm';
@@ -17,8 +17,16 @@ import { formatRelativeTime } from '@/lib/utils';
 export const PostDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { data, isLoading, isError } = usePost(id || '');
+  const viewMutation = useRegisterPostView(id || '');
+  const registeredViewFor = useRef<string | null>(null);
   const voteMutation = useVote(id);
   const { user, isAuthenticated } = useAuthStore();
+
+  useEffect(() => {
+    if (!id || isLoading || isError || registeredViewFor.current === id) return;
+    registeredViewFor.current = id;
+    viewMutation.mutate();
+  }, [id, isLoading, isError, viewMutation]);
 
   const categoryStyles: Record<string, { label: string; variant: "secondary" | "success" | "warning" | "destructive" | "default" | "outline" }> = {
     general: { label: 'General', variant: 'outline' },
@@ -217,4 +225,3 @@ export const PostDetail: React.FC = () => {
     </PageContainer>
   );
 };
-

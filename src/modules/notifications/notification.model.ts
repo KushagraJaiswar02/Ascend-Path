@@ -4,39 +4,52 @@ export enum NotificationType {
   PING_RECEIVED = 'ping_received',
   PING_ANSWERED = 'ping_answered',
   SESSION_BOOKED = 'session_booked',
-  SESSION_REMINDER = 'session_reminder',
+  SESSION_ACCEPTED = 'session_accepted',
+  SESSION_COMPLETED = 'session_completed',
+  REVIEW_RECEIVED = 'review_received',
+  ROADMAP_COMPLETED = 'roadmap_completed',
+  STEP_COMPLETED = 'step_completed',
   POST_REPLY = 'post_reply',
-  RESPECT_MILESTONE = 'respect_milestone',
-  ROLE_UPGRADE = 'role_upgrade',
+  POST_UPVOTED = 'post_upvoted',
+  GUIDE_FOLLOWED = 'guide_followed',
   WARNING_ISSUED = 'warning_issued',
 }
 
 export interface INotification extends Document {
-  userId: mongoose.Types.ObjectId;
+  recipientId: mongoose.Types.ObjectId;
+  actorId?: mongoose.Types.ObjectId;
   type: NotificationType;
+  entityId?: mongoose.Types.ObjectId;
+  entityType?: string;
+  title: string;
   message: string;
-  link?: string;
-  isRead: boolean;
+  metadata?: Record<string, any>;
+  read: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
 const notificationSchema = new Schema<INotification>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    recipientId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    actorId: { type: Schema.Types.ObjectId, ref: 'User' },
     type: {
       type: String,
       enum: Object.values(NotificationType),
       required: true,
     },
+    entityId: { type: Schema.Types.ObjectId },
+    entityType: { type: String },
+    title: { type: String, required: true },
     message: { type: String, required: true },
-    link: { type: String },
-    isRead: { type: Boolean, default: false },
+    metadata: { type: Schema.Types.Mixed },
+    read: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
 
 // High performance index for fetching a user's unread inbox
-notificationSchema.index({ userId: 1, isRead: 1, createdAt: -1 });
+notificationSchema.index({ recipientId: 1, read: 1, createdAt: -1 });
 
 export const Notification = mongoose.model<INotification>('Notification', notificationSchema);
+

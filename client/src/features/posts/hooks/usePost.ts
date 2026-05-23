@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../../services/apiClient';
 import type { Post } from './usePosts';
 
@@ -31,5 +31,29 @@ export const usePost = (postId: string) => {
     },
     enabled: !!postId, // Only fetch if postId exists
     staleTime: 3 * 60 * 1000, // invalidated explicitly after reply/vote
+  });
+};
+
+export const useRegisterPostView = (postId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const { data } = await apiClient.post(`/posts/${postId}/view`);
+      return data.data.viewCount as number;
+    },
+    onSuccess: (viewCount) => {
+      queryClient.setQueryData<{ post: Post; replies: Reply[] }>(['post', postId], (currentData) => {
+        if (!currentData) return currentData;
+        return {
+          ...currentData,
+          post: {
+            ...currentData.post,
+            viewCount,
+          },
+        };
+      });
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+    },
   });
 };

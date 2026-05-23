@@ -20,6 +20,12 @@ export enum GuideRank {
   EXPERT = 'Expert Guide',
 }
 
+export interface ISkill {
+  name: string;
+  level?: string;
+  years?: number;
+}
+
 export interface IUser extends Document {
   name: string;
   email: string;
@@ -30,7 +36,8 @@ export interface IUser extends Document {
   guideRank: GuideRank;
   educationLevel?: EducationLevel;
   bio?: string;
-  skills: string[];
+  domains: string[];
+  skills: ISkill[];
   interests: string[];
   avatar?: string;
   isVerified: boolean;
@@ -43,6 +50,15 @@ export interface IUser extends Document {
     linkedin?: string;
     website?: string;
   };
+  availability?: {
+    text: string;
+    schedule: { day: string; slots: string[] }[];
+  };
+  totalSessions: number;
+  averageRating: number;
+  totalReviews: number;
+  profileVisibility: boolean;
+  onboardingCompleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -76,7 +92,14 @@ const userSchema = new Schema<IUser>(
       enum: Object.values(EducationLevel),
     },
     bio: { type: String },
-    skills: { type: [String], default: [] },
+    domains: { type: [String], default: [] },
+    skills: [
+      {
+        name: { type: String, required: true },
+        level: { type: String },
+        years: { type: Number },
+      }
+    ],
     interests: { type: [String], default: [] },
     avatar: { type: String },
     isVerified: { type: Boolean, default: false },
@@ -89,8 +112,30 @@ const userSchema = new Schema<IUser>(
       linkedin: { type: String },
       website: { type: String },
     },
+    availability: {
+      text: { type: String, default: 'Available for bookings' },
+      schedule: [
+        {
+          day: { type: String, required: true },
+          slots: { type: [String], default: [] },
+        }
+      ]
+    },
+    totalSessions: { type: Number, default: 0 },
+    averageRating: { type: Number, default: 0 },
+    totalReviews: { type: Number, default: 0 },
+    profileVisibility: { type: Boolean, default: true },
+    onboardingCompleted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
+
+// High-performance production indexes
+userSchema.index({ role: 1, profileVisibility: 1 });
+userSchema.index({ domains: 1 });
+userSchema.index({ 'skills.name': 1 });
+userSchema.index({ averageRating: -1 });
+userSchema.index({ fameScore: -1 });
+userSchema.index({ createdAt: -1 });
 
 export const User = mongoose.model<IUser>('User', userSchema);
