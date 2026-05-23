@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../../services/apiClient';
 import type { SessionReflection } from '../../sessions/types';
 import type { RoadmapMomentumItem, TrendingRoadmapSignal } from '../../roadmaps/types';
+import { safeParsePings } from '../../pings/types';
+
 
 export interface DashboardData {
   recentPosts: any[];
@@ -32,7 +34,7 @@ export const useDashboardData = () => {
       const recentPosts = postsRes.status === 'fulfilled' ? postsRes.value.data.data.posts : [];
       
       // Filter inbox pings for only 'pending'
-      const allInboxPings = pingsRes.status === 'fulfilled' ? pingsRes.value.data.data.pings : [];
+      const allInboxPings = pingsRes.status === 'fulfilled' ? safeParsePings(pingsRes.value.data.data.pings) : [];
       const pendingPings = allInboxPings.filter((p: any) => p.status === 'pending').slice(0, 3);
       
       // Surface live and upcoming execution sessions first.

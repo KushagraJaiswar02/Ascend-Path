@@ -58,9 +58,9 @@ export const MainLayout: React.FC = () => {
                     key={link.to}
                     to={link.to}
                     className={({ isActive }) =>
-                      `px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                      `px-3 py-1.5 rounded-md text-sm font-semibold transition-all duration-250 select-none ${
                         isActive
-                          ? 'bg-muted text-foreground font-semibold'
+                          ? 'text-primary bg-primary/5 dark:bg-primary/10 font-bold'
                           : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
                       }`
                     }
@@ -85,7 +85,7 @@ export const MainLayout: React.FC = () => {
                   {/* User Profile Info */}
                   <div className="flex items-center gap-xs bg-card text-card-foreground border border-border p-xs rounded-lg shadow-subtle select-none">
                     <Avatar className="h-7 w-7">
-                      <AvatarFallback>
+                      <AvatarFallback className="text-[10px] font-bold">
                         {user?.name ? user.name.slice(0, 2) : 'US'}
                       </AvatarFallback>
                     </Avatar>
@@ -149,9 +149,9 @@ export const MainLayout: React.FC = () => {
                 to={link.to}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={({ isActive }) =>
-                  `block px-3 py-2 rounded-md text-sm font-semibold transition-all ${
+                  `block px-3 py-2 rounded-md text-sm font-semibold transition-all select-none ${
                     isActive
-                      ? 'bg-muted text-foreground font-bold'
+                      ? 'text-primary bg-primary/5 dark:bg-primary/10 font-bold'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
                   }`
                 }

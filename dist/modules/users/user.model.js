@@ -134,6 +134,8 @@ const userSchema = new mongoose_1.Schema({
     averageRating: { type: Number, default: 0 },
     totalReviews: { type: Number, default: 0 },
     profileVisibility: { type: Boolean, default: true },
+    showRoadmapActivity: { type: Boolean, default: true },
+    anonymousRoadmapParticipation: { type: Boolean, default: false },
     onboardingCompleted: { type: Boolean, default: false },
     onboarding: {
         primaryGoal: { type: String, trim: true },

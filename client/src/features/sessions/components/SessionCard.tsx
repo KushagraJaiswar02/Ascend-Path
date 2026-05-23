@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, Timer } from 'lucide-react';
+
 import type { Session } from '../types';
 import { BookSessionButton } from './BookSessionButton';
 import { useAuthStore } from '../../../store/useAuthStore';
@@ -18,10 +19,10 @@ const statusVariantMap: Record<
   Session['status'],
   { label: string; variant: 'success' | 'outline' | 'secondary' | 'destructive' }
 > = {
-  open: { label: 'Open', variant: 'success' },
-  booked: { label: 'Booked', variant: 'secondary' },
-  completed: { label: 'Completed', variant: 'outline' },
-  cancelled: { label: 'Cancelled', variant: 'destructive' },
+  open: { label: 'Open Available', variant: 'success' },
+  booked: { label: 'Booked Scheduled', variant: 'secondary' },
+  completed: { label: 'Completed Done', variant: 'outline' },
+  cancelled: { label: 'Cancelled Null', variant: 'destructive' },
 };
 
 export const SessionCard: React.FC<SessionCardProps> = memo(({
@@ -50,63 +51,74 @@ export const SessionCard: React.FC<SessionCardProps> = memo(({
   const isOwnSession = user?._id === session.guideId._id;
 
   return (
-    <Card className={cn('flex flex-col hover:shadow-medium transition-shadow duration-200')}>
+    <Card 
+      className={cn(
+        'flex flex-col border border-border bg-card text-card-foreground shadow-subtle rounded-2xl transition-all duration-300',
+        'hover:shadow-medium hover:border-border/80 relative overflow-hidden group'
+      )}
+    >
+      {/* Visual Indicator of a premium card */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-transparent group-hover:bg-primary/25 transition-colors duration-300" />
+
       {/* Card Body */}
-      <CardContent className="p-5 flex-1 flex flex-col gap-4">
+      <CardContent className="p-5 flex-1 flex flex-col gap-4 mt-[2px]">
         {/* Status row + Price tag */}
-        <div className="flex items-center justify-between gap-2">
-          <Badge variant={statusVariant} className="capitalize tracking-wide text-xs font-semibold">
+        <div className="flex items-center justify-between gap-2 select-none">
+          <Badge 
+            variant={statusVariant} 
+            className="capitalize tracking-wider text-[10px] font-bold px-2.5 py-0.5"
+          >
             {statusLabel}
           </Badge>
-          <span className="text-xs font-semibold text-muted-foreground bg-muted border border-border rounded-md px-2 py-0.5">
+          <span className="text-[11px] font-bold text-primary bg-primary/5 dark:bg-primary/10 border border-primary/10 rounded-lg px-2.5 py-0.5">
             {session.price === 0 ? 'Free' : `$${session.price}`}
           </span>
         </div>
 
         {/* Topic + Description */}
-        <div>
-          <Link to={`/sessions/${session._id}`} className="group block">
-            <h3 className="text-body-md font-semibold text-foreground group-hover:text-primary transition-colors leading-snug mb-1">
+        <div className="space-y-1.5">
+          <Link to={`/sessions/${session._id}`} className="group/link block">
+            <h3 className="text-card-title font-bold text-foreground group-hover/link:text-primary transition-colors leading-snug">
               {session.topic}
             </h3>
           </Link>
-          <p className="text-muted-sm text-muted-foreground line-clamp-2 leading-relaxed">
+          <p className="text-metadata text-muted-foreground line-clamp-2 leading-relaxed">
             {session.description}
           </p>
         </div>
 
         {/* Schedule metadata */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-muted-sm text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Calendar className="h-3.5 w-3.5 shrink-0" />
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-metadata text-muted-foreground select-none">
+          <span className="flex items-center gap-1.5">
+            <Calendar className="h-3.5 w-3.5 shrink-0 text-muted-foreground/80" />
             {formattedDate}
           </span>
-          <span className="flex items-center gap-1">
-            <Clock className="h-3.5 w-3.5 shrink-0" />
+          <span className="flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5 shrink-0 text-muted-foreground/80" />
             {formattedTime}
           </span>
-          <span className="flex items-center gap-1">
-            <Timer className="h-3.5 w-3.5 shrink-0" />
-            {session.duration}m
+          <span className="flex items-center gap-1.5">
+            <Timer className="h-3.5 w-3.5 shrink-0 text-muted-foreground/80" />
+            {session.duration} mins
           </span>
         </div>
 
         {/* Guide info */}
-        <div className="flex items-center gap-2.5 mt-auto">
-          <Avatar className="h-8 w-8 shrink-0">
+        <div className="flex items-center gap-2.5 mt-auto pt-3 border-t border-border/40 select-none">
+          <Avatar className="h-8 w-8 shrink-0 ring-1 ring-border/50">
             {session.guideId.avatar && <AvatarImage src={session.guideId.avatar} alt={session.guideId.name} />}
-            <AvatarFallback className="text-xs">{guideInitials}</AvatarFallback>
+            <AvatarFallback className="text-[10px] font-bold bg-muted">{guideInitials}</AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <p className="text-xs text-muted-foreground leading-none mb-0.5">Guide</p>
-            <p className="text-body-sm font-medium text-foreground truncate">{session.guideId.name}</p>
+            <p className="text-[10px] font-bold text-muted-foreground leading-none mb-0.5 uppercase tracking-wider">Mentor</p>
+            <p className="text-metadata font-bold text-foreground truncate">{session.guideId.name}</p>
           </div>
         </div>
       </CardContent>
 
       {/* Booking CTA footer */}
       {showBookingAction && (
-        <CardFooter className="px-5 py-4 border-t border-border bg-muted/30">
+        <CardFooter className="px-5 py-4 border-t border-border bg-muted/15 select-none">
           <BookSessionButton
             sessionId={session._id}
             status={session.status}
@@ -121,3 +133,4 @@ export const SessionCard: React.FC<SessionCardProps> = memo(({
 });
 
 SessionCard.displayName = 'SessionCard';
+

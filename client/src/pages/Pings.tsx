@@ -2,48 +2,65 @@ import React, { useState } from 'react';
 import { PingInbox } from '../features/pings/components/PingInbox';
 import { PingSent } from '../features/pings/components/PingSent';
 import { CreatePingModal } from '../features/pings/components/CreatePingModal';
+import { PageContainer } from '@/components/layout/PageContainer';
+import { Button } from '@/components/ui/button';
+import { Mail, Send, Plus } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export const Pings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'inbox' | 'sent'>('inbox');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <div className="max-w-4xl mx-auto p-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-extrabold text-gray-900">Direct Pings</h1>
-        <button 
+    <PageContainer size="default">
+      {/* Page Header Area */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-border/60 mb-6 gap-4 select-none">
+        <div className="space-y-1">
+          <h1 className="text-page-title text-foreground tracking-tight">
+            Direct Pings
+          </h1>
+          <p className="text-body-p text-muted-foreground leading-normal">
+            Ask targeted questions directly to expert guides, track pending responses, and build your curriculum momentum.
+          </p>
+        </div>
+        <Button 
           onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition"
+          className="font-bold gap-1.5 self-start sm:self-center shrink-0"
         >
-          + Send Ping
-        </button>
+          <Plus className="h-4 w-4" />
+          <span>Send Direct Ping</span>
+        </Button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-gray-200 mb-6">
+      {/* Tabs Layout */}
+      <div className="flex border-b border-border/60 mb-6 select-none">
         <button
           onClick={() => setActiveTab('inbox')}
-          className={`px-6 py-3 font-semibold text-sm border-b-2 transition-colors ${
+          className={cn(
+            "px-6 py-3 font-semibold text-metadata border-b-2 transition-all duration-200 gap-2 inline-flex items-center cursor-pointer",
             activeTab === 'inbox' 
-              ? 'border-blue-600 text-blue-600' 
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-          }`}
+              ? 'border-primary text-primary font-bold bg-primary/[2%] dark:bg-primary/[4%]' 
+              : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30'
+          )}
         >
-          Inbox
+          <Mail className="h-4 w-4 shrink-0" />
+          <span>Incoming Inbox</span>
         </button>
         <button
           onClick={() => setActiveTab('sent')}
-          className={`px-6 py-3 font-semibold text-sm border-b-2 transition-colors ${
+          className={cn(
+            "px-6 py-3 font-semibold text-metadata border-b-2 transition-all duration-200 gap-2 inline-flex items-center cursor-pointer",
             activeTab === 'sent' 
-              ? 'border-blue-600 text-blue-600' 
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-          }`}
+              ? 'border-primary text-primary font-bold bg-primary/[2%] dark:bg-primary/[4%]' 
+              : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30'
+          )}
         >
-          Sent
+          <Send className="h-4 w-4 shrink-0" />
+          <span>Sent Pings</span>
         </button>
       </div>
 
-      {/* Content */}
+      {/* Content Area */}
       <div className="min-h-[400px]">
         {activeTab === 'inbox' ? <PingInbox /> : <PingSent />}
       </div>
@@ -53,6 +70,6 @@ export const Pings: React.FC = () => {
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
       />
-    </div>
+    </PageContainer>
   );
 };

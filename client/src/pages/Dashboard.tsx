@@ -12,13 +12,14 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Award, Star, AlertCircle, RefreshCw } from 'lucide-react';
+import { Award, Star, AlertCircle, RefreshCw, Flame } from 'lucide-react';
 import { BecomeMentorCTA } from '../features/mentorApplications/components/BecomeMentorCTA';
 import { MentorApplicationStatusCard } from '../features/mentorApplications/components/MentorApplicationStatusCard';
 import { useMyMentorApplication } from '../features/mentorApplications/hooks/useMentorApplications';
 import { PersonalizedWelcomeBanner } from '../features/onboarding/components/PersonalizedWelcomeBanner';
 import { RecommendationPreview } from '../features/onboarding/components/RecommendationPreview';
 import { useOnboardingRecommendations } from '../features/onboarding/hooks/useOnboarding';
+import { StatsCard } from '../features/dashboard/components/StatsCard';
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuthStore();
@@ -46,31 +47,42 @@ export const Dashboard: React.FC = () => {
         </div>
 
         {/* Skeleton 2x2 Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-lg">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="flex flex-col h-[280px] border border-border bg-card">
-              <div className="flex items-center justify-between p-md border-b border-border/50 bg-muted/20">
-                <Skeleton className="h-5 w-32" />
-                <Skeleton className="h-4 w-12" />
-              </div>
-              <CardContent className="p-md sm:p-lg flex-grow flex flex-col gap-md">
-                <div className="flex items-center gap-sm">
-                  <Skeleton className="h-6 w-6 rounded-full" />
-                  <div className="space-y-xs flex-1">
-                    <Skeleton className="h-4 w-1/3" />
-                    <Skeleton className="h-3 w-1/4" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-lg">
+          <div className="lg:col-span-2 space-y-lg">
+            {[1, 2].map((i) => (
+              <Card key={i} className="flex flex-col h-[280px] border border-border bg-card">
+                <div className="flex items-center justify-between p-md border-b border-border/50 bg-muted/20">
+                  <Skeleton className="h-5 w-32" />
+                  <Skeleton className="h-4 w-12" />
+                </div>
+                <CardContent className="p-md sm:p-lg flex-grow flex flex-col gap-md">
+                  <div className="flex items-center gap-sm">
+                    <Skeleton className="h-6 w-6 rounded-full" />
+                    <div className="space-y-xs flex-1">
+                      <Skeleton className="h-4 w-1/3" />
+                      <Skeleton className="h-3 w-1/4" />
+                    </div>
                   </div>
-                </div>
-                <div className="space-y-xs">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-5/6" />
-                </div>
-                <div className="flex justify-end mt-auto">
-                  <Skeleton className="h-8 w-24 rounded-md" />
-                </div>
+                  <div className="space-y-xs">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-5/6" />
+                  </div>
+                  <div className="flex justify-end mt-auto">
+                    <Skeleton className="h-8 w-24 rounded-md" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="space-y-lg">
+            <Card className="h-[200px] border border-border bg-card">
+              <CardContent className="p-md flex flex-col gap-sm">
+                <Skeleton className="h-5 w-1/2" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
               </CardContent>
             </Card>
-          ))}
+          </div>
         </div>
       </PageContainer>
     );
@@ -113,35 +125,20 @@ export const Dashboard: React.FC = () => {
       <div className="flex flex-col gap-sm md:flex-row md:items-center md:justify-between pb-md border-b border-border/60 mb-lg">
         <div className="space-y-xs">
           <div className="flex flex-wrap items-center gap-sm">
-            <h1 className="text-heading-md font-bold tracking-tight text-foreground sm:text-heading-lg leading-tight select-none">
+            <h1 className="text-page-title text-foreground tracking-tight select-none">
               Welcome back, {user?.name}!
             </h1>
-            <Badge variant="secondary" className="capitalize text-[11px] font-bold px-2 py-0.5 border border-border select-none">
+            <Badge variant="secondary" className="capitalize text-[11px] font-bold px-2 py-0.5 border border-border select-none bg-muted/60">
               {user?.role}
             </Badge>
           </div>
-          <p className="text-body-sm text-muted-foreground leading-normal max-w-xl">
+          <p className="text-body-p text-muted-foreground leading-normal max-w-xl">
             Review your notifications, track your curriculum goals, and manage your incoming messages.
           </p>
         </div>
         
-        {/* Subtle, highly legible and recognizable Reputation Capsules */}
-        <div className="flex flex-wrap items-center gap-sm mt-xs md:mt-0 select-none">
-          <div className="inline-flex items-center gap-xs px-sm py-[3px] bg-muted/50 border border-border rounded-full shadow-subtle text-muted-foreground text-body-xs font-semibold transition-colors hover:bg-muted hover:border-border/80">
-            <Award className="h-3.5 w-3.5 text-primary shrink-0" />
-            <span>Respect Points:</span>
-            <span className="text-foreground font-bold">{user?.respectPoints || 0}</span>
-          </div>
-          
-          {user?.role !== 'guide' && <BecomeMentorCTA />}
-          {user?.role === 'guide' && (
-            <div className="inline-flex items-center gap-xs px-sm py-[3px] bg-warning/10 border border-warning/20 rounded-full shadow-subtle text-warning-foreground text-body-xs font-semibold transition-colors hover:bg-warning/15">
-              <Star className="h-3.5 w-3.5 text-warning shrink-0" />
-              <span>Fame Score:</span>
-              <span className="text-foreground font-bold">{user?.fameScore || 0}</span>
-            </div>
-          )}
-        </div>
+        {/* Compact Onboarding Action in Header */}
+        {user?.role !== 'guide' && <BecomeMentorCTA />}
       </div>
 
       <PersonalizedWelcomeBanner
@@ -155,36 +152,72 @@ export const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {user?.role !== 'guide' && (
-        <div className="mb-lg">
-          <MentorApplicationStatusCard application={mentorApplication.data} isLoading={mentorApplication.isLoading} />
-        </div>
-      )}
-
-      {/* 4. Balanced 2x2 Dashboard Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-lg items-stretch">
-        <div className="h-full">
-          <RecentPings pings={data?.pendingPings || []} />
-        </div>
-        <div className="h-full">
-          <RecentPosts posts={data?.recentPosts || []} />
-        </div>
-        <div className="h-full">
-          <UpcomingSessions sessions={data?.upcomingSessions || []} />
-        </div>
-        <div className="h-full">
-          <MentorRecommendations reflections={data?.mentorRecommendations || []} />
-        </div>
-        <div className="h-full lg:col-span-2">
+      {/* 4. Asymmetric Two-Column Dashboard Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-lg items-start">
+        {/* Left Column - Main Learning Momentum & Schedule (2/3 width) */}
+        <div className="lg:col-span-2 space-y-lg">
+          {/* Active Path Tracking */}
+          <RoadmapProgress />
+          
+          {/* Momentum & Streaks */}
           <LearnerMomentumCard
             momentum={data?.roadmapMomentum || []}
             trending={data?.trendingRoadmaps || []}
           />
+          
+          {/* Upcoming Schedule */}
+          <UpcomingSessions sessions={data?.upcomingSessions || []} />
+          
+          {/* Tailored Matches & Mentor Advice */}
+          <MentorRecommendations reflections={data?.mentorRecommendations || []} />
         </div>
-        <div className="h-full lg:col-span-2">
-          <RoadmapProgress />
+
+        {/* Right Column - Sidebar Feed, Inbox & Status (1/3 width) */}
+        <div className="space-y-lg">
+          {/* Reputation Stat Cards widget (replaces tiny pills) */}
+          <div className="space-y-sm">
+            <h2 className="text-section-title text-foreground px-xs">Your Progress</h2>
+            <div className="grid grid-cols-1 gap-sm">
+              <StatsCard
+                title="Respect Points"
+                value={user?.respectPoints || 0}
+                subtitle="Earned from community help"
+                icon={<Award />}
+                variant="primary"
+              />
+              
+              {user?.role === 'guide' ? (
+                <StatsCard
+                  title="Fame Score"
+                  value={user?.fameScore || 0}
+                  subtitle="Expert mentor authority"
+                  icon={<Star className="fill-warning/10 text-warning" />}
+                  variant="warning"
+                />
+              ) : (
+                <StatsCard
+                  title="Roadmap Momentum"
+                  value={`${data?.roadmapMomentum?.[0]?.streakCount || 0} Days`}
+                  subtitle="Consecutive learning streak"
+                  icon={<Flame className="text-orange-500 fill-orange-500/10" />}
+                  variant="warning"
+                />
+              )}
+            </div>
+          </div>
+
+          {user?.role !== 'guide' && (
+            <MentorApplicationStatusCard application={mentorApplication.data} isLoading={mentorApplication.isLoading} />
+          )}
+
+          {/* Action Required Messages */}
+          <RecentPings pings={data?.pendingPings || []} />
+
+          {/* Forum Interactions */}
+          <RecentPosts posts={data?.recentPosts || []} />
         </div>
       </div>
     </PageContainer>
   );
 };
+

@@ -50,28 +50,30 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ activeTab, filters, on
   };
 
   return (
-    <div className="bg-card border border-border/80 p-md sm:p-lg rounded-2xl shadow-subtle space-y-md sm:space-y-lg select-none">
-      <div className="flex items-center gap-xs pb-sm border-b border-border/40">
+    <div className="bg-card border border-border bg-card p-5 rounded-2xl shadow-subtle space-y-5 select-none transition-all duration-300 hover:border-border/80 relative overflow-hidden group">
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-transparent group-hover:bg-primary/20 transition-colors duration-300" />
+      
+      <div className="flex items-center gap-2 pb-3 border-b border-border/40 mt-[2px]">
         <Sliders className="h-4.5 w-4.5 text-primary shrink-0" />
-        <h3 className="text-body-md font-black text-foreground">Discovery Filters</h3>
+        <h3 className="text-card-title font-bold text-foreground">Discovery Filters</h3>
       </div>
 
       {activeTab === 'guides' && (
-        <div className="space-y-md sm:space-y-lg">
+        <div className="space-y-5">
           {/* 1. Domains Multi-select */}
-          <div className="space-y-xs">
-            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-xxs">
-              <LayoutGrid className="h-3.5 w-3.5 text-primary" />
+          <div className="space-y-2">
+            <label className="block text-label-lbl font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <LayoutGrid className="h-3.5 w-3.5 text-primary shrink-0" />
               <span>Expert Domains</span>
             </label>
-            <div className="flex flex-col gap-xxs pt-xxs">
+            <div className="flex flex-col gap-1.5 pt-1">
               {AVAILABLE_DOMAINS.map((domain) => {
                 const isSelected = (filters.domains || []).includes(domain);
                 return (
-                  <label key={domain} className="flex items-center gap-xs cursor-pointer text-body-xs font-semibold text-foreground/80 hover:text-foreground">
+                  <label key={domain} className="flex items-center gap-2 cursor-pointer text-metadata font-semibold text-foreground/80 hover:text-foreground">
                     <input
                       type="checkbox"
-                      className="w-4 h-4 rounded text-primary focus:ring-primary/45 border-border bg-background cursor-pointer"
+                      className="w-4 h-4 rounded text-primary focus:ring-primary/20 border-border bg-background cursor-pointer accent-primary"
                       checked={isSelected}
                       onChange={() => handleArrayToggle('domains', domain)}
                     />
@@ -83,12 +85,12 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ activeTab, filters, on
           </div>
 
           {/* 2. Skills Multi-select */}
-          <div className="space-y-xs border-t border-border/40 pt-md">
-            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-xxs">
-              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+          <div className="space-y-2 border-t border-border/40 pt-4">
+            <label className="block text-label-lbl font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
               <span>Granular Technologies</span>
             </label>
-            <div className="flex flex-wrap gap-xxs pt-xxs">
+            <div className="flex flex-wrap gap-1.5 pt-1">
               {AVAILABLE_SKILLS.map((skill) => {
                 const isSelected = (filters.skills || []).includes(skill);
                 return (
@@ -96,10 +98,10 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ activeTab, filters, on
                     key={skill}
                     variant={isSelected ? 'default' : 'outline'}
                     onClick={() => handleArrayToggle('skills', skill)}
-                    className={`cursor-pointer px-sm py-[3px] rounded-full text-[10px] font-bold shadow-sm transition-all ${
+                    className={`cursor-pointer px-2.5 py-[3px] rounded-full text-[10px] font-bold shadow-sm transition-all duration-200 select-none ${
                       isSelected
-                        ? 'bg-primary text-primary-foreground border-primary shadow-primary/20'
-                        : 'bg-background text-foreground border-border/80 hover:border-primary/40 hover:text-primary'
+                        ? 'bg-primary text-primary-foreground border-primary shadow-primary/10'
+                        : 'bg-background text-foreground border-border hover:border-primary/40 hover:text-primary'
                     }`}
                   >
                     {skill}
@@ -110,13 +112,13 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ activeTab, filters, on
           </div>
 
           {/* 3. Minimum Star Rating */}
-          <div className="space-y-xs border-t border-border/40 pt-md">
-            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-xxs">
-              <Star className="h-3.5 w-3.5 text-primary" />
+          <div className="space-y-2 border-t border-border/40 pt-4">
+            <label className="block text-label-lbl font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <Star className="h-3.5 w-3.5 text-primary shrink-0" />
               <span>Minimum Star Rating</span>
             </label>
             <select
-              className="w-full bg-background border border-border/80 rounded-xl text-body-xs font-bold text-foreground focus:ring-primary focus:border-primary px-sm py-xs mt-xxs outline-none cursor-pointer"
+              className="w-full bg-background border border-border rounded-xl text-metadata font-bold text-foreground focus:ring-1 focus:ring-primary focus:border-primary px-3 py-2 mt-1 outline-none cursor-pointer"
               value={filters.minRating || ''}
               onChange={(e) => handleChange('minRating', e.target.value ? Number(e.target.value) : undefined)}
             >
@@ -129,9 +131,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ activeTab, filters, on
           </div>
 
           {/* 4. Minimum Fame Score */}
-          <div className="space-y-xs border-t border-border/40 pt-md">
-            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-xxs">
-              <Flame className="h-3.5 w-3.5 text-primary fill-primary/5" />
+          <div className="space-y-2 border-t border-border/40 pt-4">
+            <label className="block text-label-lbl font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <Flame className="h-3.5 w-3.5 text-primary fill-primary/5 shrink-0" />
               <span>Min Fame Score: {filters.minFameScore || 0}+</span>
             </label>
             <input
@@ -139,36 +141,36 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ activeTab, filters, on
               min="0"
               max="100"
               step="10"
-              className="w-full h-1.5 bg-muted border border-border/40 rounded-lg appearance-none cursor-pointer accent-primary mt-xs"
+              className="w-full h-1.5 bg-muted border border-border/40 rounded-lg appearance-none cursor-pointer accent-primary mt-2"
               value={filters.minFameScore || 0}
               onChange={(e) => handleChange('minFameScore', Number(e.target.value))}
             />
           </div>
 
           {/* 5. Minimum Sessions Completed */}
-          <div className="space-y-xs border-t border-border/40 pt-md">
-            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-xxs">
-              <UserCheck className="h-3.5 w-3.5 text-primary" />
+          <div className="space-y-2 border-t border-border/40 pt-4">
+            <label className="block text-label-lbl font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <UserCheck className="h-3.5 w-3.5 text-primary shrink-0" />
               <span>Min Sessions Completed</span>
             </label>
             <input
               type="number"
               min="0"
               placeholder="e.g. 5"
-              className="w-full bg-background border border-border/80 rounded-xl text-body-xs font-bold text-foreground focus:ring-primary focus:border-primary px-sm py-xs outline-none"
+              className="w-full bg-background border border-border rounded-xl text-metadata font-semibold text-foreground focus:ring-1 focus:ring-primary focus:border-primary px-3 py-2 outline-none"
               value={filters.minSessions || ''}
               onChange={(e) => handleChange('minSessions', e.target.value ? Number(e.target.value) : undefined)}
             />
           </div>
 
           {/* 6. Weekly Availability Day */}
-          <div className="space-y-xs border-t border-border/40 pt-md">
-            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-xxs">
-              <Calendar className="h-3.5 w-3.5 text-primary" />
+          <div className="space-y-2 border-t border-border/40 pt-4">
+            <label className="block text-label-lbl font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <Calendar className="h-3.5 w-3.5 text-primary shrink-0" />
               <span>Availability Day</span>
             </label>
             <select
-              className="w-full bg-background border border-border/80 rounded-xl text-body-xs font-bold text-foreground focus:ring-primary focus:border-primary px-sm py-xs mt-xxs outline-none cursor-pointer"
+              className="w-full bg-background border border-border rounded-xl text-metadata font-bold text-foreground focus:ring-1 focus:ring-primary focus:border-primary px-3 py-2 mt-1 outline-none cursor-pointer"
               value={filters.availability || ''}
               onChange={(e) => handleChange('availability', e.target.value || undefined)}
             >
@@ -180,32 +182,32 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ activeTab, filters, on
           </div>
 
           {/* 7. Quick Checks (Beginner Friendly, Top Rated, Active) */}
-          <div className="space-y-xxs border-t border-border/40 pt-md flex flex-col gap-xxs select-none">
-            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-xs">
+          <div className="space-y-2 border-t border-border/40 pt-4 flex flex-col gap-1.5 select-none">
+            <label className="block text-label-lbl font-semibold text-muted-foreground uppercase tracking-wider mb-1">
               Quick Highlights
             </label>
-            <label className="flex items-center gap-xs cursor-pointer text-body-xs font-semibold text-foreground/80 hover:text-foreground">
+            <label className="flex items-center gap-2 cursor-pointer text-metadata font-semibold text-foreground/80 hover:text-foreground">
               <input
                 type="checkbox"
-                className="w-4 h-4 rounded text-primary focus:ring-primary/45 border-border bg-background cursor-pointer"
+                className="w-4 h-4 rounded text-primary focus:ring-primary/20 border-border bg-background cursor-pointer accent-primary"
                 checked={filters.isBeginnerFriendly || false}
                 onChange={(e) => handleChange('isBeginnerFriendly', e.target.checked)}
               />
               <span>Beginner Friendly</span>
             </label>
-            <label className="flex items-center gap-xs cursor-pointer text-body-xs font-semibold text-foreground/80 hover:text-foreground">
+            <label className="flex items-center gap-2 cursor-pointer text-metadata font-semibold text-foreground/80 hover:text-foreground">
               <input
                 type="checkbox"
-                className="w-4 h-4 rounded text-primary focus:ring-primary/45 border-border bg-background cursor-pointer"
+                className="w-4 h-4 rounded text-primary focus:ring-primary/20 border-border bg-background cursor-pointer accent-primary"
                 checked={filters.isTopRated || false}
                 onChange={(e) => handleChange('isTopRated', e.target.checked)}
               />
               <span>Top Rated Only</span>
             </label>
-            <label className="flex items-center gap-xs cursor-pointer text-body-xs font-semibold text-foreground/80 hover:text-foreground">
+            <label className="flex items-center gap-2 cursor-pointer text-metadata font-semibold text-foreground/80 hover:text-foreground">
               <input
                 type="checkbox"
-                className="w-4 h-4 rounded text-primary focus:ring-primary/45 border-border bg-background cursor-pointer"
+                className="w-4 h-4 rounded text-primary focus:ring-primary/20 border-border bg-background cursor-pointer accent-primary"
                 checked={filters.isMostActive || false}
                 onChange={(e) => handleChange('isMostActive', e.target.checked)}
               />
@@ -216,11 +218,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ activeTab, filters, on
       )}
 
       {activeTab === 'roadmaps' && (
-        <div className="space-y-6">
-          <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Domain</label>
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="block text-label-lbl font-semibold text-muted-foreground uppercase tracking-wider">Domain</label>
             <select
-              className="w-full bg-background border border-border/80 rounded-xl text-body-xs font-bold text-foreground focus:ring-primary focus:border-primary px-sm py-xs outline-none cursor-pointer"
+              className="w-full bg-background border border-border rounded-xl text-metadata font-bold text-foreground focus:ring-1 focus:ring-primary focus:border-primary px-3 py-2 outline-none cursor-pointer"
               value={filters.domain || ''}
               onChange={(e) => handleChange('domain', e.target.value)}
             >
@@ -231,11 +233,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ activeTab, filters, on
             </select>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Max Duration (Weeks)</label>
+          <div className="space-y-1.5 pt-2">
+            <label className="block text-label-lbl font-semibold text-muted-foreground uppercase tracking-wider">Max Duration (Weeks)</label>
             <input
               type="number"
-              className="w-full bg-background border border-border/80 rounded-xl text-body-xs font-bold text-foreground focus:ring-primary focus:border-primary px-sm py-xs outline-none"
+              className="w-full bg-background border border-border rounded-xl text-metadata font-semibold text-foreground focus:ring-1 focus:ring-primary focus:border-primary px-3 py-2 outline-none"
               placeholder="e.g. 12"
               value={filters.maxEstimatedWeeks || ''}
               onChange={(e) => handleChange('maxEstimatedWeeks', e.target.value)}
@@ -245,11 +247,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ activeTab, filters, on
       )}
 
       {activeTab === 'posts' && (
-        <div className="space-y-6">
-          <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Category</label>
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="block text-label-lbl font-semibold text-muted-foreground uppercase tracking-wider">Category</label>
             <select
-              className="w-full bg-background border border-border/80 rounded-xl text-body-xs font-bold text-foreground focus:ring-primary focus:border-primary px-sm py-xs outline-none cursor-pointer"
+              className="w-full bg-background border border-border rounded-xl text-metadata font-bold text-foreground focus:ring-1 focus:ring-primary focus:border-primary px-3 py-2 outline-none cursor-pointer"
               value={filters.category || ''}
               onChange={(e) => handleChange('category', e.target.value)}
             >
@@ -260,15 +262,15 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ activeTab, filters, on
             </select>
           </div>
 
-          <div className="flex items-center gap-3 p-3 bg-muted/40 rounded-xl border border-border/60">
+          <div className="flex items-center gap-2.5 p-3 bg-muted/40 rounded-xl border border-border/60 mt-2 select-none">
             <input
               type="checkbox"
               id="isSolved"
-              className="w-4 h-4 text-primary rounded focus:ring-primary/45 border-border bg-background cursor-pointer"
+              className="w-4 h-4 text-primary rounded focus:ring-primary/20 border-border bg-background cursor-pointer accent-primary"
               checked={filters.isSolved || false}
               onChange={(e) => handleChange('isSolved', e.target.checked)}
             />
-            <label htmlFor="isSolved" className="text-sm font-semibold text-foreground/85 cursor-pointer">
+            <label htmlFor="isSolved" className="text-metadata font-semibold text-foreground/90 cursor-pointer">
               Solved Posts Only
             </label>
           </div>
@@ -277,10 +279,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ activeTab, filters, on
       
       <button 
         onClick={() => onFilterChange({})}
-        className="w-full py-2.5 text-xs font-bold text-muted-foreground hover:text-foreground uppercase tracking-widest border border-border/40 hover:border-border rounded-xl transition duration-200"
+        className="w-full py-2.5 text-[11px] font-bold text-muted-foreground hover:text-foreground uppercase tracking-widest border border-border/50 hover:border-border rounded-xl transition duration-200 cursor-pointer bg-background hover:bg-muted/30"
       >
         Reset All Filters
       </button>
     </div>
   );
 };
+
