@@ -12,6 +12,8 @@ export enum AuditAction {
   HIDE_CONTENT = 'hide_content',
   UNHIDE_CONTENT = 'unhide_content',
   CONTENT_DELETE = 'content_delete',
+  ACCEPT_ANSWER_OVERRIDE = 'accept_answer_override',
+  CLEAR_ACCEPTED_ANSWER = 'clear_accepted_answer',
   VERIFY_GUIDE = 'verify_guide',
   UNVERIFY_GUIDE = 'unverify_guide',
   MENTOR_APPLICATION_SUBMITTED = 'mentor_application_submitted',

@@ -1,7 +1,8 @@
 import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
-import { ThumbsUp, MessageSquare, Eye, CheckCircle2 } from 'lucide-react';
+import { ThumbsUp, MessageSquare, Eye } from 'lucide-react';
 import type { Post } from '../hooks/usePosts';
+import { SolvedThreadIndicator } from './SolvedThreadIndicator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -13,6 +14,7 @@ interface PostCardProps {
 
 export const PostCard: React.FC<PostCardProps> = memo(({ post }) => {
   const voteCount = post.upvotes - post.downvotes;
+  const solved = post.isResolved || post.isSolved;
   
   // Category styles dictionary
   const categoryStyles: Record<string, { label: string; variant: "secondary" | "success" | "warning" | "destructive" | "default" | "outline" }> = {
@@ -34,12 +36,7 @@ export const PostCard: React.FC<PostCardProps> = memo(({ post }) => {
               <Badge variant={currentCategory.variant} className="capitalize text-[10px] px-2 py-0.5 font-bold tracking-wider">
                 {currentCategory.label}
               </Badge>
-              {post.isSolved && (
-                <Badge variant="success" className="text-[10px] px-2 py-0.5 font-bold flex items-center gap-0.5">
-                  <CheckCircle2 className="h-3 w-3 shrink-0" />
-                  Solved
-                </Badge>
-              )}
+              <SolvedThreadIndicator solved={solved} />
             </div>
             
             <CardTitle className="text-body-md font-bold leading-snug tracking-tight text-foreground hover:text-primary transition-colors mt-xs truncate">

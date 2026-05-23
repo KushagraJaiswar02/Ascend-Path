@@ -8,9 +8,11 @@ import {
   useToggleStepUncomplete,
   useUpdateProgressDetails,
 } from '../features/roadmaps/hooks/useRoadmapProgress';
+import { useRoadmapCommunity } from '../features/roadmaps/hooks/useRoadmapCommunity';
 import { ProgressOverview } from '../features/roadmaps/components/ProgressOverview';
 import { RoadmapSectionAccordion } from '../features/roadmaps/components/RoadmapSectionAccordion';
 import { EnrollmentCTA } from '../features/roadmaps/components/EnrollmentCTA';
+import { CommunityProgressIndicator } from '../features/roadmaps/components/CommunityProgressIndicator';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, BookOpen, AlertCircle, Award, ShieldCheck } from 'lucide-react';
@@ -29,6 +31,7 @@ export const RoadmapDetail: React.FC = () => {
   const {
     data: progress,
   } = useMyRoadmapProgress(roadmap?._id || '', !!roadmap?._id);
+  const { data: community } = useRoadmapCommunity(roadmap?._id);
 
   // Mutations
   const enrollMutation = useEnrollInRoadmap();
@@ -219,6 +222,8 @@ export const RoadmapDetail: React.FC = () => {
 
         {/* Right Side: Curator details, target outcomes, prerequisites sidebar */}
         <div className="space-y-lg">
+          <CommunityProgressIndicator community={community} />
+
           {/* Owning Curator Profile */}
           {roadmap.createdBy && (
             <Card className="border border-border shadow-subtle rounded-2xl overflow-hidden select-none">

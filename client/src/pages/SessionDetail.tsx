@@ -5,15 +5,20 @@ import {
   Calendar,
   Clock,
   Timer,
-  Video,
   Star,
   Loader2,
   AlertTriangle,
 } from 'lucide-react';
 import { useSession } from '../features/sessions/hooks/useSession';
+import { useSessionReflection } from '../features/sessions/hooks/useSessionReflection';
 import { useCancelSession } from '../features/sessions/hooks/useCancelSession';
 import { useRateSession } from '../features/sessions/hooks/useRateSession';
 import { BookSessionButton } from '../features/sessions/components/BookSessionButton';
+import { SessionReflectionModal } from '../features/sessions/components/SessionReflectionModal';
+import { MentorFollowupPanel } from '../features/sessions/components/MentorFollowupPanel';
+import { ReflectionSummaryCard } from '../features/sessions/components/ReflectionSummaryCard';
+import { MentorRecommendationCard } from '../features/sessions/components/MentorRecommendationCard';
+import { SessionExecutionPanel } from '../features/sessions/components/SessionExecutionPanel';
 import { useAuthStore } from '../store/useAuthStore';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -123,10 +128,12 @@ export const SessionDetail: React.FC = () => {
   const { toast } = useToast();
 
   const { data: session, isLoading, isError } = useSession(id || '');
+  const reflectionQuery = useSessionReflection(id || '');
   const cancelMutation = useCancelSession();
   const rateMutation = useRateSession();
 
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [reflectionOpen, setReflectionOpen] = useState(false);
   const [rating, setRating] = useState(5);
   const [review, setReview] = useState('');
 
@@ -150,10 +157,15 @@ export const SessionDetail: React.FC = () => {
   }
 
   // — Role & permission flags ————————————————————————————————————————
+  const explorer = session.clientId || session.explorerId;
+  const reflection = reflectionQuery.data;
   const isGuide    = user?._id === session.guideId._id;
-  const isExplorer = user?._id === session.explorerId?._id;
+  const isExplorer = user?._id === explorer?._id;
   const canCancel  = (isGuide || isExplorer) && (session.status === 'open' || session.status === 'booked');
   const canRate    = isExplorer && session.status === 'completed' && !session.rating;
+  const canReflect = isExplorer && session.status === 'completed' && !reflection?.menteeReflection?.submittedAt;
+  const canFollowup = isGuide && session.status === 'completed';
+  const isParticipant = isGuide || isExplorer;
 
   // — Derived display values ————————————————————————————————————————
   const dateObj     = new Date(session.scheduledAt);
@@ -189,6 +201,10 @@ export const SessionDetail: React.FC = () => {
 
   const handleRate = (e: React.FormEvent) => {
     e.preventDefault();
+    const getErrorMessage = (error: unknown) => {
+      const err = error as { response?: { data?: { error?: string } }; message?: string };
+      return err.response?.data?.error || err.message || 'Could not save your review. Please try again.';
+    };
     rateMutation.mutate(
       { sessionId: session._id, rating, review },
       {
@@ -199,11 +215,11 @@ export const SessionDetail: React.FC = () => {
             description: 'Thanks for sharing your experience.',
           });
         },
-        onError: () => {
+        onError: (error) => {
           toast({
             type: 'error',
             title: 'Submission failed',
-            description: 'Could not save your review. Please try again.',
+            description: getErrorMessage(error),
           });
         },
       }
@@ -280,7 +296,7 @@ export const SessionDetail: React.FC = () => {
                   </span>
                   <span className="flex items-center gap-2 text-body-sm text-foreground">
                     <Timer className="h-4 w-4 text-muted-foreground shrink-0" />
-                    {session.duration} minutes
+                    {session.durationMinutes || session.duration} minutes
                   </span>
                 </div>
               </div>
@@ -304,6 +320,7 @@ export const SessionDetail: React.FC = () => {
                   status={session.status}
                   price={session.price}
                   topic={session.topic}
+                  isOwnSession={isGuide}
                 />
               </div>
             )}
@@ -333,37 +350,8 @@ export const SessionDetail: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* ── Meeting info card (booked only) ───────────────────────── */}
-        {session.status === 'booked' && (isGuide || isExplorer) && (
-          <Card>
-            <CardHeader className="pb-sm">
-              <CardTitle className="flex items-center gap-2">
-                <Video className="h-4 w-4 text-muted-foreground" />
-                Meeting Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-body-sm text-muted-foreground mb-md">
-                The meeting link will be available 15 minutes before the session starts.
-              </p>
-              {session.meetingLink ? (
-                <Button asChild variant="primary" size="md">
-                  <a
-                    href={session.meetingLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Join Meeting
-                  </a>
-                </Button>
-              ) : (
-                <Button variant="outline" size="md" disabled className="cursor-not-allowed">
-                  Link not yet available
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        )}
+        {/* Session execution and attendance verification */}
+        <SessionExecutionPanel session={session} isGuide={isGuide} isParticipant={isParticipant} />
 
         {/* ── Rate & review card ────────────────────────────────────── */}
         {canRate && (
@@ -425,11 +413,11 @@ export const SessionDetail: React.FC = () => {
             </CardHeader>
             <CardContent className="pt-0 space-y-sm">
               <StarDisplay value={session.rating} />
-              {session.explorerId && (
+              {explorer && (
                 <div className="flex items-center gap-2 mt-xs">
                   <Avatar className="h-7 w-7">
                     <AvatarFallback className="text-xs">
-                      {session.explorerId.name
+                      {explorer.name
                         .split(' ')
                         .map((n) => n[0])
                         .join('')
@@ -438,7 +426,7 @@ export const SessionDetail: React.FC = () => {
                     </AvatarFallback>
                   </Avatar>
                   <p className="text-body-sm text-muted-foreground">
-                    {session.explorerId.name}
+                    {explorer.name}
                   </p>
                 </div>
               )}
@@ -448,6 +436,36 @@ export const SessionDetail: React.FC = () => {
       </div>
 
       {/* ── Cancel confirmation dialog ────────────────────────────────── */}
+      {session.status === 'completed' && (isGuide || isExplorer) && (
+        <div className="grid grid-cols-1 gap-md mt-lg">
+          {isExplorer && (
+            <>
+              <ReflectionSummaryCard
+                reflection={reflection}
+                onAddReflection={canReflect ? () => setReflectionOpen(true) : undefined}
+              />
+              {reflection?.mentorFollowup?.submittedAt && <MentorRecommendationCard reflection={reflection} />}
+            </>
+          )}
+
+          {canFollowup && (
+            <>
+              <ReflectionSummaryCard reflection={reflection} />
+              <MentorFollowupPanel sessionId={session._id} reflection={reflection} />
+            </>
+          )}
+        </div>
+      )}
+
+      {isExplorer && (
+        <SessionReflectionModal
+          sessionId={session._id}
+          open={reflectionOpen}
+          onOpenChange={setReflectionOpen}
+          initialValues={reflection?.menteeReflection}
+        />
+      )}
+
       <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>

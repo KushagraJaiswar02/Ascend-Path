@@ -31,7 +31,10 @@ const validate = (schema: any) => (req: Request, res: Response, next: NextFuncti
 // --- ROADMAPS ROUTER ---
 const roadmapRouter = Router();
 roadmapRouter.get('/', roadmapController.getRoadmaps);
+roadmapRouter.get('/trending', roadmapController.getTrendingRoadmaps);
 roadmapRouter.get('/:id', roadmapController.getRoadmapById);
+roadmapRouter.get('/:id/community', roadmapController.getRoadmapCommunity);
+roadmapRouter.get('/:id/active-learners', roadmapController.getRoadmapActiveLearners);
 
 // Protected Roadmap routes
 roadmapRouter.post('/', authMiddleware, validate(createRoadmapSchema), roadmapController.createRoadmap);
@@ -65,6 +68,7 @@ stepRouter.post('/:id/uncomplete', roadmapController.toggleStepUncomplete);
 const meRoadmapRouter = Router();
 meRoadmapRouter.use(authMiddleware);
 meRoadmapRouter.get('/', roadmapController.getMyActiveRoadmaps);
+meRoadmapRouter.get('/momentum', roadmapController.getMyRoadmapMomentum);
 meRoadmapRouter.get('/:id/progress', roadmapController.getMyRoadmapProgress);
 
 export {
@@ -73,4 +77,3 @@ export {
   stepRouter as stepRoutes,
   meRoadmapRouter as meRoadmapRoutes,
 };
-

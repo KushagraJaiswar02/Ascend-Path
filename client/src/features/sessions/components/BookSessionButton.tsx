@@ -17,6 +17,7 @@ interface BookSessionButtonProps {
   status: 'open' | 'booked' | 'completed' | 'cancelled';
   price: number;
   topic?: string;
+  isOwnSession?: boolean;
 }
 
 export const BookSessionButton: React.FC<BookSessionButtonProps> = ({
@@ -24,6 +25,7 @@ export const BookSessionButton: React.FC<BookSessionButtonProps> = ({
   status,
   price,
   topic,
+  isOwnSession = false,
 }) => {
   const bookMutation = useBookSession();
   const { toast } = useToast();
@@ -56,6 +58,14 @@ export const BookSessionButton: React.FC<BookSessionButtonProps> = ({
     );
   }
 
+  if (isOwnSession) {
+    return (
+      <span className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium border border-border bg-muted text-muted-foreground cursor-not-allowed select-none w-full">
+        Your hosted session
+      </span>
+    );
+  }
+
   const handleConfirmBook = () => {
     bookMutation.mutate(sessionId, {
       onSuccess: () => {
@@ -68,12 +78,12 @@ export const BookSessionButton: React.FC<BookSessionButtonProps> = ({
             : 'Your session slot has been confirmed.',
         });
       },
-      onError: () => {
+      onError: (error: any) => {
         setDialogOpen(false);
         toast({
           type: 'error',
           title: 'Booking Failed',
-          description: 'Something went wrong. Please try again in a moment.',
+          description: error?.response?.data?.error || 'Something went wrong. Please try again in a moment.',
         });
       },
     });

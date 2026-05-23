@@ -25,6 +25,18 @@ const notifyUser = async (recipientId: string, eventPayload: any, domains: strin
   }
 };
 
+const notifySessionParticipants = (
+  payload: { clientId: string; guideId: string },
+  eventName: string,
+  eventPayload: any
+) => {
+  [payload.clientId, payload.guideId].filter(Boolean).forEach((userId) => {
+    socketService.toUser(userId, eventName, eventPayload);
+    socketService.toUser(userId, 'refresh_data', { domain: 'sessions' });
+    socketService.toUser(userId, 'refresh_data', { domain: 'dashboard' });
+  });
+};
+
 // 1. PING_RECEIVED
 eventEmitter.on('PING_RECEIVED', async (payload: {
   pingId: string;
@@ -103,6 +115,74 @@ eventEmitter.on('SESSION_BOOKED', async (payload: {
   }
 });
 
+eventEmitter.on('SESSION_STARTED', async (payload: {
+  sessionId: string;
+  clientId: string;
+  guideId: string;
+  title: string;
+  startedAt: Date;
+}) => {
+  try {
+    const notification = await notificationService.createNotification({
+      recipientId: payload.clientId,
+      actorId: payload.guideId,
+      type: NotificationType.SESSION_ACCEPTED,
+      entityId: payload.sessionId,
+      entityType: 'Session',
+      title: 'Session Room Open',
+      message: `Your mentor opened "${payload.title}". You can join now.`,
+      metadata: { sessionId: payload.sessionId, startedAt: payload.startedAt },
+    });
+
+    await notifyUser(payload.clientId, notification, ['sessions', 'dashboard']);
+    notifySessionParticipants(payload, 'session_execution_updated', {
+      type: 'SESSION_STARTED',
+      sessionId: payload.sessionId,
+      startedAt: payload.startedAt,
+    });
+  } catch (err) {
+    logger.error('Error handling SESSION_STARTED event:', err);
+  }
+});
+
+eventEmitter.on('PARTICIPANT_JOINED', async (payload: {
+  sessionId: string;
+  clientId: string;
+  guideId: string;
+  participantId: string;
+  participantRole: string;
+  mentorJoinedAt?: Date;
+  menteeJoinedAt?: Date;
+  attendanceStatus: string;
+}) => {
+  notifySessionParticipants(payload, 'session_execution_updated', {
+    type: 'PARTICIPANT_JOINED',
+    sessionId: payload.sessionId,
+    participantId: payload.participantId,
+    participantRole: payload.participantRole,
+    mentorJoinedAt: payload.mentorJoinedAt,
+    menteeJoinedAt: payload.menteeJoinedAt,
+    attendanceStatus: payload.attendanceStatus,
+  });
+});
+
+eventEmitter.on('SESSION_ENDED', async (payload: {
+  sessionId: string;
+  clientId: string;
+  guideId: string;
+  endedAt: Date;
+  actualDurationMinutes: number;
+  attendanceStatus: string;
+}) => {
+  notifySessionParticipants(payload, 'session_execution_updated', {
+    type: 'SESSION_ENDED',
+    sessionId: payload.sessionId,
+    endedAt: payload.endedAt,
+    actualDurationMinutes: payload.actualDurationMinutes,
+    attendanceStatus: payload.attendanceStatus,
+  });
+});
+
 // 4. SESSION_ACCEPTED
 eventEmitter.on('SESSION_ACCEPTED', async (payload: {
   sessionId: string;
@@ -154,12 +234,98 @@ eventEmitter.on('SESSION_COMPLETED', async (payload: {
     // Also trigger silent data refresh on guide dashboard so session finishes live
     socketService.toUser(payload.guideId, 'refresh_data', { domain: 'sessions' });
     socketService.toUser(payload.guideId, 'refresh_data', { domain: 'dashboard' });
+    notifySessionParticipants(payload, 'session_execution_updated', {
+      type: 'SESSION_COMPLETED',
+      sessionId: payload.sessionId,
+      actualDurationMinutes: (payload as any).actualDurationMinutes,
+      attendanceVerified: (payload as any).attendanceVerified,
+    });
   } catch (err) {
     logger.error('Error handling SESSION_COMPLETED event:', err);
   }
 });
 
-// 6. REVIEW_RECEIVED
+// 6. SESSION_REFLECTION_REQUESTED
+eventEmitter.on('SESSION_REFLECTION_REQUESTED', async (payload: {
+  sessionId: string;
+  reflectionId: string;
+  menteeId: string;
+  mentorId: string;
+  title: string;
+}) => {
+  try {
+    const notification = await notificationService.createNotification({
+      recipientId: payload.menteeId,
+      actorId: payload.mentorId,
+      type: NotificationType.SESSION_REFLECTION_REQUESTED,
+      entityId: payload.sessionId,
+      entityType: 'Session',
+      title: 'Capture Your Session Learnings',
+      message: `Reflect on "${payload.title}" while the guidance is still fresh.`,
+      metadata: { sessionId: payload.sessionId, reflectionId: payload.reflectionId },
+    });
+
+    await notifyUser(payload.menteeId, notification, ['sessions', 'dashboard', 'reflections']);
+  } catch (err) {
+    logger.error('Error handling SESSION_REFLECTION_REQUESTED event:', err);
+  }
+});
+
+// 7. SESSION_REFLECTION_SUBMITTED
+eventEmitter.on('SESSION_REFLECTION_SUBMITTED', async (payload: {
+  sessionId: string;
+  reflectionId: string;
+  menteeId: string;
+  mentorId: string;
+  title: string;
+  confidenceLevel: number;
+}) => {
+  try {
+    const notification = await notificationService.createNotification({
+      recipientId: payload.mentorId,
+      actorId: payload.menteeId,
+      type: NotificationType.SESSION_REFLECTION_SUBMITTED,
+      entityId: payload.sessionId,
+      entityType: 'Session',
+      title: 'Reflection Submitted',
+      message: `Your mentee reflected on "${payload.title}" and rated confidence ${payload.confidenceLevel}/5.`,
+      metadata: { sessionId: payload.sessionId, reflectionId: payload.reflectionId },
+    });
+
+    await notifyUser(payload.mentorId, notification, ['sessions', 'dashboard', 'reflections']);
+  } catch (err) {
+    logger.error('Error handling SESSION_REFLECTION_SUBMITTED event:', err);
+  }
+});
+
+// 8. MENTOR_FOLLOWUP_ADDED
+eventEmitter.on('MENTOR_FOLLOWUP_ADDED', async (payload: {
+  sessionId: string;
+  reflectionId: string;
+  menteeId: string;
+  mentorId: string;
+  title: string;
+  recommendationCount: number;
+}) => {
+  try {
+    const notification = await notificationService.createNotification({
+      recipientId: payload.menteeId,
+      actorId: payload.mentorId,
+      type: NotificationType.MENTOR_FOLLOWUP_ADDED,
+      entityId: payload.sessionId,
+      entityType: 'Session',
+      title: 'Mentor Follow-Up Added',
+      message: `Your mentor added ${payload.recommendationCount || 'new'} next-step recommendations for "${payload.title}".`,
+      metadata: { sessionId: payload.sessionId, reflectionId: payload.reflectionId },
+    });
+
+    await notifyUser(payload.menteeId, notification, ['sessions', 'dashboard', 'roadmap', 'reflections']);
+  } catch (err) {
+    logger.error('Error handling MENTOR_FOLLOWUP_ADDED event:', err);
+  }
+});
+
+// 9. REVIEW_RECEIVED
 eventEmitter.on('REVIEW_RECEIVED', async (payload: {
   reviewId: string;
   reviewerId: string;
@@ -205,6 +371,27 @@ eventEmitter.on('ROADMAP_COMPLETED', async (payload: {
     await notifyUser(payload.userId, notification, ['roadmap', 'dashboard']);
   } catch (err) {
     logger.error('Error handling ROADMAP_COMPLETED event:', err);
+  }
+});
+
+eventEmitter.on('ROADMAP_STEP_COMPLETED', async (payload: {
+  roadmapId: string;
+  stepId: string;
+  userId: string;
+  stepTitle: string;
+  progressPercentage: number;
+}) => {
+  try {
+    socketService.toUser(payload.userId, 'roadmap_community_updated', {
+      type: 'ROADMAP_STEP_COMPLETED',
+      roadmapId: payload.roadmapId,
+      stepId: payload.stepId,
+      progressPercentage: payload.progressPercentage,
+    });
+    socketService.toUser(payload.userId, 'refresh_data', { domain: 'roadmap' });
+    socketService.toUser(payload.userId, 'refresh_data', { domain: 'dashboard' });
+  } catch (err) {
+    logger.error('Error handling ROADMAP_STEP_COMPLETED event:', err);
   }
 });
 
@@ -290,7 +477,75 @@ eventEmitter.on('POST_UPVOTED', async (payload: {
   }
 });
 
-// 11. GUIDE_FOLLOWED
+// 11. ANSWER_ACCEPTED
+eventEmitter.on('ANSWER_ACCEPTED', async (payload: {
+  postId: string;
+  replyId: string;
+  actorId: string;
+  recipientId: string;
+  postTitle: string;
+  actorName: string;
+}) => {
+  try {
+    if (payload.actorId === payload.recipientId) return;
+
+    const notification = await notificationService.createNotification({
+      recipientId: payload.recipientId,
+      actorId: payload.actorId,
+      type: NotificationType.ANSWER_ACCEPTED,
+      entityId: payload.postId,
+      entityType: 'Post',
+      title: 'Answer Accepted',
+      message: `${payload.actorName || 'The post author'} accepted your answer on "${payload.postTitle}".`,
+      metadata: { postId: payload.postId, replyId: payload.replyId },
+    });
+
+    await notifyUser(payload.recipientId, notification, ['forums', 'dashboard', 'reputation']);
+  } catch (err) {
+    logger.error('Error handling ANSWER_ACCEPTED event:', err);
+  }
+});
+
+// 12. POST_RESOLVED
+eventEmitter.on('POST_RESOLVED', async (payload: {
+  postId: string;
+  replyId?: string;
+  actorId: string;
+  recipientId: string;
+  postTitle: string;
+  acceptedAuthorName?: string;
+  cleared?: boolean;
+  moderatorOverride?: boolean;
+}) => {
+  try {
+    const title = payload.cleared ? 'Solved Status Removed' : 'Post Resolved';
+    const message = payload.cleared
+      ? `The solved status was removed from "${payload.postTitle}".`
+      : `"${payload.postTitle}" was marked resolved with an answer from ${payload.acceptedAuthorName || 'a contributor'}.`;
+
+    const notification = await notificationService.createNotification({
+      recipientId: payload.recipientId,
+      actorId: payload.actorId,
+      type: NotificationType.POST_RESOLVED,
+      entityId: payload.postId,
+      entityType: 'Post',
+      title,
+      message,
+      metadata: {
+        postId: payload.postId,
+        replyId: payload.replyId,
+        cleared: !!payload.cleared,
+        moderatorOverride: !!payload.moderatorOverride,
+      },
+    });
+
+    await notifyUser(payload.recipientId, notification, ['forums', 'dashboard']);
+  } catch (err) {
+    logger.error('Error handling POST_RESOLVED event:', err);
+  }
+});
+
+// 13. GUIDE_FOLLOWED
 eventEmitter.on('GUIDE_FOLLOWED', async (payload: {
   guideId: string;
   followerId: string;

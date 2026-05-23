@@ -45,6 +45,8 @@ import { reviewRoutes } from './modules/reviews/review.routes';
 import { adminRoutes } from './modules/admin/admin.routes';
 import { mentorApplicationRoutes, adminMentorApplicationRoutes } from './modules/mentor-applications/mentorApplication.routes';
 import { onboardingRoutes } from './modules/onboarding/onboarding.routes';
+import { sessionReflectionController } from './modules/sessions/sessionReflection.controller';
+import { authMiddleware } from './middleware/auth.middleware';
 
 // Register Module Routes Here
 app.use('/api/v1/users', userRoutes);
@@ -56,6 +58,7 @@ app.use('/api/v1/sections', sectionRoutes);
 app.use('/api/v1/steps', stepRoutes);
 app.use('/api/v1/me/roadmaps', meRoadmapRoutes);
 app.use('/api/v1/sessions', sessionRoutes);
+app.get('/api/v1/me/reflections', authMiddleware, sessionReflectionController.getMyReflections);
 app.use('/api/v1/search', searchRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/moderation', reportRoutes);

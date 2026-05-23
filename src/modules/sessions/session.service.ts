@@ -1,13 +1,17 @@
 import { sessionRepository } from './session.repository';
 import { userRepository } from '../users/user.repository';
 import { canActAsGuide, hasCapability, UserCapability } from '../users/userCapabilities';
-import { SessionStatus } from './session.model';
+import { AttendanceStatus, SessionStatus } from './session.model';
 import { CreateSessionInput, UpdateSessionInput, RateSessionInput } from './session.validation';
 import { respectService } from '../respect/respect.service';
 import { RespectReason } from '../respect/respectVote.model';
 import { fameService } from '../users/fame.service';
 import { eventEmitter } from '../../utils/eventEmitter';
 import { logger } from '../../utils/logger';
+import { sessionExecutionService } from './sessionExecution.service';
+
+const getId = (value: any) => value?._id?.toString?.() || value?.toString?.() || '';
+const createHttpError = (statusCode: number, message: string) => ({ statusCode, message });
 
 export const sessionService = {
   async createSession(userId: string, data: CreateSessionInput) {
@@ -73,31 +77,34 @@ export const sessionService = {
 
   async bookSession(userId: string, sessionId: string) {
     const session = await sessionRepository.getSessionById(sessionId);
-    if (!session) throw new Error('Session not found');
+    if (!session) throw createHttpError(404, 'Session not found');
 
-    if (session.guideId._id.toString() === userId) {
-      throw new Error('You cannot book your own session');
+    const actorId = getId(userId);
+    const guideId = getId(session.guideId);
+
+    if (guideId === actorId) {
+      throw createHttpError(400, 'Mentors cannot enroll in their own session');
     }
 
     if (session.status !== SessionStatus.OPEN) {
-      throw new Error('This session is no longer available');
+      throw createHttpError(400, 'This session is no longer available');
     }
 
     // Atomic update simulation (in real prod, use atomic findOneAndUpdate with condition)
     const updatedSession = await sessionRepository.updateSession(sessionId, {
-      clientId: userId as any,
+      clientId: actorId as any,
       status: SessionStatus.BOOKED,
     });
 
     if (updatedSession) {
       Promise.all([
-        userRepository.findUserById(userId),
-        userRepository.findUserById(session.guideId._id.toString())
+        userRepository.findUserById(actorId),
+        userRepository.findUserById(guideId)
       ]).then(([client, guide]) => {
         eventEmitter.emit('SESSION_BOOKED', {
           sessionId: updatedSession._id.toString(),
-          clientId: userId,
-          guideId: session.guideId._id.toString(),
+          clientId: actorId,
+          guideId,
           title: session.topic || (session as any).title || 'Mentorship Session',
           clientName: client?.name || 'A learner',
         });
@@ -127,60 +134,32 @@ export const sessionService = {
 
     return await sessionRepository.updateSession(sessionId, {
       status: SessionStatus.CANCELLED,
+      attendanceStatus: AttendanceStatus.CANCELLED,
     });
   },
 
   async completeSession(userId: string, sessionId: string) {
-    const session = await sessionRepository.getSessionById(sessionId);
-    if (!session) throw new Error('Session not found');
-
-    if (session.guideId._id.toString() !== userId) {
-      throw new Error('Only the Guide can mark the session as completed');
-    }
-
-    if (session.status !== SessionStatus.BOOKED) {
-      throw new Error('Only booked sessions can be marked as completed');
-    }
-
-    const updatedSession = await sessionRepository.updateSession(sessionId, {
-      status: SessionStatus.COMPLETED,
-    });
-
-    // Asynchronous fame update
-    fameService.updateFameScore(session.guideId._id.toString()).catch((e) => logger.error('Failed to update fame score after session complete:', e));
-
-    if (updatedSession) {
-      Promise.all([
-        userRepository.findUserById(session.guideId._id.toString()),
-        userRepository.findUserById(session.clientId?._id.toString() || '')
-      ]).then(([guide, client]) => {
-        eventEmitter.emit('SESSION_COMPLETED', {
-          sessionId: updatedSession._id.toString(),
-          clientId: session.clientId?._id.toString() || '',
-          guideId: session.guideId._id.toString(),
-          title: session.topic || (session as any).title || 'Mentorship Session',
-          guideName: guide?.name || 'Your guide',
-        });
-      }).catch((e) => logger.error('Failed to emit SESSION_COMPLETED event:', e));
-    }
-
-    return updatedSession;
+    return await sessionExecutionService.completeSession(userId, sessionId);
   },
 
   async rateSession(userId: string, sessionId: string, data: RateSessionInput) {
     const session = await sessionRepository.getSessionById(sessionId);
-    if (!session) throw new Error('Session not found');
+    if (!session) throw createHttpError(404, 'Session not found');
 
-    if (session.clientId?._id.toString() !== userId) {
-      throw new Error('Only the client can rate this session');
+    const actorId = getId(userId);
+    const clientId = getId(session.clientId);
+    const guideId = getId(session.guideId);
+
+    if (clientId !== actorId) {
+      throw createHttpError(403, 'Only the mentee who attended this session can submit a review');
     }
 
     if (session.status !== SessionStatus.COMPLETED) {
-      throw new Error('You can only rate a completed session');
+      throw createHttpError(400, 'You can only rate a completed session');
     }
 
     if (session.rating) {
-      throw new Error('You have already rated this session');
+      throw createHttpError(400, 'You have already rated this session');
     }
 
     const updatedSession = await sessionRepository.updateSession(sessionId, {
@@ -192,8 +171,8 @@ export const sessionService = {
     if (data.rating >= 4) {
       try {
         await respectService.grantOneTimePoints(
-          userId,
-          session.guideId._id.toString(),
+          actorId,
+          guideId,
           sessionId,
           RespectReason.SESSION,
           50 // Bonus points for a great mentoring session
@@ -204,7 +183,7 @@ export const sessionService = {
     }
 
     // Update Fame Score
-    fameService.updateFameScore(session.guideId._id.toString()).catch(console.error);
+    fameService.updateFameScore(guideId).catch(console.error);
 
     return updatedSession;
   },

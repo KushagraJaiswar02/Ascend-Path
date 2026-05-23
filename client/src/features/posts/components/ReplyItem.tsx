@@ -1,15 +1,16 @@
 import React from 'react';
-import { ThumbsUp, CheckCircle2 } from 'lucide-react';
+import { ThumbsUp } from 'lucide-react';
 import type { Reply } from '../hooks/usePost';
+import { useAcceptAnswer, useUnacceptAnswer } from '../hooks/usePost';
 import { useVote } from '../hooks/useVote';
 import { useAuthStore } from '../../../store/useAuthStore';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '../../../services/apiClient';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { formatRelativeTime } from '@/lib/utils';
+import { AcceptedAnswerBadge } from './AcceptedAnswerBadge';
+import { ResolvePostButton } from './ResolvePostButton';
+import { TopAnswerHighlight } from './TopAnswerHighlight';
 
 interface ReplyItemProps {
   reply: Reply;
@@ -19,41 +20,30 @@ interface ReplyItemProps {
 
 export const ReplyItem: React.FC<ReplyItemProps> = ({ reply, postId, postAuthorId }) => {
   const { user, isAuthenticated } = useAuthStore();
-  const queryClient = useQueryClient();
   const voteMutation = useVote(postId);
+  const acceptMutation = useAcceptAnswer(postId);
+  const unacceptMutation = useUnacceptAnswer(postId);
 
   const voteCount = reply.upvotes - reply.downvotes;
   const isPostAuthor = isAuthenticated && user?._id === postAuthorId;
   const isReplyAuthor = user?._id === reply.authorId?._id;
+  const isAccepted = reply.isAccepted || reply.isSolution;
 
   const handleVote = (voteType: 'upvote' | 'downvote') => {
     if (!isAuthenticated) return alert("You must be logged in to vote.");
     voteMutation.mutate({ targetId: reply._id, targetType: 'reply', voteType });
   };
 
-  const solveMutation = useMutation({
-    mutationFn: async () => {
-      const { data } = await apiClient.post(`/posts/${postId}/solve`, { replyId: reply._id });
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['post', postId] });
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
-    },
-    onError: (err: any) => {
-      alert(err.response?.data?.error || "Failed to mark solution.");
-    }
-  });
-
   return (
-    <Card 
-      className={`transition-all duration-200 ${
-        reply.isSolution 
-          ? 'border-success/40 bg-success/5 shadow-subtle border-l-4 border-l-success' 
-          : 'border-border bg-card'
-      }`}
-    >
-      <CardContent className="p-md space-y-sm">
+    <TopAnswerHighlight active={isAccepted}>
+      <Card 
+        className={`transition-all duration-200 ${
+          isAccepted 
+            ? 'border-success/40 bg-transparent shadow-none' 
+            : 'border-border bg-card'
+        }`}
+      >
+        <CardContent className="p-md space-y-sm">
         {/* Reply Header */}
         <div className="flex items-center justify-between gap-sm">
           <div className="flex items-center gap-xs">
@@ -71,23 +61,15 @@ export const ReplyItem: React.FC<ReplyItemProps> = ({ reply, postId, postAuthorI
           </div>
 
           <div className="flex items-center gap-xs">
-            {reply.isSolution && (
-              <Badge variant="success" className="text-[10px] px-2 py-0.5 font-extrabold flex items-center gap-0.5 shadow-subtle">
-                <CheckCircle2 className="h-3 w-3 shrink-0" />
-                Accepted Solution
-              </Badge>
-            )}
+            {isAccepted && <AcceptedAnswerBadge />}
 
-            {isPostAuthor && !reply.isSolution && (
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={solveMutation.isPending}
-                onClick={() => solveMutation.mutate()}
-                className="text-[10px] h-6 px-2 border-success/30 text-success hover:bg-success/10 hover:text-success"
-              >
-                Mark as Solution
-              </Button>
+            {isPostAuthor && (
+              <ResolvePostButton
+                accepted={isAccepted}
+                disabled={acceptMutation.isPending || unacceptMutation.isPending}
+                onAccept={() => acceptMutation.mutate(reply._id)}
+                onUnaccept={() => unacceptMutation.mutate()}
+              />
             )}
           </div>
         </div>
@@ -121,7 +103,8 @@ export const ReplyItem: React.FC<ReplyItemProps> = ({ reply, postId, postAuthorI
             </span>
           )}
         </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </TopAnswerHighlight>
   );
 };

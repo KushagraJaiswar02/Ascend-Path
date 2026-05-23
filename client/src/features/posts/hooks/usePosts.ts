@@ -12,6 +12,11 @@ export interface Post {
   downvotes: number;
   viewCount: number;
   isSolved: boolean;
+  isResolved?: boolean;
+  acceptedReplyId?: string;
+  solutionReplyId?: string;
+  resolvedAt?: string;
+  resolvedBy?: string;
   createdAt: string;
   replyCount?: number;
 }
@@ -26,14 +31,17 @@ interface PostsResponse {
   };
 }
 
-export const usePosts = (page = 1, limit = 10, category?: string) => {
+export type ResolutionFilter = 'all' | 'resolved' | 'unresolved';
+
+export const usePosts = (page = 1, limit = 10, category?: string, resolution: ResolutionFilter = 'all') => {
   return useQuery({
-    queryKey: ['posts', { page, limit, category }],
+    queryKey: ['posts', { page, limit, category, resolution }],
     queryFn: async (): Promise<PostsResponse['data']> => {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: limit.toString(),
         ...(category && { category }),
+        ...(resolution !== 'all' && { resolution }),
       });
       const { data } = await apiClient.get(`/posts?${params.toString()}`);
       return data.data;

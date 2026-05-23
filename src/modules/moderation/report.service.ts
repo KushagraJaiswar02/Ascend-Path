@@ -5,6 +5,7 @@ import { AuditAction, AuditSeverity } from './auditLog.model';
 import { userRepository } from '../users/user.repository';
 import { Post } from '../posts/post.model';
 import { Reply } from '../posts/reply.model';
+import { postService } from '../posts/post.service';
 import { Review } from '../reviews/review.model';
 import { CareerRoadmap } from '../roadmaps/roadmap.model';
 import { eventEmitter } from '../../utils/eventEmitter';
@@ -222,6 +223,44 @@ export const reportService = {
     });
 
     return { success: true };
+  },
+
+  async overrideAcceptedAnswer(postId: string, replyId: string, actorId: string, reason: string) {
+    const post = await postService.acceptAnswer(actorId, postId, replyId, {
+      moderatorOverride: true,
+      reason,
+    });
+
+    await reportRepository.createAuditLog({
+      actorId,
+      action: AuditAction.ACCEPT_ANSWER_OVERRIDE,
+      targetId: postId,
+      targetType: TargetType.POST,
+      details: 'Moderator overrode accepted answer',
+      metadata: { postId, replyId, reason },
+      severity: AuditSeverity.WARNING,
+    });
+
+    return { success: true, post };
+  },
+
+  async clearAcceptedAnswer(postId: string, actorId: string, reason: string) {
+    const post = await postService.unacceptAnswer(actorId, postId, {
+      moderatorOverride: true,
+      reason,
+    });
+
+    await reportRepository.createAuditLog({
+      actorId,
+      action: AuditAction.CLEAR_ACCEPTED_ANSWER,
+      targetId: postId,
+      targetType: TargetType.POST,
+      details: 'Moderator removed accepted answer and solved status',
+      metadata: { postId, reason },
+      severity: AuditSeverity.WARNING,
+    });
+
+    return { success: true, post };
   },
 
   async bulkAction(actorId: string, reportIds: string[], action: 'assign' | 'dismiss' | 'resolve', payload: any) {

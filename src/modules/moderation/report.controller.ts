@@ -170,6 +170,35 @@ export const reportController = {
     }
   },
 
+  async overrideAcceptedAnswer(req: Request, res: Response, next: NextFunction) {
+    try {
+      const actorId = (req as any).user._id.toString();
+      const result = await reportService.overrideAcceptedAnswer(
+        param(req.params.postId),
+        param(req.params.replyId),
+        actorId,
+        req.body.reason || 'Moderator accepted-answer override'
+      );
+      res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async clearAcceptedAnswer(req: Request, res: Response, next: NextFunction) {
+    try {
+      const actorId = (req as any).user._id.toString();
+      const result = await reportService.clearAcceptedAnswer(
+        param(req.params.postId),
+        actorId,
+        req.body.reason || 'Moderator removed solved status'
+      );
+      res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async bulkAction(req: Request, res: Response, next: NextFunction) {
     try {
       const actorId = (req as any).user._id;

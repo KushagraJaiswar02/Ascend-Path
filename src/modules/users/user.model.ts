@@ -67,6 +67,8 @@ export interface IUser extends Document {
   averageRating: number;
   totalReviews: number;
   profileVisibility: boolean;
+  showRoadmapActivity: boolean;
+  anonymousRoadmapParticipation: boolean;
   onboardingCompleted: boolean;
   onboarding?: {
     primaryGoal?: string;
@@ -156,6 +158,8 @@ const userSchema = new Schema<IUser>(
     averageRating: { type: Number, default: 0 },
     totalReviews: { type: Number, default: 0 },
     profileVisibility: { type: Boolean, default: true },
+    showRoadmapActivity: { type: Boolean, default: true },
+    anonymousRoadmapParticipation: { type: Boolean, default: false },
     onboardingCompleted: { type: Boolean, default: false },
     onboarding: {
       primaryGoal: { type: String, trim: true },

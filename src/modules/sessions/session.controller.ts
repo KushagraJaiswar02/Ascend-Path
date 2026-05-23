@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { sessionService } from './session.service';
+import { sessionExecutionService } from './sessionExecution.service';
 
 export const sessionController = {
   async createSession(req: Request, res: Response, next: NextFunction) {
@@ -89,8 +90,48 @@ export const sessionController = {
   async completeSession(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = (req as any).user._id;
-      const session = await sessionService.completeSession(userId, req.params.id as string);
-      res.status(200).json({ success: true, data: { session } });
+      const execution = await sessionExecutionService.completeSession(userId, req.params.id as string);
+      res.status(200).json({ success: true, data: { execution } });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async startSession(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).user._id;
+      const execution = await sessionExecutionService.startSession(userId, req.params.id as string);
+      res.status(200).json({ success: true, data: { execution } });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async joinSession(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).user._id;
+      const execution = await sessionExecutionService.joinSession(userId, req.params.id as string);
+      res.status(200).json({ success: true, data: { execution } });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async endSession(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).user._id;
+      const execution = await sessionExecutionService.endSession(userId, req.params.id as string);
+      res.status(200).json({ success: true, data: { execution } });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getSessionExecution(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).user._id;
+      const execution = await sessionExecutionService.getExecution(userId, req.params.id as string);
+      res.status(200).json({ success: true, data: { execution } });
     } catch (error) {
       next(error);
     }

@@ -86,12 +86,15 @@ export const RealtimeDashboardProvider: React.FC<{ children: React.ReactNode }> 
         queryClient.invalidateQueries({ queryKey: ['pingsReceived'] });
       } else if (domain === 'sessions') {
         queryClient.invalidateQueries({ queryKey: ['sessions'] });
+        queryClient.invalidateQueries({ queryKey: ['sessionExecution'] });
       } else if (domain === 'roadmap') {
         queryClient.invalidateQueries({ queryKey: ['roadmaps'] });
+        queryClient.invalidateQueries({ queryKey: ['roadmapCommunity'] });
         queryClient.invalidateQueries({ queryKey: ['progress'] });
         queryClient.invalidateQueries({ queryKey: ['me', 'roadmaps'] });
       } else if (domain === 'dashboard') {
         queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+        queryClient.invalidateQueries({ queryKey: ['dashboardData'] });
         queryClient.invalidateQueries({ queryKey: ['me'] });
         queryClient.invalidateQueries({ queryKey: ['profile'] });
         queryClient.invalidateQueries({ queryKey: ['guides'] }); // refresh Discover guide lists
@@ -103,6 +106,12 @@ export const RealtimeDashboardProvider: React.FC<{ children: React.ReactNode }> 
         queryClient.invalidateQueries({ queryKey: ['posts'] });
         queryClient.invalidateQueries({ queryKey: ['replies'] });
       }
+    });
+
+    socket.on('roadmap_community_updated', (payload: { roadmapId: string }) => {
+      queryClient.invalidateQueries({ queryKey: ['roadmapCommunity', payload.roadmapId] });
+      queryClient.invalidateQueries({ queryKey: ['roadmaps', 'trending'] });
+      queryClient.invalidateQueries({ queryKey: ['me', 'roadmaps', 'momentum'] });
     });
 
     return () => {

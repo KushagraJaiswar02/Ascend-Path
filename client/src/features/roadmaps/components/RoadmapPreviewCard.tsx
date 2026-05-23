@@ -2,6 +2,8 @@ import React from 'react';
 import { Star, Users, Calendar } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { RoadmapProgressBar } from './RoadmapProgressBar';
+import { useRoadmapCommunity } from '../hooks/useRoadmapCommunity';
+import { RoadmapPresenceStrip } from './RoadmapPresenceStrip';
 
 interface RoadmapPreviewCardProps {
   roadmap: any;
@@ -16,6 +18,7 @@ export const RoadmapPreviewCard: React.FC<RoadmapPreviewCardProps> = ({
 }) => {
   const isEnrolled = !!progress;
   const progressPercentage = progress?.progressPercentage || 0;
+  const { data: community } = useRoadmapCommunity(roadmap._id);
 
   return (
     <div
@@ -77,6 +80,8 @@ export const RoadmapPreviewCard: React.FC<RoadmapPreviewCardProps> = ({
             </Badge>
           ))}
         </div>
+
+        <RoadmapPresenceStrip community={community} compact />
       </div>
 
       {/* Progress Bar (if enrolled) or Action CTA Footer */}
