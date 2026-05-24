@@ -6,7 +6,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 export const env = {
   PORT: process.env.PORT || 5000,
-  MONGO_URI: process.env.MONGO_URI || 'mongodb://localhost:27017/ascendpath',
+  MONGODB_URI: process.env.MONGODB_URI || 'mongodb+srv://jaiswarkushagra047_db_user:0Xo2z9ofLXsJnKBc@cluster0.oatpqv4.mongodb.net/ascendpath?retryWrites=true&w=majority&appName=Cluster0',
   JWT_SECRET: process.env.JWT_SECRET || 'fallback_secret_do_not_use_in_prod',
   NODE_ENV: process.env.NODE_ENV || 'development',
   CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:5173',
