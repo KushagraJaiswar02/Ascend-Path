@@ -12,11 +12,33 @@ const env_1 = require("./config/env");
 const rateLimiter_1 = require("./middleware/rateLimiter");
 const requestContext_1 = require("./middleware/requestContext");
 const app = (0, express_1.default)();
-// Security Middleware
+// ── Trust Proxy (required on Render / Railway / Heroku) ───────────────────────
+// Render sits behind a reverse proxy. Without this, req.secure is always false
+// which breaks secure cookie detection and rate limiter IP resolution.
+app.set('trust proxy', 1);
+// ── Security Headers ──────────────────────────────────────────────────────────
 app.use((0, helmet_1.default)());
+// ── CORS ─────────────────────────────────────────────────────────────────────
+// withCredentials requests require an explicit origin, never '*'.
+// We whitelist both the configured CLIENT_URL (Vercel) and localhost dev ports.
+const allowedOrigins = [
+    env_1.env.CLIENT_URL,
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:3000',
+].filter(Boolean);
 app.use((0, cors_1.default)({
-    origin: env_1.env.CLIENT_URL,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    origin: (origin, callback) => {
+        // Allow server-to-server (no origin) and whitelisted origins
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error(`CORS: Origin '${origin}' not allowed`));
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
 }));
 app.use(requestContext_1.requestContext);

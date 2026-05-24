@@ -3,16 +3,41 @@ import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_do_not_use_in_prod';
 
+// Mirror the same origin whitelist used in app.ts
+const allowedOrigins = [
+  process.env.CLIENT_URL || 'http://localhost:5173',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:3000',
+].filter(Boolean);
+
 export const socketService = {
   io: null as Server | null,
 
   init(server: any) {
     this.io = new Server(server, {
+      /**
+       * Transport order matters:
+       * - Start with 'polling' so the HTTP handshake succeeds through Render's
+       *   proxy, then upgrade to 'websocket' automatically.
+       * - Using only 'websocket' can fail on platforms that don't support
+       *   HTTP upgrade in the first request.
+       */
+      transports: ['polling', 'websocket'],
       cors: {
-        origin: process.env.CLIENT_URL || 'http://localhost:5173',
+        origin: (origin: string | undefined, callback: Function) => {
+          if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+          } else {
+            callback(new Error(`Socket CORS: Origin '${origin}' not allowed`));
+          }
+        },
         methods: ['GET', 'POST'],
         credentials: true,
       },
+      // Keep connections alive through Render's 30s idle proxy timeout
+      pingTimeout: 60000,
+      pingInterval: 25000,
     });
 
     // WebSockets Auth Handshake Middleware

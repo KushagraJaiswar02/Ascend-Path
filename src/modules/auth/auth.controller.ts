@@ -1,10 +1,22 @@
 import { Request, Response, NextFunction } from 'express';
 import { authService } from './auth.service';
 
+const isProduction = process.env.NODE_ENV === 'production';
+
+/**
+ * Cookie options for cross-origin deployment (Vercel frontend → Render backend).
+ *
+ * CRITICAL: sameSite MUST be 'none' (not 'strict' or 'lax') for cross-origin
+ * requests. 'strict' silently blocks all cookies when the frontend and backend
+ * are on different domains — the single most common deployment auth failure.
+ *
+ * sameSite: 'none' requires secure: true — browsers enforce this pair.
+ * In local development (HTTP) we fall back to 'lax' so cookies still work.
+ */
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict' as const,
+  secure: isProduction,
+  sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 

@@ -32,17 +32,29 @@ export const RealtimeDashboardProvider: React.FC<{ children: React.ReactNode }> 
       return;
     }
 
-    // Backend endpoint URL
-    const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    // Socket.IO connects to the server ROOT — NOT to /api/v1.
+    // VITE_SOCKET_URL should be just: https://your-backend.onrender.com
+    // We derive it from VITE_API_URL by stripping the path as a fallback.
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+    const socketUrl =
+      import.meta.env.VITE_SOCKET_URL ||
+      apiUrl.replace('/api/v1', '');
 
     // Initialize socket connection with JWT authorization handshake
     const socket = io(socketUrl, {
       auth: {
         token: accessToken,
       },
+      /**
+       * Transport order: start with polling (HTTP long-poll) so the initial
+       * handshake works through Render's proxy, then upgrade to websocket.
+       * Using only 'websocket' can fail on first connect on some platforms.
+       */
+      transports: ['polling', 'websocket'],
+      reconnection: true,
       reconnectionAttempts: 10,
       reconnectionDelay: 1000,
-      transports: ['websocket'],
+      reconnectionDelayMax: 10000,
     });
 
     socketRef.current = socket;
