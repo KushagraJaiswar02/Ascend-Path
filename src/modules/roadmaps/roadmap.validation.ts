@@ -65,7 +65,7 @@ const resourceSchema = z.object({
 export const createStepSchema = z.object({
   body: z.object({
     title: z.string().min(3, 'Step title must be at least 3 characters').max(100).trim(),
-    description: z.string().max(2000).trim().optional(),
+    description: z.string().max(2000, 'Description cannot exceed 2000 characters').trim().optional(),
     type: z.enum(['article', 'video', 'project', 'assignment', 'quiz', 'session', 'external resource']).default('article'),
     resources: z.array(resourceSchema).default([]),
     estimatedMinutes: z.number().int().min(0).default(0),
@@ -73,6 +73,9 @@ export const createStepSchema = z.object({
     order: z.number().int().min(0).default(0),
     isOptional: z.boolean().default(false),
     linkedSessionId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid session ObjectId').optional(),
+    richNotes: z.string().max(5000).trim().optional(),
+    videoUrl: z.string().trim().optional(),
+    mentorTip: z.string().max(1000).trim().optional(),
   }),
 });
 
@@ -87,6 +90,9 @@ export const updateStepSchema = z.object({
     order: z.number().int().min(0).optional(),
     isOptional: z.boolean().optional(),
     linkedSessionId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid session ObjectId').or(z.null()).optional(),
+    richNotes: z.string().max(5000).trim().optional(),
+    videoUrl: z.string().trim().optional(),
+    mentorTip: z.string().max(1000).trim().optional(),
   }),
 });
 
