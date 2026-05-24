@@ -146,6 +146,42 @@ eventEmitter.on('SESSION_STARTED', async (payload: {
   }
 });
 
+eventEmitter.on('PUBLIC_SESSION_REGISTERED', async (payload: {
+  sessionId: string;
+  userId: string;
+  guideId: string;
+  attendeeCount: number;
+  title: string;
+}) => {
+  socketService.toUser(payload.userId, 'refresh_data', { domain: 'sessions' });
+  socketService.toUser(payload.userId, 'refresh_data', { domain: 'dashboard' });
+  socketService.toUser(payload.guideId, 'refresh_data', { domain: 'sessions' });
+  socketService.toUser(payload.guideId, 'public_session_registered', {
+    sessionId: payload.sessionId,
+    attendeeCount: payload.attendeeCount,
+    title: payload.title,
+  });
+});
+
+eventEmitter.on('PUBLIC_WORKSHOP_LIVE', async (payload: {
+  sessionId: string;
+  guideId: string;
+  attendeeCount: number;
+  attendeeIds?: string[];
+  title: string;
+}) => {
+  [payload.guideId, ...(payload.attendeeIds || [])].filter(Boolean).forEach((userId) => {
+    socketService.toUser(userId, 'session_execution_updated', {
+      type: 'PUBLIC_WORKSHOP_LIVE',
+      sessionId: payload.sessionId,
+      attendeeCount: payload.attendeeCount,
+      title: payload.title,
+    });
+    socketService.toUser(userId, 'refresh_data', { domain: 'sessions' });
+    socketService.toUser(userId, 'refresh_data', { domain: 'dashboard' });
+  });
+});
+
 eventEmitter.on('PARTICIPANT_JOINED', async (payload: {
   sessionId: string;
   clientId: string;

@@ -12,6 +12,7 @@ import {
   MeetingProvider,
   SessionExecutionState,
   SessionStatus,
+  SessionType,
 } from './session.model';
 
 const getId = (value: any) => value?._id?.toString?.() || value?.toString?.() || '';
@@ -28,7 +29,10 @@ const requireParticipant = (session: ISession, userId: string) => {
   const actorId = getId(userId);
   const guideId = getId(session.guideId);
   const clientId = getId(session.clientId);
-  if (actorId !== guideId && actorId !== clientId) {
+  const isPublicAttendee = session.sessionType === SessionType.PUBLIC_WORKSHOP &&
+    session.attendees?.some((attendee: any) => getId(attendee.userId) === actorId);
+
+  if (actorId !== guideId && actorId !== clientId && !isPublicAttendee) {
     throw createHttpError(403, 'You are not authorized to access this session execution');
   }
 
@@ -36,7 +40,7 @@ const requireParticipant = (session: ISession, userId: string) => {
     actorId,
     guideId,
     clientId,
-    role: actorId === guideId ? 'mentor' : 'mentee',
+    role: actorId === guideId ? 'mentor' : session.sessionType === SessionType.PUBLIC_WORKSHOP ? 'attendee' : 'mentee',
   };
 };
 
@@ -59,10 +63,11 @@ export const sessionExecutionService = {
     if (actorId !== guideId) {
       throw createHttpError(403, 'Only the mentor can start the session room');
     }
-    if (session.status !== SessionStatus.BOOKED) {
+    const isPublicWorkshop = session.sessionType === SessionType.PUBLIC_WORKSHOP;
+    if (!isPublicWorkshop && session.status !== SessionStatus.BOOKED) {
       throw createHttpError(400, 'Only booked sessions can be started');
     }
-    if (!clientId) {
+    if (!isPublicWorkshop && !clientId) {
       throw createHttpError(400, 'Cannot start a session without a booked mentee');
     }
     assertSessionTimeArrived(session);
@@ -84,6 +89,7 @@ export const sessionExecutionService = {
       startedAt: session.startedAt || new Date(),
       attendanceStatus: AttendanceStatus.WAITING,
       sessionExecutionState: SessionExecutionState.STARTED,
+      status: isPublicWorkshop ? SessionStatus.LIVE : session.status,
     });
     if (!updatedSession) throw createHttpError(500, 'Failed to start session');
 
@@ -94,6 +100,15 @@ export const sessionExecutionService = {
       title: updatedSession.topic || updatedSession.title || 'Mentorship session',
       startedAt: updatedSession.startedAt,
     });
+    if (isPublicWorkshop) {
+      eventEmitter.emit('PUBLIC_WORKSHOP_LIVE', {
+        sessionId,
+        guideId,
+        attendeeCount: updatedSession.attendeeCount,
+        attendeeIds: (updatedSession.attendees || []).map((attendee: any) => getId(attendee.userId)).filter(Boolean),
+        title: updatedSession.title || updatedSession.topic || 'Community workshop',
+      });
+    }
 
     return toSessionExecutionDTO(updatedSession, await buildParticipantUrl(updatedSession, actorId));
   },
@@ -103,8 +118,12 @@ export const sessionExecutionService = {
     if (!session) throw createHttpError(404, 'Session not found');
 
     const { actorId, guideId, clientId, role } = requireParticipant(session, userId);
-    if (session.status !== SessionStatus.BOOKED) {
+    const isPublicWorkshop = session.sessionType === SessionType.PUBLIC_WORKSHOP;
+    if (!isPublicWorkshop && session.status !== SessionStatus.BOOKED) {
       throw createHttpError(400, 'Only booked sessions can be joined');
+    }
+    if (isPublicWorkshop && session.status !== SessionStatus.LIVE) {
+      throw createHttpError(400, 'This workshop is not live yet');
     }
     assertSessionTimeArrived(session);
     if (!session.meetingUrl || !session.meetingRoomId || !session.startedAt) {
@@ -114,9 +133,18 @@ export const sessionExecutionService = {
     const updateData: Partial<ISession> = {};
     if (role === 'mentor' && !session.mentorJoinedAt) updateData.mentorJoinedAt = new Date();
     if (role === 'mentee' && !session.menteeJoinedAt) updateData.menteeJoinedAt = new Date();
+    if (role === 'attendee') {
+      updateData.attendees = (session.attendees || []).map((attendee: any) => (
+        getId(attendee.userId) === actorId && !attendee.attendedAt
+          ? { ...attendee.toObject?.() || attendee, attendedAt: new Date() }
+          : attendee
+      )) as any;
+    }
 
     const mentorJoined = Boolean(updateData.mentorJoinedAt || session.mentorJoinedAt);
-    const menteeJoined = Boolean(updateData.menteeJoinedAt || session.menteeJoinedAt);
+    const menteeJoined = isPublicWorkshop
+      ? Boolean((updateData.attendees || session.attendees || []).some((attendee: any) => attendee.attendedAt))
+      : Boolean(updateData.menteeJoinedAt || session.menteeJoinedAt);
 
     updateData.attendanceStatus = mentorJoined && menteeJoined ? AttendanceStatus.ACTIVE : AttendanceStatus.WAITING;
     updateData.sessionExecutionState = mentorJoined && menteeJoined
@@ -145,12 +173,14 @@ export const sessionExecutionService = {
     if (!session) throw createHttpError(404, 'Session not found');
 
     const { actorId, guideId, clientId } = requireParticipant(session, userId);
+    const isPublicWorkshop = session.sessionType === SessionType.PUBLIC_WORKSHOP;
     if (actorId !== guideId) {
-      throw createHttpError(403, 'Only the mentor can end the session and unlock reflections');
+      throw createHttpError(403, isPublicWorkshop ? 'Only the host can end the workshop' : 'Only the mentor can end the session and unlock reflections');
     }
     if (!session.startedAt) throw createHttpError(400, 'Session has not started');
-    if (session.status !== SessionStatus.BOOKED) throw createHttpError(400, 'Only active booked sessions can be ended');
-    if (!session.menteeJoinedAt) {
+    if (!isPublicWorkshop && session.status !== SessionStatus.BOOKED) throw createHttpError(400, 'Only active booked sessions can be ended');
+    if (isPublicWorkshop && session.status !== SessionStatus.LIVE) throw createHttpError(400, 'Only live workshops can be ended');
+    if (!isPublicWorkshop && !session.menteeJoinedAt) {
       throw createHttpError(400, 'Reflection unlock requires the mentee to join the session first');
     }
 
@@ -160,9 +190,9 @@ export const sessionExecutionService = {
     const updatedSession = await sessionRepository.updateSession(sessionId, {
       endedAt,
       actualDurationMinutes,
-      status: SessionStatus.COMPLETED,
+      status: isPublicWorkshop ? SessionStatus.ENDED : SessionStatus.COMPLETED,
       attendanceStatus: AttendanceStatus.COMPLETED,
-      sessionExecutionState: SessionExecutionState.REFLECTION_UNLOCKED,
+      sessionExecutionState: isPublicWorkshop ? SessionExecutionState.ENDED : SessionExecutionState.REFLECTION_UNLOCKED,
     });
     if (!updatedSession) throw createHttpError(500, 'Failed to end session');
 
@@ -170,9 +200,11 @@ export const sessionExecutionService = {
       .updateFameScore(guideId)
       .catch((e) => logger.error('Failed to update fame score after session end:', e));
 
-    sessionReflectionService
-      .requestReflectionForCompletedSession(updatedSession._id.toString())
-      .catch((e) => logger.error('Failed to unlock post-session reflection:', e));
+    if (!isPublicWorkshop) {
+      sessionReflectionService
+        .requestReflectionForCompletedSession(updatedSession._id.toString())
+        .catch((e) => logger.error('Failed to unlock post-session reflection:', e));
+    }
 
     eventEmitter.emit('SESSION_ENDED', {
       sessionId,

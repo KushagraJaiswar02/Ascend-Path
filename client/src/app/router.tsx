@@ -17,6 +17,7 @@ const Dashboard    = lazy(() => import('../pages/Dashboard').then(m => ({ defaul
 const Forum        = lazy(() => import('../pages/Forum').then(m => ({ default: m.Forum })));
 const PostDetail   = lazy(() => import('../pages/PostDetail').then(m => ({ default: m.PostDetail })));
 const Sessions     = lazy(() => import('../pages/Sessions').then(m => ({ default: m.Sessions })));
+const PublicSessionDiscovery = lazy(() => import('../pages/PublicSessionDiscovery').then(m => ({ default: m.PublicSessionDiscovery })));
 const SessionDetail = lazy(() => import('../pages/SessionDetail').then(m => ({ default: m.SessionDetail })));
 const Explore      = lazy(() => import('../pages/Explore').then(m => ({ default: m.Explore })));
 const Pings        = lazy(() => import('../pages/Pings').then(m => ({ default: m.Pings })));
@@ -82,6 +83,10 @@ export const router = createBrowserRouter([
           {
             path: '/sessions',
             element: <Lazy><Sessions /></Lazy>,
+          },
+          {
+            path: '/sessions/public',
+            element: <Lazy><PublicSessionDiscovery /></Lazy>,
           },
           {
             path: '/sessions/:id',

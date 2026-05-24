@@ -2,7 +2,7 @@ import { eventEmitter } from '../../utils/eventEmitter';
 import { logger } from '../../utils/logger';
 import mongoose from 'mongoose';
 import { sessionRepository } from './session.repository';
-import { SessionStatus } from './session.model';
+import { SessionStatus, SessionType } from './session.model';
 import { SessionReflectionEvent } from './sessionReflection.events';
 import { sessionReflectionRepository } from './sessionReflection.repository';
 import { SessionReflectionStatus } from './sessionReflection.model';
@@ -16,6 +16,9 @@ export const sessionReflectionService = {
   async requestReflectionForCompletedSession(sessionId: string) {
     const session = await sessionRepository.getSessionById(sessionId);
     if (!session) throw new Error('Session not found');
+    if (session.sessionType !== SessionType.PRIVATE_MENTORSHIP) {
+      throw new Error('Reflections are only available for private mentorship sessions');
+    }
     if (session.status !== SessionStatus.COMPLETED || !hasVerifiedAttendance(session)) {
       throw new Error('Reflection can only be requested for verified completed sessions');
     }
@@ -46,6 +49,9 @@ export const sessionReflectionService = {
   async submitMenteeReflection(userId: string, sessionId: string, data: SubmitSessionReflectionInput) {
     const session = await sessionRepository.getSessionById(sessionId);
     if (!session) throw new Error('Session not found');
+    if (session.sessionType !== SessionType.PRIVATE_MENTORSHIP) {
+      throw new Error('Reflections are only available for private mentorship sessions');
+    }
     if (session.status !== SessionStatus.COMPLETED || !hasVerifiedAttendance(session)) {
       throw new Error('Reflections are available after verified session completion');
     }
@@ -85,6 +91,9 @@ export const sessionReflectionService = {
   async submitMentorFollowup(userId: string, sessionId: string, data: SubmitMentorFollowupInput) {
     const session = await sessionRepository.getSessionById(sessionId);
     if (!session) throw new Error('Session not found');
+    if (session.sessionType !== SessionType.PRIVATE_MENTORSHIP) {
+      throw new Error('Follow-up recommendations are only available for private mentorship sessions');
+    }
     if (session.status !== SessionStatus.COMPLETED || !hasVerifiedAttendance(session)) {
       throw new Error('Follow-up recommendations are available after verified completion');
     }

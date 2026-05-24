@@ -21,8 +21,15 @@ const statusVariantMap: Record<
 > = {
   open: { label: 'Open Available', variant: 'success' },
   booked: { label: 'Booked Scheduled', variant: 'secondary' },
+  started: { label: 'Started', variant: 'secondary' },
+  active: { label: 'Active', variant: 'success' },
   completed: { label: 'Completed Done', variant: 'outline' },
   cancelled: { label: 'Cancelled Null', variant: 'destructive' },
+  scheduled: { label: 'Scheduled', variant: 'secondary' },
+  registration_open: { label: 'Registration Open', variant: 'success' },
+  live: { label: 'Live Now', variant: 'success' },
+  ended: { label: 'Ended', variant: 'outline' },
+  archived: { label: 'Archived', variant: 'outline' },
 };
 
 export const SessionCard: React.FC<SessionCardProps> = memo(({
@@ -99,7 +106,7 @@ export const SessionCard: React.FC<SessionCardProps> = memo(({
           </span>
           <span className="flex items-center gap-1.5">
             <Timer className="h-3.5 w-3.5 shrink-0 text-muted-foreground/80" />
-            {session.duration} mins
+            {session.durationMinutes || session.duration} mins
           </span>
         </div>
 
@@ -133,4 +140,3 @@ export const SessionCard: React.FC<SessionCardProps> = memo(({
 });
 
 SessionCard.displayName = 'SessionCard';
-

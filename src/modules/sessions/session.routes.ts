@@ -31,6 +31,7 @@ router.post('/', checkSuspended, validate(createSessionSchema), sessionControlle
 router.get('/', sessionController.getOpenSessions);
 router.get('/me', sessionController.getMySessions);
 router.get('/me/reflections', sessionReflectionController.getMyReflections);
+router.get('/public', sessionController.getPublicWorkshops);
 router.post('/:id/reflection', validate(submitSessionReflectionSchema), sessionReflectionController.submitReflection);
 router.patch('/:id/followup', validate(submitMentorFollowupSchema), sessionReflectionController.submitFollowup);
 router.get('/:id/reflection', sessionReflectionController.getSessionReflection);
@@ -40,6 +41,7 @@ router.delete('/:id', sessionController.deleteSession);
 
 // State transitions & Actions
 router.post('/:id/book', checkSuspended, sessionController.bookSession);
+router.post('/:id/register', checkSuspended, sessionController.registerForPublicSession);
 router.post('/:id/cancel', sessionController.cancelSession);
 router.post('/:id/start', sessionController.startSession);
 router.post('/:id/join', sessionController.joinSession);

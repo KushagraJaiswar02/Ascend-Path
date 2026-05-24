@@ -14,7 +14,7 @@ import { CalendarCheck, Loader2 } from 'lucide-react';
 
 interface BookSessionButtonProps {
   sessionId: string;
-  status: 'open' | 'booked' | 'completed' | 'cancelled';
+  status: 'open' | 'booked' | 'started' | 'active' | 'completed' | 'cancelled' | 'scheduled' | 'registration_open' | 'live' | 'ended' | 'archived';
   price: number;
   topic?: string;
   isOwnSession?: boolean;
