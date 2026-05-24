@@ -3,6 +3,7 @@ import { notificationService } from './notification.service';
 import { socketService } from '../realtime/socket';
 import { NotificationType } from './notification.model';
 import { logger } from '../../utils/logger';
+import { User } from '../users/user.model';
 
 // Helper to trigger socket notifications and data refreshes in parallel
 const notifyUser = async (recipientId: string, eventPayload: any, domains: string[] = []) => {
@@ -587,6 +588,122 @@ eventEmitter.on('WARNING_ISSUED', async (payload: {
     await notifyUser(payload.userId, notification, ['dashboard']);
   } catch (err) {
     logger.error('Error handling WARNING_ISSUED event:', err);
+  }
+});
+
+// 13. REPORT_SUBMITTED
+eventEmitter.on('REPORT_SUBMITTED', async (payload: { report: any }) => {
+  try {
+    const { report } = payload;
+    
+    // Find all moderators, sentinels, admins, and super_admins
+    const moderators = await User.find({
+      $or: [
+        { role: { $in: ['moderator', 'sentinel', 'admin', 'super_admin'] } },
+        { roles: { $in: ['moderator', 'sentinel', 'admin', 'super_admin'] } }
+      ]
+    } as any);
+
+    logger.info(`Fanning out new report submission ${report._id} to ${moderators.length} safety personnel`);
+
+    for (const mod of moderators) {
+      const notification = await notificationService.createNotification({
+        recipientId: mod._id.toString(),
+        actorId: report.reporterId,
+        type: NotificationType.REPORT_SUBMITTED,
+        entityId: report._id,
+        entityType: 'Report',
+        title: '🚨 New Safety Report Submitted',
+        message: `New ${report.reasonCategory || 'safety'} report submitted for ${report.targetType}. Quick review required.`,
+        metadata: { reportId: report._id, targetType: report.targetType, targetId: report.targetId },
+      });
+
+      await notifyUser(mod._id.toString(), notification, ['dashboard', 'moderation']);
+      
+      // Emit a specific light-weight real-time event to refresh report queues live
+      socketService.toUser(mod._id.toString(), 'report_created', { reportId: report._id });
+    }
+  } catch (err) {
+    logger.error('Error handling REPORT_SUBMITTED event:', err);
+  }
+});
+
+// 14. REPORT_REVIEWED
+eventEmitter.on('REPORT_REVIEWED', async (payload: {
+  reportId: string;
+  reporterId: string;
+  moderatorId: string;
+  status: string;
+  moderatorDecision: string;
+  targetType: string;
+  targetId: string;
+}) => {
+  try {
+    const notification = await notificationService.createNotification({
+      recipientId: payload.reporterId,
+      actorId: payload.moderatorId,
+      type: NotificationType.REPORT_REVIEWED,
+      entityId: payload.reportId as any,
+      entityType: 'Report',
+      title: 'Report Resolved ✅',
+      message: `Your safety report regarding ${payload.targetType} has been reviewed and resolved as: ${payload.moderatorDecision.replace('_', ' ')}.`,
+      metadata: { reportId: payload.reportId },
+    });
+
+    await notifyUser(payload.reporterId, notification, ['dashboard', 'moderation']);
+  } catch (err) {
+    logger.error('Error handling REPORT_REVIEWED event:', err);
+  }
+});
+
+// 15. USER_SUSPENDED
+eventEmitter.on('USER_SUSPENDED', async (payload: {
+  userId: string;
+  reason: string;
+  suspendedUntil: Date;
+}) => {
+  try {
+    const notification = await notificationService.createNotification({
+      recipientId: payload.userId,
+      type: NotificationType.USER_SUSPENDED,
+      title: '⚠️ Account Suspended',
+      message: `Your account is temporarily suspended until ${new Date(payload.suspendedUntil).toLocaleString()} due to: ${payload.reason}.`,
+      metadata: { suspendedUntil: payload.suspendedUntil },
+    });
+
+    await notifyUser(payload.userId, notification, ['dashboard']);
+    
+    // Broadcast user suspension event to live client to force state update or logout if open
+    socketService.toUser(payload.userId, 'account_status_changed', {
+      isSuspended: true,
+      suspendedUntil: payload.suspendedUntil,
+      reason: payload.reason,
+    });
+  } catch (err) {
+    logger.error('Error handling USER_SUSPENDED event:', err);
+  }
+});
+
+// 16. FALSE_REPORT_PENALTY_APPLIED
+eventEmitter.on('FALSE_REPORT_PENALTY_APPLIED', async (payload: {
+  userId: string;
+  reportId: string;
+  suspendedUntil: Date;
+}) => {
+  try {
+    const notification = await notificationService.createNotification({
+      recipientId: payload.userId,
+      type: NotificationType.FALSE_REPORT_PENALTY_APPLIED,
+      entityId: payload.reportId as any,
+      entityType: 'Report',
+      title: 'Strike Applied: False Reporting ⛔',
+      message: 'A false report penalty has been applied to your account. You have received a trust strike and a 2-day suspension.',
+      metadata: { reportId: payload.reportId },
+    });
+
+    await notifyUser(payload.userId, notification, ['dashboard']);
+  } catch (err) {
+    logger.error('Error handling FALSE_REPORT_PENALTY_APPLIED event:', err);
   }
 });
 

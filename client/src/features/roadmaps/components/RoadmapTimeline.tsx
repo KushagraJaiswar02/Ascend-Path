@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, Lock, Sparkles, Circle } from 'lucide-react';
+import { CheckCircle2, Lock, Circle } from 'lucide-react';
 import { RoadmapStepCard } from './RoadmapStepCard';
 
 interface RoadmapTimelineProps {
@@ -99,7 +99,7 @@ export const RoadmapTimeline: React.FC<RoadmapTimelineProps> = ({
 
             {/* ================= STEPS TIMELINE SUB-NODES ================= */}
             <div className="pl-8 sm:pl-10 space-y-5 relative">
-              {sectionSteps.map((step: any, stepIdx: number) => {
+              {sectionSteps.map((step: any) => {
                 const stepIdStr = step._id.toString();
                 const isStepCompleted = completedSet.has(stepIdStr);
                 const isActive = stepIdStr === activeStepId;

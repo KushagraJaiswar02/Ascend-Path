@@ -178,10 +178,10 @@ export const NotificationItem: React.FC<NotificationItemProps> = memo(
         const entityType = notification.entityType;
         const entityId = notification.entityId;
         if (entityType === 'Ping') navigate(`/pings`);
-        else if (entityType === 'Session') navigate(`/sessions`);
+        else if (entityType === 'Session') navigate(`/sessions/${entityId}`);
         else if (entityType === 'Review') navigate(`/`);
         else if (entityType === 'Roadmap') navigate(`/roadmaps/${entityId}`);
-        else if (entityType === 'Post') navigate(`/forum/post/${entityId}`);
+        else if (entityType === 'Post') navigate(`/forum/${entityId}`);
       }
     };
 

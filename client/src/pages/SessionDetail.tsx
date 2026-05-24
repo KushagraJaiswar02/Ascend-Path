@@ -38,6 +38,7 @@ import {
 import { useToast } from '@/components/ui/toast';
 import type { Session } from '../features/sessions/types';
 import { cn } from '@/lib/utils';
+import { ReportModal } from '@/features/moderation/components/ReportModal';
 
 // ── Status badge map ─────────────────────────────────────────────────────────
 const statusVariantMap: Record<
@@ -136,6 +137,7 @@ export const SessionDetail: React.FC = () => {
   const [reflectionOpen, setReflectionOpen] = useState(false);
   const [rating, setRating] = useState(5);
   const [review, setReview] = useState('');
+  const [reportOpen, setReportOpen] = useState(false);
 
   // — Loading & error guards ——————————————————————————————————————————
   if (isLoading) return <DetailSkeleton />;
@@ -229,14 +231,26 @@ export const SessionDetail: React.FC = () => {
   // ── Render ────────────────────────────────────────────────────────
   return (
     <PageContainer size="tight">
-      {/* Back navigation */}
-      <Link
-        to="/sessions"
-        className="inline-flex items-center gap-1.5 text-body-sm text-muted-foreground hover:text-foreground transition-colors mb-lg group"
-      >
-        <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform duration-150" />
-        Back to Sessions
-      </Link>
+      {/* Back navigation & Report */}
+      <div className="flex items-center justify-between gap-sm mb-lg">
+        <Link
+          to="/sessions"
+          className="inline-flex items-center gap-1.5 text-body-sm text-muted-foreground hover:text-foreground transition-colors group"
+        >
+          <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform duration-150" />
+          Back to Sessions
+        </Link>
+        
+        {user && user._id !== session.guideId?._id && (
+          <Button
+            onClick={() => setReportOpen(true)}
+            variant="ghost"
+            className="text-xs font-semibold text-muted-foreground hover:text-red-400 h-8 px-2"
+          >
+            Report Session
+          </Button>
+        )}
+      </div>
 
       <div className="space-y-lg">
         {/* ── Overview card ─────────────────────────────────────────── */}
@@ -451,6 +465,12 @@ export const SessionDetail: React.FC = () => {
           {canFollowup && (
             <>
               <ReflectionSummaryCard reflection={reflection} />
+              {reflection?.mentorFollowup?.submittedAt && (
+                <div className="space-y-xs pt-xs border-t border-border/40 select-none">
+                  <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">Active Follow-up Recommendation Details</p>
+                  <MentorRecommendationCard reflection={reflection} />
+                </div>
+              )}
               <MentorFollowupPanel sessionId={session._id} reflection={reflection} />
             </>
           )}
@@ -503,6 +523,13 @@ export const SessionDetail: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <ReportModal
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        targetType="session"
+        targetId={session._id}
+        targetName={session.topic}
+      />
     </PageContainer>
   );
 };

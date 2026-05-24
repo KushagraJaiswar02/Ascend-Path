@@ -36,11 +36,6 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         throw new Error('Your account has been permanently banned');
       }
 
-      if (user.suspendedUntil && user.suspendedUntil > new Date()) {
-        res.status(403);
-        throw new Error('Your account is temporarily suspended');
-      }
-
       // Exclude passwordHash from user object
       const userObj = user.toObject();
       delete userObj.passwordHash;
@@ -56,6 +51,31 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
   } catch (error) {
     next(error);
   }
+};
+
+export const optionalAuthMiddleware = async (req: Request, _res: Response, next: NextFunction) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      next();
+      return;
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
+    const user = await userRepository.findUserById(decoded.userId);
+
+    if (user && !user.isBanned) {
+      const userObj = user.toObject();
+      delete userObj.passwordHash;
+      (req as any).user = userObj;
+    }
+  } catch {
+    // Public reads should remain public; protected handlers still use authMiddleware.
+  }
+
+  next();
 };
 
 export const authorize = (...roles: string[]) => {

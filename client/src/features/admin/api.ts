@@ -41,6 +41,11 @@ export const adminApi = {
     return data.data;
   },
 
+  async softDeleteContent(payload: { targetType: string; targetId: string; reason: string }) {
+    const { data } = await apiClient.post('/moderation/content/delete', payload);
+    return data.data;
+  },
+
   async suspendUser(userId: string, payload: { days: number; reason: string }) {
     const { data } = await apiClient.post(`/moderation/users/${userId}/suspend`, payload);
     return data.data;

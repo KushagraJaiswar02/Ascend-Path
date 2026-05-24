@@ -17,18 +17,52 @@ export const MainLayout: React.FC = () => {
     navigate('/auth/login');
   };
 
-  const navLinks = [
-    { name: 'Dashboard', to: '/dashboard', privateOnly: true },
-    { name: 'Forum', to: '/forum', privateOnly: false },
-    { name: 'Sessions', to: '/sessions', privateOnly: true },
-    { name: 'Explore', to: '/explore', privateOnly: true },
-    { name: 'Pings', to: '/pings', privateOnly: true },
-  ];
+  const getNavLinksForRole = (role?: string) => {
+    if (!isAuthenticated || !role) {
+      return [
+        { name: 'Discussion Forum', to: '/forum', privateOnly: false },
+      ];
+    }
 
-  // Filter links based on whether user is logged in
-  const visibleLinks = navLinks.filter(
-    (link) => !link.privateOnly || isAuthenticated
-  );
+    if (['moderator', 'sentinel'].includes(role)) {
+      return [
+        { name: 'Dashboard', to: '/dashboard', privateOnly: true },
+        { name: 'Moderation Queue', to: '/admin/moderation', privateOnly: true },
+        { name: 'Audit Logs', to: '/admin/audit', privateOnly: true },
+        { name: 'Users Center', to: '/admin/users', privateOnly: true },
+        { name: 'Discussion Forum', to: '/forum', privateOnly: false },
+      ];
+    }
+
+    if (['admin', 'architect', 'super_admin'].includes(role)) {
+      return [
+        { name: 'Dashboard', to: '/dashboard', privateOnly: true },
+        { name: 'Platform Control', to: '/admin', privateOnly: true },
+        { name: 'System Health', to: '/admin/health', privateOnly: true },
+        { name: 'Users Center', to: '/admin/users', privateOnly: true },
+        { name: 'Discussion Forum', to: '/forum', privateOnly: false },
+      ];
+    }
+
+    if (role === 'guide') {
+      return [
+        { name: 'Dashboard', to: '/dashboard', privateOnly: true },
+        { name: 'Mentorship Hub', to: '/sessions', privateOnly: true },
+        { name: 'Explore Paths', to: '/explore', privateOnly: true },
+        { name: 'Discussion Forum', to: '/forum', privateOnly: false },
+      ];
+    }
+
+    // Default Learner
+    return [
+      { name: 'Dashboard', to: '/dashboard', privateOnly: true },
+      { name: 'Sessions Hub', to: '/sessions', privateOnly: true },
+      { name: 'Explore Paths', to: '/explore', privateOnly: true },
+      { name: 'Discussion Forum', to: '/forum', privateOnly: false },
+    ];
+  };
+
+  const visibleLinks = getNavLinksForRole(user?.role);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans transition-colors duration-200">

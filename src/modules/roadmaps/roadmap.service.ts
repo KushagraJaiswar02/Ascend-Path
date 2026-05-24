@@ -95,7 +95,7 @@ export const roadmapService = {
   },
 
   async getRoadmaps(page: number, limit: number, domain?: string, difficulty?: string, search?: string, sortBy = 'fameScore') {
-    const filters: any = { visibility: 'public', isPublished: true };
+    const filters: any = { visibility: 'public', isPublished: true, moderationStatus: { $nin: ['deleted', 'hidden'] } };
 
     if (domain) {
       filters.domains = { $regex: new RegExp(domain.trim(), 'i') };

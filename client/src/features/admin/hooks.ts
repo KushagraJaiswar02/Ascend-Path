@@ -33,7 +33,19 @@ export const useModerationActions = () => {
 
   return {
     actionReport: useMutation({
-      mutationFn: ({ reportId, payload }: { reportId: string; payload: { status: string; resolution?: string } }) =>
+      mutationFn: ({
+        reportId,
+        payload,
+      }: {
+        reportId: string;
+        payload: {
+          status: string;
+          resolution?: string;
+          moderatorDecision?: string;
+          falseReportStrike?: boolean;
+          moderatorNotes?: string;
+        };
+      }) =>
         adminApi.actionReport(reportId, payload),
       onSuccess: invalidate,
     }),
@@ -43,6 +55,10 @@ export const useModerationActions = () => {
     }),
     hideContent: useMutation({
       mutationFn: adminApi.hideContent,
+      onSuccess: invalidate,
+    }),
+    softDeleteContent: useMutation({
+      mutationFn: adminApi.softDeleteContent,
       onSuccess: invalidate,
     }),
     suspendUser: useMutation({

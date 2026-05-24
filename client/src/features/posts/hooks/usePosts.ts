@@ -32,16 +32,18 @@ interface PostsResponse {
 }
 
 export type ResolutionFilter = 'all' | 'resolved' | 'unresolved';
+export type PostScopeFilter = 'all' | 'mine';
 
-export const usePosts = (page = 1, limit = 10, category?: string, resolution: ResolutionFilter = 'all') => {
+export const usePosts = (page = 1, limit = 10, category?: string, resolution: ResolutionFilter = 'all', scope: PostScopeFilter = 'all') => {
   return useQuery({
-    queryKey: ['posts', { page, limit, category, resolution }],
+    queryKey: ['posts', { page, limit, category, resolution, scope }],
     queryFn: async (): Promise<PostsResponse['data']> => {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: limit.toString(),
         ...(category && { category }),
         ...(resolution !== 'all' && { resolution }),
+        ...(scope !== 'all' && { scope }),
       });
       const { data } = await apiClient.get(`/posts?${params.toString()}`);
       return data.data;

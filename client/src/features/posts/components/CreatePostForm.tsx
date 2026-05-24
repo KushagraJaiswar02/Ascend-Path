@@ -5,8 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Briefcase, GraduationCap, Compass } from 'lucide-react';
+import { useToast } from '@/components/ui/toast';
 
 export const CreatePostForm: React.FC = () => {
+  const { toast } = useToast();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('general');
@@ -26,6 +28,11 @@ export const CreatePostForm: React.FC = () => {
       { title, content, category },
       {
         onSuccess: () => {
+          toast({
+            title: 'Posted',
+            description: 'Your forum post is live.',
+            type: 'success',
+          });
           setTitle('');
           setContent('');
           setCategory('general');

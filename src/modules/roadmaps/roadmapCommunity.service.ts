@@ -8,7 +8,26 @@ const DEFAULT_PREVIOUS_WINDOW_DAYS = Number(process.env.ROADMAP_PREVIOUS_WINDOW_
 
 const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-const toObjectId = (id: string) => new mongoose.Types.ObjectId(id);
+const hiddenModerationStatuses: Array<'deleted' | 'hidden'> = ['deleted', 'hidden'];
+
+const publicRoadmapQuery = {
+  visibility: 'public' as const,
+  isPublished: true,
+  moderationStatus: { $nin: hiddenModerationStatuses },
+};
+
+const getPublicRoadmapOrThrow = async (roadmapId: string) => {
+  if (!mongoose.Types.ObjectId.isValid(roadmapId)) {
+    throw { statusCode: 404, message: 'Roadmap not found' };
+  }
+
+  const roadmap = await CareerRoadmap.findOne({ _id: roadmapId, ...publicRoadmapQuery }).select('_id');
+  if (!roadmap) {
+    throw { statusCode: 404, message: 'Roadmap not found' };
+  }
+
+  return roadmap._id;
+};
 
 const publicLearnerLookupStages = [
   {
@@ -60,7 +79,7 @@ export const roadmapCommunityService = {
     const previousStart = daysAgo(DEFAULT_TRENDING_WINDOW_DAYS + DEFAULT_PREVIOUS_WINDOW_DAYS);
     const avatarLimit = Math.min(options?.avatarLimit || 8, 24);
 
-    const roadmapObjectId = toObjectId(roadmapId);
+    const roadmapObjectId = await getPublicRoadmapOrThrow(roadmapId);
 
     const [
       enrollmentCount,
@@ -125,7 +144,7 @@ export const roadmapCommunityService = {
     const activeSince = daysAgo(DEFAULT_ACTIVE_WINDOW_DAYS);
     const safeLimit = Math.min(Math.max(limit, 1), 50);
     const skip = (Math.max(page, 1) - 1) * safeLimit;
-    const roadmapObjectId = toObjectId(roadmapId);
+    const roadmapObjectId = await getPublicRoadmapOrThrow(roadmapId);
 
     const [learners, total] = await Promise.all([
       UserProgress.aggregate([
@@ -218,7 +237,7 @@ export const roadmapCommunityService = {
           foreignField: '_id',
           as: 'roadmap',
           pipeline: [
-            { $match: { visibility: 'public', isPublished: true, moderationStatus: 'visible' } },
+            { $match: publicRoadmapQuery },
             { $project: { title: 1, slug: 1, domains: 1, difficulty: 1, enrollmentCount: 1, thumbnail: 1 } },
           ],
         },
@@ -247,7 +266,9 @@ export const roadmapCommunityService = {
 
     const communities = await Promise.all(
       progress.map(async (item) => {
-        const roadmap = await CareerRoadmap.findById(item.roadmapId).select('title slug');
+        const roadmap = await CareerRoadmap.findOne({ _id: item.roadmapId, ...publicRoadmapQuery }).select('title slug');
+        if (!roadmap) return null;
+
         const community = await this.getRoadmapCommunity(item.roadmapId.toString(), { avatarLimit: 5 });
         return {
           roadmap,
@@ -258,6 +279,6 @@ export const roadmapCommunityService = {
       })
     );
 
-    return communities.filter((item) => item.roadmap);
+    return communities.filter((item) => item?.roadmap);
   },
 };

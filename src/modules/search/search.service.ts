@@ -71,7 +71,7 @@ export const searchService = {
 
   async searchRoadmaps(q: string, filters: any, sort: string, page: number, limit: number) {
     const skip = (page - 1) * limit;
-    const query: any = { isPublic: true };
+    const query: any = { isPublic: true, moderationStatus: { $nin: ['deleted', 'hidden'] } };
 
     // Text search
     if (q) {
@@ -107,7 +107,7 @@ export const searchService = {
 
   async searchPosts(q: string, filters: any, sort: string, page: number, limit: number) {
     const skip = (page - 1) * limit;
-    const query: any = {};
+    const query: any = { moderationStatus: { $nin: ['deleted', 'hidden'] } };
 
     // Text search
     if (q) {
