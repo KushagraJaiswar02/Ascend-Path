@@ -113,6 +113,5 @@ const sessionReflectionSchema = new Schema<ISessionReflection>(
 
 sessionReflectionSchema.index({ menteeId: 1, status: 1, updatedAt: -1 });
 sessionReflectionSchema.index({ mentorId: 1, status: 1, updatedAt: -1 });
-sessionReflectionSchema.index({ sessionId: 1 }, { unique: true });
 
 export const SessionReflection = mongoose.model<ISessionReflection>('SessionReflection', sessionReflectionSchema);

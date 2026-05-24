@@ -85,7 +85,6 @@ const userSchema = new mongoose_1.Schema({
         type: String,
         enum: ['none', 'pending', 'under_review', 'approved', 'rejected', 'changes_requested'],
         default: 'none',
-        index: true,
     },
     respectPoints: { type: Number, default: 0 },
     fameScore: { type: Number, default: 0 },

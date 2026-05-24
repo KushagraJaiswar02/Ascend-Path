@@ -4,27 +4,36 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = __importDefault(require("./app"));
-const dotenv_1 = __importDefault(require("dotenv"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const http_1 = __importDefault(require("http"));
 const socket_1 = require("./modules/realtime/socket");
-dotenv_1.default.config();
-const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI ||
-    'mongodb+srv://jaiswarkushagra047_db_user:0Xo2z9ofLXsJnKBc@cluster0.oatpqv4.mongodb.net/ascendpath?retryWrites=true&w=majority&appName=Cluster0';
+const env_1 = require("./config/env");
+// ── Global Error Guards ───────────────────────────────────────────────────────
+// Must be registered BEFORE anything async runs so no rejection slips through.
+process.on('uncaughtException', (err) => {
+    console.error('💥 uncaughtException — shutting down:', err.message, err.stack);
+    // Give logger a tick to flush, then force exit
+    setTimeout(() => process.exit(1), 500);
+});
+process.on('unhandledRejection', (reason) => {
+    console.error('💥 unhandledRejection — reason:', reason);
+    // Throw so uncaughtException above picks it up and exits cleanly
+    throw reason;
+});
+// ── Server Bootstrap ──────────────────────────────────────────────────────────
 const startServer = async () => {
     try {
-        await mongoose_1.default.connect(MONGODB_URI, {
-            serverSelectionTimeoutMS: 10000,
-            socketTimeoutMS: 45000,
+        await mongoose_1.default.connect(env_1.env.MONGODB_URI, {
+            serverSelectionTimeoutMS: 10_000,
+            socketTimeoutMS: 45_000,
         });
         console.log('✅ Connected to MongoDB Atlas');
         const server = http_1.default.createServer(app_1.default);
         socket_1.socketService.init(server);
-        server.listen(PORT, () => {
-            console.log(`🚀 AscendPath server running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
+        server.listen(env_1.env.PORT, () => {
+            console.log(`🚀 AscendPath server running on port ${env_1.env.PORT} [${env_1.env.NODE_ENV}]`);
         });
-        // ── Graceful Shutdown ──────────────────────────────────────────────────
+        // ── Graceful Shutdown ────────────────────────────────────────────────────
         const shutdown = async (signal) => {
             console.log(`\n⚠️  ${signal} received — shutting down gracefully…`);
             server.close(async () => {
@@ -32,7 +41,7 @@ const startServer = async () => {
                 console.log('✅ MongoDB connection closed.');
                 process.exit(0);
             });
-            // Force kill after 10s if stuck
+            // Force-kill after 10 s if something hangs
             setTimeout(() => process.exit(1), 10_000);
         };
         process.on('SIGTERM', () => shutdown('SIGTERM'));
