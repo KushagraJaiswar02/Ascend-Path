@@ -28,6 +28,7 @@ interface PostsResponse {
     total: number;
     page: number;
     limit: number;
+    totalPages: number;
   };
 }
 

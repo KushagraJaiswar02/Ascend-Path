@@ -12,7 +12,9 @@
     "start": "node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "seed:dummy": "node scripts/seedDummyData.js",
-    "seed:bulk": "node scripts/seedBulkDemoData.js"
+    "seed:bulk": "node scripts/seedBulkDemoData.js",
+    "seed:coverage": "node scripts/seedCoverageDemoData.js",
+    "seed:forum": "node scripts/seedForumPosts.js"
   },
   "keywords": [],
   "author": "",
