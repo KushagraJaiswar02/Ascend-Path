@@ -110,6 +110,9 @@ export interface IRoadmapStep extends Document {
   order: number;
   isOptional: boolean;
   linkedSessionId?: mongoose.Types.ObjectId;
+  richNotes?: string;
+  videoUrl?: string;
+  mentorTip?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -138,6 +141,9 @@ const roadmapStepSchema = new Schema<IRoadmapStep>(
     order: { type: Number, required: true, default: 0 },
     isOptional: { type: Boolean, default: false },
     linkedSessionId: { type: Schema.Types.ObjectId, ref: 'Session' },
+    richNotes: { type: String },
+    videoUrl: { type: String },
+    mentorTip: { type: String },
   },
   { timestamps: true }
 );
