@@ -7,16 +7,30 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { EmptyState } from '@/components/layout/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MessageSquare, Lock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Lock, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
 export const Forum: React.FC = () => {
+  const [page, setPage] = useState(1);
   const [resolution, setResolution] = useState<ResolutionFilter>('all');
   const [scope, setScope] = useState<PostScopeFilter>('all');
   const { isAuthenticated } = useAuthStore();
   const effectiveScope = isAuthenticated ? scope : 'all';
-  const { data, isLoading, isError } = usePosts(1, 10, undefined, resolution, effectiveScope);
+  const pageSize = 10;
+  const { data, isLoading, isError } = usePosts(page, pageSize, undefined, resolution, effectiveScope);
+  const totalPosts = data?.total || 0;
+  const totalPages = data?.totalPages || 0;
+
+  const handleResolutionChange = (value: ResolutionFilter) => {
+    setResolution(value);
+    setPage(1);
+  };
+
+  const handleScopeChange = (value: PostScopeFilter) => {
+    setScope(value);
+    setPage(1);
+  };
 
   return (
     <PageContainer size="tight" className="py-lg">
@@ -65,7 +79,7 @@ export const Forum: React.FC = () => {
                     type="button"
                     variant={scope === value ? 'secondary' : 'ghost'}
                     size="sm"
-                    onClick={() => setScope(value)}
+                    onClick={() => handleScopeChange(value)}
                     className="h-6 px-2 text-[10px]"
                   >
                     {value === 'all' ? 'All posts' : 'My posts'}
@@ -80,7 +94,7 @@ export const Forum: React.FC = () => {
                   type="button"
                   variant={resolution === value ? 'secondary' : 'ghost'}
                   size="sm"
-                  onClick={() => setResolution(value)}
+                  onClick={() => handleResolutionChange(value)}
                   className="h-7 px-2 text-[10px] capitalize"
                 >
                   {value === 'all' ? 'All' : value === 'resolved' ? 'Solved' : 'Open'}
@@ -88,7 +102,7 @@ export const Forum: React.FC = () => {
               ))}
             </div>
             <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground bg-muted px-2 py-0.5 rounded">
-              {data?.posts?.length || 0} posts
+              {totalPosts} posts
             </span>
           </div>
         </div>
@@ -142,10 +156,44 @@ export const Forum: React.FC = () => {
         )}
 
         {!isLoading && !isError && data?.posts && data.posts.length > 0 && (
-          <div className="space-y-sm">
-            {data.posts.map((post) => (
-              <PostCard key={post._id} post={post} />
-            ))}
+          <div className="space-y-md">
+            <div className="space-y-sm">
+              {data.posts.map((post) => (
+                <PostCard key={post._id} post={post} />
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-sm border-t border-border/60 pt-md">
+                <p className="text-body-xs text-muted-foreground font-medium">
+                  Page {data.page} of {totalPages}
+                </p>
+                <div className="flex items-center gap-xs">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((current) => Math.max(1, current - 1))}
+                    disabled={page <= 1 || isLoading}
+                    className="gap-xs"
+                  >
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                    Previous
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                    disabled={page >= totalPages || isLoading}
+                    className="gap-xs"
+                  >
+                    Next
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
