@@ -9,6 +9,7 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { EmptyState } from '@/components/layout/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CalendarOff } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 type SessionTab = 'browse' | 'my-sessions';
@@ -30,6 +31,11 @@ export const Sessions: React.FC = () => {
       <PageHeader
         title="Mentorship Sessions"
         description="Browse open sessions led by experienced guides, or manage the slots you've created."
+        actions={
+          <Link to="/sessions/public" className="text-sm font-bold text-primary hover:underline">
+            Explore public workshops
+          </Link>
+        }
       />
 
       {/* Tab Navigation */}

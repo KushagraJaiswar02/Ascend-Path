@@ -1,4 +1,4 @@
-import { Session, ISession, SessionStatus } from './session.model';
+import { Session, ISession, SessionStatus, SessionType } from './session.model';
 
 export const sessionRepository = {
   async createSession(data: Partial<ISession>): Promise<ISession> {
@@ -7,7 +7,8 @@ export const sessionRepository = {
   },
 
   async getSessionById(id: string): Promise<ISession | null> {
-    return await Session.findById(id).populate('guideId clientId', 'name role respectPoints');
+    return await Session.findById(id)
+      .populate('guideId clientId attendees.userId waitlist.userId', 'name role respectPoints avatar');
   },
 
   async updateSession(id: string, updateData: Partial<ISession>): Promise<ISession | null> {
@@ -22,13 +23,15 @@ export const sessionRepository = {
   async getOpenSessions(page: number, limit: number): Promise<any> {
     const skip = (page - 1) * limit;
     
-    const sessions = await Session.find({ status: SessionStatus.OPEN, scheduledAt: { $gt: new Date() } })
+    const query = { sessionType: SessionType.PRIVATE_MENTORSHIP, status: SessionStatus.OPEN, scheduledAt: { $gt: new Date() } };
+
+    const sessions = await Session.find(query)
       .populate('guideId', 'name role respectPoints bio')
       .skip(skip)
       .limit(limit)
       .sort({ scheduledAt: 1 });
       
-    const total = await Session.countDocuments({ status: SessionStatus.OPEN, scheduledAt: { $gt: new Date() } });
+    const total = await Session.countDocuments(query);
     
     return {
       sessions,
@@ -41,13 +44,15 @@ export const sessionRepository = {
   async getUserSessions(userId: string, page: number, limit: number): Promise<any> {
     const skip = (page - 1) * limit;
     
-    const sessions = await Session.find({ $or: [{ guideId: userId }, { clientId: userId }] })
-      .populate('guideId clientId', 'name role respectPoints')
+    const query = { $or: [{ guideId: userId }, { clientId: userId }, { 'attendees.userId': userId }] };
+
+    const sessions = await Session.find(query)
+      .populate('guideId clientId attendees.userId', 'name role respectPoints avatar')
       .skip(skip)
       .limit(limit)
       .sort({ scheduledAt: 1 });
       
-    const total = await Session.countDocuments({ $or: [{ guideId: userId }, { clientId: userId }] });
+    const total = await Session.countDocuments(query);
     
     return {
       sessions,
@@ -94,6 +99,40 @@ export const sessionRepository = {
       mentorResponsivenessRate: total ? Math.round(((totals?.mentorJoinCount || 0) / total) * 100) : 0,
       menteeAttendanceRate: total ? Math.round(((totals?.menteeJoinCount || 0) / total) * 100) : 0,
       reflectionUnlockRate: total ? Math.round(((totals?.reflectionsUnlocked || 0) / total) * 100) : 0,
+    };
+  },
+
+  async getPublicWorkshops(
+    filters: { domain?: string; difficulty?: string; guideId?: string },
+    page: number,
+    limit: number
+  ): Promise<any> {
+    const skip = (page - 1) * limit;
+    const query: any = {
+      sessionType: SessionType.PUBLIC_WORKSHOP,
+      isPublic: true,
+      status: { $in: [SessionStatus.SCHEDULED, SessionStatus.REGISTRATION_OPEN, SessionStatus.LIVE] },
+      scheduledAt: { $gt: new Date(Date.now() - 2 * 60 * 60 * 1000) },
+    };
+
+    if (filters.domain) query.domains = { $regex: new RegExp(filters.domain, 'i') };
+    if (filters.difficulty) query.difficulty = filters.difficulty;
+    if (filters.guideId) query.guideId = filters.guideId;
+
+    const [sessions, total] = await Promise.all([
+      Session.find(query)
+        .populate('guideId', 'name role respectPoints bio avatar')
+        .skip(skip)
+        .limit(limit)
+        .sort({ status: -1, attendeeCount: -1, scheduledAt: 1 }),
+      Session.countDocuments(query),
+    ]);
+
+    return {
+      sessions,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      totalSessions: total,
     };
   },
 };

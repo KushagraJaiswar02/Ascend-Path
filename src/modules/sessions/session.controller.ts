@@ -45,6 +45,21 @@ export const sessionController = {
     }
   },
 
+  async getPublicWorkshops(req: Request, res: Response, next: NextFunction) {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+      const domain = typeof req.query.domain === 'string' ? req.query.domain : undefined;
+      const difficulty = typeof req.query.difficulty === 'string' ? req.query.difficulty : undefined;
+      const guideId = typeof req.query.guideId === 'string' ? req.query.guideId : undefined;
+
+      const result = await sessionService.getPublicWorkshops({ domain, difficulty, guideId }, page, limit);
+      res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async getMySessions(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = (req as any).user._id;
@@ -71,6 +86,16 @@ export const sessionController = {
     try {
       const userId = (req as any).user._id;
       const session = await sessionService.bookSession(userId, req.params.id as string);
+      res.status(200).json({ success: true, data: { session } });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async registerForPublicSession(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).user._id;
+      const session = await sessionService.registerForPublicSession(userId, req.params.id as string);
       res.status(200).json({ success: true, data: { session } });
     } catch (error) {
       next(error);

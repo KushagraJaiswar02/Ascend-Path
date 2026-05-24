@@ -1,7 +1,8 @@
 import { sessionRepository } from './session.repository';
+import mongoose from 'mongoose';
 import { userRepository } from '../users/user.repository';
 import { canActAsGuide, hasCapability, UserCapability } from '../users/userCapabilities';
-import { AttendanceStatus, SessionStatus } from './session.model';
+import { AttendanceStatus, RegistrationMode, SessionStatus, SessionType } from './session.model';
 import { CreateSessionInput, UpdateSessionInput, RateSessionInput } from './session.validation';
 import { respectService } from '../respect/respect.service';
 import { RespectReason } from '../respect/respectVote.model';
@@ -22,12 +23,29 @@ export const sessionService = {
       throw new Error('Only approved mentors can create availability sessions');
     }
 
-    return await sessionRepository.createSession({
+    const sessionType = data.sessionType === SessionType.PUBLIC_WORKSHOP
+      ? SessionType.PUBLIC_WORKSHOP
+      : SessionType.PRIVATE_MENTORSHIP;
+    const isPublicWorkshop = sessionType === SessionType.PUBLIC_WORKSHOP;
+
+    const createData: any = {
       ...data,
       scheduledAt: new Date(data.scheduledAt),
+      roadmapId: data.roadmapId ? new mongoose.Types.ObjectId(data.roadmapId) as any : undefined,
       guideId: userId as any,
-      status: SessionStatus.OPEN,
-    });
+      sessionType,
+      isPublic: isPublicWorkshop,
+      attendeeCount: 0,
+      resources: data.resources || [],
+      status: isPublicWorkshop ? SessionStatus.REGISTRATION_OPEN : SessionStatus.OPEN,
+      registrationMode: data.registrationMode === RegistrationMode.APPROVAL
+        ? RegistrationMode.APPROVAL
+        : data.registrationMode === RegistrationMode.INVITE_ONLY
+          ? RegistrationMode.INVITE_ONLY
+          : RegistrationMode.OPEN,
+    };
+
+    return await sessionRepository.createSession(createData);
   },
 
   async updateSession(userId: string, sessionId: string, data: UpdateSessionInput) {
@@ -65,6 +83,10 @@ export const sessionService = {
     return await sessionRepository.getOpenSessions(page, limit);
   },
 
+  async getPublicWorkshops(filters: { domain?: string; difficulty?: string; guideId?: string }, page: number, limit: number) {
+    return await sessionRepository.getPublicWorkshops(filters, page, limit);
+  },
+
   async getUserSessions(userId: string, page: number, limit: number) {
     return await sessionRepository.getUserSessions(userId, page, limit);
   },
@@ -84,6 +106,10 @@ export const sessionService = {
 
     if (guideId === actorId) {
       throw createHttpError(400, 'Mentors cannot enroll in their own session');
+    }
+
+    if (session.sessionType !== SessionType.PRIVATE_MENTORSHIP) {
+      throw createHttpError(400, 'Use workshop registration for public sessions');
     }
 
     if (session.status !== SessionStatus.OPEN) {
@@ -109,6 +135,53 @@ export const sessionService = {
           clientName: client?.name || 'A learner',
         });
       }).catch((e) => logger.error('Failed to emit SESSION_BOOKED event:', e));
+    }
+
+    return updatedSession;
+  },
+
+  async registerForPublicSession(userId: string, sessionId: string) {
+    const session = await sessionRepository.getSessionById(sessionId);
+    if (!session) throw createHttpError(404, 'Workshop not found');
+
+    const actorId = getId(userId);
+    const guideId = getId(session.guideId);
+
+    if (session.sessionType !== SessionType.PUBLIC_WORKSHOP || !session.isPublic) {
+      throw createHttpError(400, 'This session is not open for public registration');
+    }
+    if (![SessionStatus.SCHEDULED, SessionStatus.REGISTRATION_OPEN].includes(session.status)) {
+      throw createHttpError(400, 'Registration is not open for this workshop');
+    }
+    if (guideId === actorId) {
+      throw createHttpError(400, 'Hosts are already attached to their workshop');
+    }
+    if (session.registrationMode !== RegistrationMode.OPEN) {
+      throw createHttpError(400, 'This workshop is not using open registration yet');
+    }
+    if (session.attendees?.some((attendee: any) => getId(attendee.userId) === actorId)) {
+      throw createHttpError(400, 'You are already registered for this workshop');
+    }
+    if (session.capacity && session.attendeeCount >= session.capacity) {
+      throw createHttpError(400, 'This workshop is at capacity');
+    }
+
+    const updatedSession = await sessionRepository.updateSession(sessionId, {
+      attendees: [
+        ...(session.attendees || []),
+        { userId: actorId as any, registeredAt: new Date() } as any,
+      ],
+      attendeeCount: (session.attendeeCount || 0) + 1,
+    });
+
+    if (updatedSession) {
+      eventEmitter.emit('PUBLIC_SESSION_REGISTERED', {
+        sessionId: updatedSession._id.toString(),
+        userId: actorId,
+        guideId,
+        attendeeCount: updatedSession.attendeeCount,
+        title: updatedSession.title || updatedSession.topic || 'Community workshop',
+      });
     }
 
     return updatedSession;

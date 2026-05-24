@@ -6,13 +6,21 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import { SessionTypeSelector, type SessionTypeChoice } from './SessionTypeSelector';
 
 export const CreateSessionForm: React.FC = () => {
+  const [sessionType, setSessionType] = useState<SessionTypeChoice>('private_mentorship');
   const [topic, setTopic] = useState('');
   const [description, setDescription] = useState('');
   const [scheduledAt, setScheduledAt] = useState('');
   const [duration, setDuration] = useState(30);
   const [price, setPrice] = useState(0);
+  const [capacity, setCapacity] = useState(50);
+  const [difficulty, setDifficulty] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner');
+  const [sessionCategory, setSessionCategory] = useState<'workshop' | 'ama' | 'roadmap_walkthrough' | 'study_event' | 'community_teaching'>('workshop');
+  const [domainsInput, setDomainsInput] = useState('');
+  const [tagsInput, setTagsInput] = useState('');
+  const [bannerImage, setBannerImage] = useState('');
   const [fieldError, setFieldError] = useState('');
 
   const createMutation = useCreateSession();
@@ -24,25 +32,43 @@ export const CreateSessionForm: React.FC = () => {
 
     createMutation.mutate(
       {
+        sessionType,
         title: topic,
         topic,
         description,
         scheduledAt: new Date(scheduledAt).toISOString(),
         durationMinutes: duration,
-        price,
+        price: sessionType === 'public_workshop' ? 0 : price,
+        ...(sessionType === 'public_workshop' && {
+          capacity,
+          difficulty,
+          sessionCategory,
+          domains: domainsInput.split(',').map((domain) => domain.trim()).filter(Boolean),
+          tags: tagsInput.split(',').map((tag) => tag.trim()).filter(Boolean),
+          bannerImage: bannerImage.trim() || undefined,
+          registrationMode: 'open' as const,
+        }),
       },
       {
         onSuccess: () => {
           toast({
             type: 'success',
-            title: 'Session slot created',
-            description: `"${topic}" is now open for bookings.`,
+            title: sessionType === 'public_workshop' ? 'Workshop published' : 'Session slot created',
+            description: sessionType === 'public_workshop'
+              ? `"${topic}" is open for community registration.`
+              : `"${topic}" is now open for bookings.`,
           });
           setTopic('');
           setDescription('');
           setScheduledAt('');
           setDuration(30);
           setPrice(0);
+          setCapacity(50);
+          setDifficulty('beginner');
+          setSessionCategory('workshop');
+          setDomainsInput('');
+          setTagsInput('');
+          setBannerImage('');
         },
         onError: (error: any) => {
           const msg =
@@ -65,9 +91,9 @@ export const CreateSessionForm: React.FC = () => {
   return (
     <Card>
       <CardHeader className="pb-0">
-        <CardTitle>Create a Session Slot</CardTitle>
+        <CardTitle>Create a Session</CardTitle>
         <CardDescription>
-          Open a new mentorship slot for explorers to discover and book.
+          Publish private mentorship availability or a community workshop from the same scheduling system.
         </CardDescription>
       </CardHeader>
 
@@ -79,6 +105,8 @@ export const CreateSessionForm: React.FC = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-md">
+          <SessionTypeSelector value={sessionType} onChange={setSessionType} />
+
           {/* Topic */}
           <div className="space-y-xs">
             <label
@@ -93,7 +121,7 @@ export const CreateSessionForm: React.FC = () => {
               required
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              placeholder="e.g. React Architecture Review"
+              placeholder={sessionType === 'public_workshop' ? 'e.g. Backend Roadmap Walkthrough' : 'e.g. React Architecture Review'}
             />
           </div>
 
@@ -111,7 +139,7 @@ export const CreateSessionForm: React.FC = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              placeholder="What will you cover in this session?"
+              placeholder={sessionType === 'public_workshop' ? 'What will attendees learn or build together?' : 'What will you cover in this session?'}
             />
           </div>
 
@@ -153,7 +181,8 @@ export const CreateSessionForm: React.FC = () => {
               </select>
             </div>
 
-            <div className="space-y-xs">
+            {sessionType === 'private_mentorship' && (
+              <div className="space-y-xs">
               <label
                 htmlFor="session-price"
                 className="text-body-sm font-semibold text-foreground"
@@ -170,8 +199,95 @@ export const CreateSessionForm: React.FC = () => {
                 onChange={(e) => setPrice(Number(e.target.value))}
                 placeholder="0 for free"
               />
-            </div>
+              </div>
+            )}
+            {sessionType === 'public_workshop' && (
+              <div className="space-y-xs">
+                <label htmlFor="session-capacity" className="text-body-sm font-semibold text-foreground">
+                  Capacity
+                </label>
+                <Input
+                  id="session-capacity"
+                  type="number"
+                  min={1}
+                  required
+                  value={capacity}
+                  onChange={(e) => setCapacity(Number(e.target.value))}
+                />
+              </div>
+            )}
           </div>
+
+          {sessionType === 'public_workshop' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-sm">
+              <div className="space-y-xs">
+                <label htmlFor="session-difficulty" className="text-body-sm font-semibold text-foreground">
+                  Difficulty
+                </label>
+                <select
+                  id="session-difficulty"
+                  value={difficulty}
+                  onChange={(e) => setDifficulty(e.target.value as typeof difficulty)}
+                  className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
+                >
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+              </div>
+              <div className="space-y-xs">
+                <label htmlFor="session-category" className="text-body-sm font-semibold text-foreground">
+                  Event category
+                </label>
+                <select
+                  id="session-category"
+                  value={sessionCategory}
+                  onChange={(e) => setSessionCategory(e.target.value as typeof sessionCategory)}
+                  className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
+                >
+                  <option value="workshop">Workshop</option>
+                  <option value="ama">AMA</option>
+                  <option value="roadmap_walkthrough">Roadmap walkthrough</option>
+                  <option value="study_event">Study event</option>
+                  <option value="community_teaching">Community teaching</option>
+                </select>
+              </div>
+              <div className="space-y-xs">
+                <label htmlFor="session-domains" className="text-body-sm font-semibold text-foreground">
+                  Domains
+                </label>
+                <Input
+                  id="session-domains"
+                  value={domainsInput}
+                  onChange={(e) => setDomainsInput(e.target.value)}
+                  placeholder="Frontend, DevOps, Data"
+                />
+              </div>
+              <div className="space-y-xs">
+                <label htmlFor="session-tags" className="text-body-sm font-semibold text-foreground">
+                  Tags
+                </label>
+                <Input
+                  id="session-tags"
+                  value={tagsInput}
+                  onChange={(e) => setTagsInput(e.target.value)}
+                  placeholder="portfolio, roadmap, interview"
+                />
+              </div>
+              <div className="space-y-xs sm:col-span-2">
+                <label htmlFor="session-banner" className="text-body-sm font-semibold text-foreground">
+                  Banner image URL
+                </label>
+                <Input
+                  id="session-banner"
+                  type="url"
+                  value={bannerImage}
+                  onChange={(e) => setBannerImage(e.target.value)}
+                  placeholder="https://..."
+                />
+              </div>
+            </div>
+          )}
 
           <Button
             type="submit"
@@ -186,7 +302,7 @@ export const CreateSessionForm: React.FC = () => {
                 Creating…
               </>
             ) : (
-              'Create Open Slot'
+              sessionType === 'public_workshop' ? 'Publish Workshop' : 'Create Open Slot'
             )}
           </Button>
         </form>

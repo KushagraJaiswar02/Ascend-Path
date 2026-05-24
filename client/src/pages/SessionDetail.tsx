@@ -19,6 +19,8 @@ import { MentorFollowupPanel } from '../features/sessions/components/MentorFollo
 import { ReflectionSummaryCard } from '../features/sessions/components/ReflectionSummaryCard';
 import { MentorRecommendationCard } from '../features/sessions/components/MentorRecommendationCard';
 import { SessionExecutionPanel } from '../features/sessions/components/SessionExecutionPanel';
+import { SessionRegistrationPanel } from '../features/sessions/components/SessionRegistrationPanel';
+import { SessionAttendanceStrip } from '../features/sessions/components/SessionAttendanceStrip';
 import { useAuthStore } from '../store/useAuthStore';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,8 +49,15 @@ const statusVariantMap: Record<
 > = {
   open:      { label: 'Open for Booking',  variant: 'success' },
   booked:    { label: 'Booked',            variant: 'secondary' },
+  started:   { label: 'Started',           variant: 'secondary' },
+  active:    { label: 'Active',            variant: 'success' },
   completed: { label: 'Completed',         variant: 'outline' },
   cancelled: { label: 'Cancelled',         variant: 'destructive' },
+  scheduled: { label: 'Scheduled',         variant: 'secondary' },
+  registration_open: { label: 'Registration Open', variant: 'success' },
+  live:      { label: 'Live',              variant: 'success' },
+  ended:     { label: 'Ended',             variant: 'outline' },
+  archived:  { label: 'Archived',          variant: 'outline' },
 };
 
 // ── Star rating interactive picker ───────────────────────────────────────────
@@ -129,7 +138,7 @@ export const SessionDetail: React.FC = () => {
   const { toast } = useToast();
 
   const { data: session, isLoading, isError } = useSession(id || '');
-  const reflectionQuery = useSessionReflection(id || '');
+  const reflectionQuery = useSessionReflection(id || '', session?.sessionType !== 'public_workshop');
   const cancelMutation = useCancelSession();
   const rateMutation = useRateSession();
 
@@ -160,14 +169,19 @@ export const SessionDetail: React.FC = () => {
 
   // — Role & permission flags ————————————————————————————————————————
   const explorer = session.clientId || session.explorerId;
+  const isPublicWorkshop = session.sessionType === 'public_workshop';
   const reflection = reflectionQuery.data;
   const isGuide    = user?._id === session.guideId._id;
+  const isRegisteredAttendee = !!user && !!session.attendees?.some((attendee) => {
+    const attendeeId = typeof attendee.userId === 'string' ? attendee.userId : attendee.userId._id;
+    return attendeeId === user._id;
+  });
   const isExplorer = user?._id === explorer?._id;
   const canCancel  = (isGuide || isExplorer) && (session.status === 'open' || session.status === 'booked');
-  const canRate    = isExplorer && session.status === 'completed' && !session.rating;
-  const canReflect = isExplorer && session.status === 'completed' && !reflection?.menteeReflection?.submittedAt;
-  const canFollowup = isGuide && session.status === 'completed';
-  const isParticipant = isGuide || isExplorer;
+  const canRate    = !isPublicWorkshop && isExplorer && session.status === 'completed' && !session.rating;
+  const canReflect = !isPublicWorkshop && isExplorer && session.status === 'completed' && !reflection?.menteeReflection?.submittedAt;
+  const canFollowup = !isPublicWorkshop && isGuide && session.status === 'completed';
+  const isParticipant = isGuide || isExplorer || isRegisteredAttendee;
 
   // — Derived display values ————————————————————————————————————————
   const dateObj     = new Date(session.scheduledAt);
@@ -319,7 +333,7 @@ export const SessionDetail: React.FC = () => {
             {/* Description */}
             <div className="space-y-xs pt-xs">
               <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                About this session
+                {isPublicWorkshop ? 'About this workshop' : 'About this session'}
               </p>
               <p className="text-body-sm text-foreground leading-relaxed whitespace-pre-wrap">
                 {session.description}
@@ -327,7 +341,14 @@ export const SessionDetail: React.FC = () => {
             </div>
 
             {/* Booking CTA */}
-            {session.status === 'open' && !isGuide && (
+            {isPublicWorkshop && ['scheduled', 'registration_open'].includes(session.status) && (
+              <div className="pt-xs space-y-sm">
+                <SessionAttendanceStrip attendeeCount={session.attendeeCount} capacity={session.capacity} />
+                <SessionRegistrationPanel session={session} />
+              </div>
+            )}
+
+            {!isPublicWorkshop && session.status === 'open' && !isGuide && (
               <div className="pt-xs">
                 <BookSessionButton
                   sessionId={session._id}
@@ -450,7 +471,7 @@ export const SessionDetail: React.FC = () => {
       </div>
 
       {/* ── Cancel confirmation dialog ────────────────────────────────── */}
-      {session.status === 'completed' && (isGuide || isExplorer) && (
+        {!isPublicWorkshop && session.status === 'completed' && (isGuide || isExplorer) && (
         <div className="grid grid-cols-1 gap-md mt-lg">
           {isExplorer && (
             <>

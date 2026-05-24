@@ -16,14 +16,14 @@ interface FollowupPayload {
   nextSessionSuggestion?: string;
 }
 
-export const useSessionReflection = (sessionId: string) => {
+export const useSessionReflection = (sessionId: string, enabled = true) => {
   return useQuery({
     queryKey: ['sessionReflection', sessionId],
     queryFn: async (): Promise<SessionReflection | null> => {
       const { data } = await apiClient.get(`/sessions/${sessionId}/reflection`);
       return data.data.reflection;
     },
-    enabled: !!sessionId,
+    enabled: !!sessionId && enabled,
   });
 };
 
