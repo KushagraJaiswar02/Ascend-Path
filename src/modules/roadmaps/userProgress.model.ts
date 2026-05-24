@@ -17,8 +17,8 @@ export interface IUserProgress extends Document {
 
 const userProgressSchema = new Schema<IUserProgress>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    roadmapId: { type: Schema.Types.ObjectId, ref: 'CareerRoadmap', required: true, index: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    roadmapId: { type: Schema.Types.ObjectId, ref: 'CareerRoadmap', required: true },
     completedSteps: [{ type: Schema.Types.ObjectId, ref: 'RoadmapStep' }],
     progressPercentage: { type: Number, default: 0, min: 0, max: 100 },
     startedAt: { type: Date, default: Date.now },

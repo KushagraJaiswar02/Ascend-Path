@@ -32,7 +32,7 @@ export interface ICareerRoadmap extends Document {
 const careerRoadmapSchema = new Schema<ICareerRoadmap>(
   {
     title: { type: String, required: true, trim: true },
-    slug: { type: String, required: true, unique: true, index: true, trim: true },
+    slug: { type: String, required: true, unique: true, trim: true },
     description: { type: String },
     thumbnail: { type: String },
     domains: { type: [String], default: [] },
@@ -59,7 +59,6 @@ const careerRoadmapSchema = new Schema<ICareerRoadmap>(
 );
 
 // High performance indexes
-careerRoadmapSchema.index({ slug: 1 }, { unique: true });
 careerRoadmapSchema.index({ domains: 1, difficulty: 1, isPublished: 1 });
 careerRoadmapSchema.index({ createdBy: 1 });
 careerRoadmapSchema.index({ moderationStatus: 1, createdAt: -1 });
@@ -78,7 +77,7 @@ export interface IRoadmapSection extends Document {
 
 const roadmapSectionSchema = new Schema<IRoadmapSection>(
   {
-    roadmapId: { type: Schema.Types.ObjectId, ref: 'CareerRoadmap', required: true, index: true },
+    roadmapId: { type: Schema.Types.ObjectId, ref: 'CareerRoadmap', required: true },
     title: { type: String, required: true, trim: true },
     description: { type: String },
     order: { type: Number, required: true, default: 0 },
@@ -119,8 +118,8 @@ export interface IRoadmapStep extends Document {
 
 const roadmapStepSchema = new Schema<IRoadmapStep>(
   {
-    roadmapId: { type: Schema.Types.ObjectId, ref: 'CareerRoadmap', required: true, index: true },
-    sectionId: { type: Schema.Types.ObjectId, ref: 'RoadmapSection', required: true, index: true },
+    roadmapId: { type: Schema.Types.ObjectId, ref: 'CareerRoadmap', required: true },
+    sectionId: { type: Schema.Types.ObjectId, ref: 'RoadmapSection', required: true },
     title: { type: String, required: true, trim: true },
     description: { type: String },
     type: {

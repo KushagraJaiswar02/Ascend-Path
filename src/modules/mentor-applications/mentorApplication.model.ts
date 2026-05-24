@@ -66,7 +66,7 @@ const uploadSchema = new Schema<MentorApplicationUpload>(
 
 const mentorApplicationSchema = new Schema<IMentorApplication>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     bio: { type: String, required: true, trim: true, maxlength: 2000 },
     domains: { type: [String], required: true, default: [] },
     skills: { type: [String], required: true, default: [] },
@@ -99,7 +99,6 @@ const mentorApplicationSchema = new Schema<IMentorApplication>(
       type: String,
       enum: Object.values(MentorApplicationStatus),
       default: MentorApplicationStatus.PENDING,
-      index: true,
     },
     rejectionReason: { type: String, trim: true, maxlength: 1200 },
     changeRequest: { type: String, trim: true, maxlength: 1200 },

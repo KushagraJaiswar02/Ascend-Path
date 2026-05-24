@@ -2,12 +2,17 @@
   "name": "ascendpath",
   "version": "1.0.0",
   "main": "index.js",
+  "engines": {
+    "node": "20.x",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
     "dev": "nodemon src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "seed:dummy": "node scripts/seedDummyData.js"
+    "seed:dummy": "node scripts/seedDummyData.js",
+    "seed:bulk": "node scripts/seedBulkDemoData.js"
   },
   "keywords": [],
   "author": "",
