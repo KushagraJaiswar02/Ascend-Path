@@ -49,7 +49,11 @@ export interface IUser extends Document {
   avatar?: string;
   isVerified: boolean;
   isBanned: boolean;
+  isSuspended: boolean;
+  suspensionReason?: string;
+  suspensionSource?: string;
   suspendedUntil?: Date;
+  falseReportStrikes: number;
   moderatorNotes?: string;
   mutedUntil?: Date;
   pingAvailable: boolean;
@@ -135,7 +139,11 @@ const userSchema = new Schema<IUser>(
     avatar: { type: String },
     isVerified: { type: Boolean, default: false },
     isBanned: { type: Boolean, default: false },
+    isSuspended: { type: Boolean, default: false },
+    suspensionReason: { type: String },
+    suspensionSource: { type: String },
     suspendedUntil: { type: Date },
+    falseReportStrikes: { type: Number, default: 0 },
     moderatorNotes: { type: String },
     mutedUntil: { type: Date },
     pingAvailable: { type: Boolean, default: true },

@@ -8,19 +8,22 @@ export const postRepository = {
   },
 
   async getPostById(id: string): Promise<IPost | null> {
-    return await Post.findById(id).populate('authorId', 'name avatar role respectPoints');
+    return await Post.findOne({ _id: id, moderationStatus: { $nin: ['deleted', 'hidden'] } }).populate('authorId', 'name avatar role respectPoints');
   },
 
   async getPosts(
     page: number = 1,
     limit: number = 20,
-    filters: { category?: PostCategory; tags?: string; search?: string; resolution?: 'resolved' | 'unresolved' }
+    filters: { category?: PostCategory; tags?: string; search?: string; resolution?: 'resolved' | 'unresolved'; authorId?: string }
   ) {
-    const query: any = {};
+    const query: any = { moderationStatus: { $nin: ['deleted', 'hidden'] } };
     const and: any[] = [];
 
     if (filters.category) {
       query.category = filters.category;
+    }
+    if (filters.authorId) {
+      query.authorId = filters.authorId;
     }
     if (filters.tags) {
       // Tags might be a comma-separated string
@@ -56,7 +59,7 @@ export const postRepository = {
 
     const postsWithReplyCount = await Promise.all(
       posts.map(async (post) => {
-        const replyCount = await Reply.countDocuments({ postId: post._id });
+        const replyCount = await Reply.countDocuments({ postId: post._id, moderationStatus: { $nin: ['deleted', 'hidden'] } });
         return { ...post, replyCount };
       })
     );
@@ -87,17 +90,20 @@ export const postRepository = {
   },
 
   async getRepliesByPost(postId: string, page: number = 1, limit: number = 20) {
-    const post = await Post.findById(postId).select('acceptedReplyId solutionReplyId').lean();
-    const acceptedId = post?.acceptedReplyId?.toString() || post?.solutionReplyId?.toString();
+    const post = await Post.findOne({ _id: postId, moderationStatus: { $nin: ['deleted', 'hidden'] } }).select('acceptedReplyId solutionReplyId').lean();
+    if (!post) {
+      return { replies: [], total: 0, page, limit, totalPages: 0 };
+    }
+    const acceptedId = post.acceptedReplyId?.toString() || post.solutionReplyId?.toString();
     const includeAccepted = !!acceptedId && page === 1;
     const pageLimit = includeAccepted ? Math.max(limit - 1, 0) : limit;
     const skip = includeAccepted ? 0 : (page - 1) * limit - (acceptedId ? 1 : 0);
-    const replyQuery: any = { postId };
+    const replyQuery: any = { postId, moderationStatus: { $nin: ['deleted', 'hidden'] } };
     if (acceptedId) replyQuery._id = { $ne: acceptedId };
 
     const [acceptedReply, replies, total] = await Promise.all([
       includeAccepted
-        ? Reply.findOne({ _id: acceptedId, postId }).populate('authorId', 'name avatar role respectPoints').lean()
+        ? Reply.findOne({ _id: acceptedId, postId, moderationStatus: { $nin: ['deleted', 'hidden'] } }).populate('authorId', 'name avatar role respectPoints').lean()
         : Promise.resolve(null),
       Reply.find(replyQuery)
         .populate('authorId', 'name avatar role respectPoints')
@@ -105,7 +111,7 @@ export const postRepository = {
         .skip(Math.max(skip, 0))
         .limit(pageLimit)
         .lean(),
-      Reply.countDocuments({ postId }),
+      Reply.countDocuments({ postId, moderationStatus: { $nin: ['deleted', 'hidden'] } }),
     ]);
 
     const orderedReplies = acceptedReply ? [acceptedReply, ...replies] : replies;
@@ -124,7 +130,7 @@ export const postRepository = {
   },
 
   async getReplyById(id: string): Promise<IReply | null> {
-    return await Reply.findById(id);
+    return await Reply.findOne({ _id: id, moderationStatus: { $nin: ['deleted', 'hidden'] } });
   },
 
   async votePost(id: string, voters: any[], upvotes: number, downvotes: number): Promise<void> {

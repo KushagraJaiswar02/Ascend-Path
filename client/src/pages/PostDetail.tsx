@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { usePost, useRegisterPostView } from '../features/posts/hooks/usePost';
 import { useVote } from '../features/posts/hooks/useVote';
@@ -14,9 +14,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, ThumbsUp, ThumbsDown, Eye, MessageSquare, Clock } from 'lucide-react';
 import { formatRelativeTime } from '@/lib/utils';
 import { SolvedThreadIndicator } from '@/features/posts/components/SolvedThreadIndicator';
+import { ReportModal } from '@/features/moderation/components/ReportModal';
 
 export const PostDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [reportOpen, setReportOpen] = useState(false);
   const { data, isLoading, isError } = usePost(id || '');
   const viewMutation = useRegisterPostView(id || '');
   const registeredViewFor = useRef<string | null>(null);
@@ -171,14 +173,32 @@ export const PostDetail: React.FC = () => {
               </Button>
             </div>
 
-            {isPostAuthor && (
+            {isPostAuthor ? (
               <span className="text-[10px] text-muted-foreground/80 bg-muted/30 px-xs py-0.5 rounded border border-border/40">
                 Post Author
               </span>
+            ) : (
+              isAuthenticated && (
+                <Button
+                  onClick={() => setReportOpen(true)}
+                  variant="ghost"
+                  className="text-xs font-semibold text-muted-foreground hover:text-red-400 flex items-center gap-1 h-7 px-2"
+                >
+                  Report
+                </Button>
+              )
             )}
           </div>
         </CardContent>
       </Card>
+
+      <ReportModal
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        targetType="post"
+        targetId={post._id}
+        targetName={post.title}
+      />
 
       {/* Replies Timeline Section */}
       <div className="space-y-md">

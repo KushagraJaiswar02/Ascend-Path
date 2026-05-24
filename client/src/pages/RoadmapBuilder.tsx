@@ -20,18 +20,13 @@ import {
   Users,
   ExternalLink,
   Bookmark,
-  ChevronDown,
-  ChevronUp,
   Lock,
-  Check,
   CheckCircle2,
   FileEdit,
   Eye,
   Settings,
-  X,
   Compass,
-  ArrowRight,
-  ListTodo
+  X,
 } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useRoadmap } from '../features/roadmaps/hooks/useRoadmapProgress';
@@ -202,6 +197,14 @@ export const RoadmapBuilder: React.FC = () => {
     setSectionOrder(section.order || 0);
   };
 
+  const handleCloseSectionModal = () => {
+    setIsAddingSection(false);
+    setEditingSectionId(null);
+    setSectionTitle('');
+    setSectionDesc('');
+    setSectionOrder(0);
+  };
+
   const handleSaveSection = async () => {
     if (!sectionTitle.trim() || !roadmapId) return;
 
@@ -219,10 +222,7 @@ export const RoadmapBuilder: React.FC = () => {
         await apiClient.post(`/roadmaps/${roadmapId}/sections`, payload);
       }
 
-      setIsAddingSection(false);
-      setEditingSectionId(null);
-      setSectionTitle('');
-      setSectionDesc('');
+      handleCloseSectionModal();
       if (isEditingMode) refetchRoadmap();
     } catch (err) {
       console.error(err);
@@ -700,7 +700,7 @@ export const RoadmapBuilder: React.FC = () => {
 
                           {/* ================= STEPS TIMELINE SUB-NODES ================= */}
                           <div className="pl-9 space-y-4 relative">
-                            {sectionSteps.map((step: any, stepIdx: number) => {
+                            {sectionSteps.map((step: any) => {
                               const hasNotes = !!step.richNotes;
                               const hasVideo = !!step.videoUrl;
                               const hasTip = !!step.mentorTip;

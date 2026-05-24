@@ -17,12 +17,13 @@ export const postService = {
     });
   },
 
-  async getPosts(page: number, limit: number, category?: string, tags?: string, search?: string, resolution?: 'resolved' | 'unresolved') {
+  async getPosts(page: number, limit: number, category?: string, tags?: string, search?: string, resolution?: 'resolved' | 'unresolved', authorId?: string) {
     return await postRepository.getPosts(page, limit, {
       category: category as PostCategory,
       tags,
       search,
       resolution,
+      authorId,
     });
   },
 

@@ -4,24 +4,16 @@ import { motion } from 'framer-motion';
 import {
   Flame,
   ArrowRight,
-  BookOpen,
-  Calendar,
-  Clock,
-  Video,
-  Inbox,
   Sparkles,
   UsersRound,
   TrendingUp,
   Award,
   ArrowUpRight,
-  Compass,
   CheckCircle2,
-  HelpCircle,
   CheckCircle,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DashboardSection } from './DashboardSection';
 import { EmptyStateCard } from './EmptyStateCard';
@@ -39,7 +31,7 @@ interface MenteeDashboardProps {
 
 export const MenteeDashboard: React.FC<MenteeDashboardProps> = ({ data, user }) => {
   const navigate = useNavigate();
-  const { data: activeRoadmaps, isLoading: isActiveRoadmapsLoading } = useMyActiveRoadmaps();
+  const { data: activeRoadmaps } = useMyActiveRoadmaps();
 
   const activeProgress = activeRoadmaps?.[0];
   const activeRoadmapId = activeProgress?.roadmapId?._id;
@@ -262,7 +254,10 @@ export const MenteeDashboard: React.FC<MenteeDashboardProps> = ({ data, user }) 
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => navigate(`/sessions`)}
+                        onClick={() => {
+                          const sId = typeof reflection.sessionId === 'object' && reflection.sessionId ? reflection.sessionId._id : reflection.sessionId;
+                          navigate(`/sessions/${sId}`);
+                        }}
                         className="shrink-0 text-xs font-bold h-9 px-3 rounded-xl hover:border-primary/20 hover:bg-primary/5 gap-1"
                       >
                         <span>View Reflections</span>

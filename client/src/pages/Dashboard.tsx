@@ -6,21 +6,24 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, RefreshCw } from 'lucide-react';
-import { BecomeMentorCTA } from '../features/mentorApplications/components/BecomeMentorCTA';
 import { PersonalizedWelcomeBanner } from '../features/onboarding/components/PersonalizedWelcomeBanner';
 import { RecommendationPreview } from '../features/onboarding/components/RecommendationPreview';
 import { useOnboardingRecommendations } from '../features/onboarding/hooks/useOnboarding';
 import { MenteeDashboard } from '../features/dashboard/components/MenteeDashboard';
 import { MentorDashboard } from '../features/dashboard/components/MentorDashboard';
+import { ModeratorDashboard } from '../features/dashboard/components/ModeratorDashboard';
+import { AdminDashboard } from '../features/dashboard/components/AdminDashboard';
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuthStore();
   const { data, isLoading, isError, refetch } = useDashboardData();
   const onboardingRecommendations = useOnboardingRecommendations();
 
-  // 1. High-fidelity Loading Skeleton Grid specific to Mentor / Mentee roles
+  // 1. High-fidelity Loading Skeleton Grid specific to Mentor / Mentee/ Admin roles
   if (isLoading) {
-    const isMentor = user?.role === 'guide';
+    const role = user?.role || 'user';
+    const isMentor = role === 'guide';
+    const isAdmin = ['admin', 'architect', 'super_admin', 'moderator', 'sentinel'].includes(role);
     return (
       <PageContainer size="default">
         {/* Skeleton Header */}
@@ -37,7 +40,24 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {isMentor ? (
+        {isAdmin ? (
+          /* Admin/Moderator skeleton */
+          <div className="space-y-8 animate-pulse">
+            <div className="space-y-4">
+              <Skeleton className="h-[120px] w-full rounded-3xl" />
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {[1, 2, 3, 4].map((i) => (
+                  <Card key={i} className="h-24 bg-card border border-border">
+                    <CardContent className="p-5 flex flex-col justify-between h-full">
+                      <Skeleton className="h-3 w-16" />
+                      <Skeleton className="h-6 w-20" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : isMentor ? (
           /* Mentor-specific high-fidelity skeleton */
           <div className="space-y-8 animate-pulse">
             {/* Attention section skeleton */}
@@ -155,12 +175,14 @@ export const Dashboard: React.FC = () => {
     );
   }
 
-  const isMentor = user?.role === 'guide';
+  const role = user?.role || 'user';
+  const isMentor = role === 'guide';
+  const isOperator = ['admin', 'architect', 'super_admin', 'moderator', 'sentinel'].includes(role);
 
   return (
     <PageContainer size="default">
-      {/* Mentee Onboarding Recommendation Banners (hidden for mentors) */}
-      {!isMentor && (
+      {/* Mentee Onboarding Recommendation Banners (hidden for mentors & administrators) */}
+      {!isMentor && !isOperator && (
         <>
           <PersonalizedWelcomeBanner
             recommendations={onboardingRecommendations.data}
@@ -176,7 +198,11 @@ export const Dashboard: React.FC = () => {
       )}
 
       {/* Render the role-appropriate simplified dashboard */}
-      {isMentor ? (
+      {['admin', 'architect', 'super_admin'].includes(role) ? (
+        <AdminDashboard />
+      ) : ['moderator', 'sentinel'].includes(role) ? (
+        <ModeratorDashboard />
+      ) : isMentor ? (
         <MentorDashboard data={data!} user={user!} />
       ) : (
         <MenteeDashboard data={data!} user={user!} />
@@ -184,5 +210,4 @@ export const Dashboard: React.FC = () => {
     </PageContainer>
   );
 };
-
 

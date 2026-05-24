@@ -22,6 +22,10 @@ export enum NotificationType {
   MENTOR_APPLICATION_APPROVED = 'mentor_application_approved',
   MENTOR_APPLICATION_REJECTED = 'mentor_application_rejected',
   MENTOR_APPLICATION_CHANGES_REQUESTED = 'mentor_application_changes_requested',
+  REPORT_SUBMITTED = 'report_submitted',
+  REPORT_REVIEWED = 'report_reviewed',
+  USER_SUSPENDED = 'user_suspended',
+  FALSE_REPORT_PENALTY_APPLIED = 'false_report_penalty_applied',
 }
 
 export interface INotification extends Document {

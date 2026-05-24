@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { ReportModal } from '@/features/moderation/components/ReportModal';
 import {
   useRoadmap,
   useMyRoadmapProgress,
@@ -23,6 +24,7 @@ export const RoadmapDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [togglingStepId, setTogglingStepId] = useState<string | undefined>(undefined);
+  const [reportOpen, setReportOpen] = useState(false);
 
   // 1. Fetch complete roadmap tree (slug or ObjectId lookup)
   const { data: roadmap, isLoading: isRoadmapLoading, isError: isRoadmapError } = useRoadmap(id || '');
@@ -172,11 +174,20 @@ export const RoadmapDetail: React.FC = () => {
           <span>Go Back</span>
         </Button>
 
-        {isEnrolled && (
-          <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 bg-emerald-500/5 px-2.5 py-1 border border-emerald-500/10 rounded-full select-none">
-            Active Journey
-          </span>
-        )}
+        <div className="flex items-center gap-sm select-none">
+          {isEnrolled && (
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 bg-emerald-500/5 px-2.5 py-1 border border-emerald-500/10 rounded-full">
+              Active Journey
+            </span>
+          )}
+          <Button
+            onClick={() => setReportOpen(true)}
+            variant="ghost"
+            className="h-8.5 px-sm text-body-xs font-black uppercase tracking-wider border border-border/80 bg-card shadow-sm cursor-pointer hover:bg-muted hover:text-red-400 rounded-xl"
+          >
+            Report
+          </Button>
+        </div>
       </div>
 
       {/* Header Panel (Sleeker and tighter footprints) */}
@@ -321,6 +332,13 @@ export const RoadmapDetail: React.FC = () => {
           )}
         </div>
       </div>
+      <ReportModal
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        targetType="roadmap"
+        targetId={roadmap._id}
+        targetName={roadmap.title}
+      />
     </PageContainer>
   );
 };

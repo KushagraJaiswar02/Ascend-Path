@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { reportService } from './report.service';
-import { ReportPriority, ReportReason, ReportStatus, TargetType } from './report.model';
+import { ReportPriority, ReportReason, ReportStatus, TargetType, ModeratorDecision } from './report.model';
 
 const param = (value: string | string[]) => (Array.isArray(value) ? value[0] : value);
 
@@ -8,21 +8,39 @@ export const reportController = {
   async submitReport(req: Request, res: Response, next: NextFunction) {
     try {
       const reporterId = (req as any).user._id;
-      const { targetType, targetId, reason, details, description, priority } = req.body;
+      const {
+        targetType,
+        targetId,
+        reasonCategory,
+        detailedReason,
+        evidenceLinks,
+        screenshots,
+        priority,
+
+        // Backwards compatibility params
+        reason,
+        details,
+        description,
+      } = req.body;
 
       const report = await reportService.submitReport({
         reporterId,
         targetType: targetType as TargetType,
         targetId,
+        reasonCategory: reasonCategory as ReportReason,
+        detailedReason,
+        evidenceLinks,
+        screenshots,
+        priority: priority as ReportPriority,
         reason: reason as ReportReason,
         details,
         description,
-        priority: priority as ReportPriority,
       });
 
       res.status(201).json({ success: true, data: report });
-    } catch (error) {
-      next(error);
+    } catch (error: any) {
+      // Return validation or custom check errors clearly
+      res.status(error.status || 400).json({ success: false, message: error.message });
     }
   },
 
@@ -48,6 +66,19 @@ export const reportController = {
     }
   },
 
+  async getMyReports(req: Request, res: Response, next: NextFunction) {
+    try {
+      const reporterId = (req as any).user._id;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+
+      const result = await reportService.getMyReports(reporterId, page, limit);
+      res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async getReport(req: Request, res: Response, next: NextFunction) {
     try {
       const report = await reportService.getReportById(param(req.params.id));
@@ -60,9 +91,39 @@ export const reportController = {
   async actionReport(req: Request, res: Response, next: NextFunction) {
     try {
       const actorId = (req as any).user._id;
-      const { status, resolution } = req.body;
+      const { status, resolution, moderatorDecision, falseReportStrike, moderatorNotes } = req.body;
 
-      const report = await reportService.actionReport(param(req.params.id), status as ReportStatus, actorId, resolution);
+      const report = await reportService.actionReport(
+        param(req.params.id),
+        status as ReportStatus,
+        actorId,
+        resolution,
+        moderatorDecision as ModeratorDecision,
+        falseReportStrike,
+        moderatorNotes
+      );
+      res.status(200).json({ success: true, data: report });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async reviewReport(req: Request, res: Response, next: NextFunction) {
+    try {
+      const actorId = (req as any).user._id;
+      const { notes } = req.body;
+      const report = await reportService.reviewReport(param(req.params.id), actorId, notes);
+      res.status(200).json({ success: true, data: report });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async escalateReport(req: Request, res: Response, next: NextFunction) {
+    try {
+      const actorId = (req as any).user._id;
+      const { notes } = req.body;
+      const report = await reportService.escalateReport(param(req.params.id), actorId, notes);
       res.status(200).json({ success: true, data: report });
     } catch (error) {
       next(error);

@@ -23,8 +23,15 @@ export const postController = {
         req.query.resolution === 'resolved' || req.query.resolution === 'unresolved'
           ? req.query.resolution
           : undefined;
+      const scope = req.query.scope === 'mine' ? 'mine' : 'all';
+      const userId = (req as any).user?._id?.toString();
 
-      const result = await postService.getPosts(page, limit, category, tags, search, resolution);
+      if (scope === 'mine' && !userId) {
+        res.status(401);
+        throw new Error('Sign in to view your posts');
+      }
+
+      const result = await postService.getPosts(page, limit, category, tags, search, resolution, scope === 'mine' ? userId : undefined);
       res.status(200).json({ success: true, data: result });
     } catch (error) {
       next(error);

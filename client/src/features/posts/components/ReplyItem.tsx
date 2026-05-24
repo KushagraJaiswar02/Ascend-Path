@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ThumbsUp } from 'lucide-react';
 import type { Reply } from '../hooks/usePost';
 import { useAcceptAnswer, useUnacceptAnswer } from '../hooks/usePost';
@@ -11,6 +11,7 @@ import { formatRelativeTime } from '@/lib/utils';
 import { AcceptedAnswerBadge } from './AcceptedAnswerBadge';
 import { ResolvePostButton } from './ResolvePostButton';
 import { TopAnswerHighlight } from './TopAnswerHighlight';
+import { ReportModal } from '@/features/moderation/components/ReportModal';
 
 interface ReplyItemProps {
   reply: Reply;
@@ -20,6 +21,7 @@ interface ReplyItemProps {
 
 export const ReplyItem: React.FC<ReplyItemProps> = ({ reply, postId, postAuthorId }) => {
   const { user, isAuthenticated } = useAuthStore();
+  const [reportOpen, setReportOpen] = useState(false);
   const voteMutation = useVote(postId);
   const acceptMutation = useAcceptAnswer(postId);
   const unacceptMutation = useUnacceptAnswer(postId);
@@ -97,14 +99,32 @@ export const ReplyItem: React.FC<ReplyItemProps> = ({ reply, postId, postAuthorI
             </span>
           </div>
           
-          {isReplyAuthor && (
+          {isReplyAuthor ? (
             <span className="text-[10px] text-muted-foreground/80 bg-muted/30 px-xs py-0.5 rounded border border-border/40">
               Author
             </span>
+          ) : (
+            isAuthenticated && (
+              <Button
+                onClick={() => setReportOpen(true)}
+                variant="ghost"
+                className="text-[11px] text-muted-foreground hover:text-red-400 h-6 px-1.5"
+              >
+                Report
+              </Button>
+            )
           )}
         </div>
         </CardContent>
       </Card>
+
+      <ReportModal
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        targetType="reply"
+        targetId={reply._id}
+        targetName={`reply by ${reply.authorId?.name}`}
+      />
     </TopAnswerHighlight>
   );
 };

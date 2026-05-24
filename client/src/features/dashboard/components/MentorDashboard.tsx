@@ -11,12 +11,8 @@ import {
   Award,
   Sparkles,
   BookOpen,
-  ArrowRight,
   PlusCircle,
   FileText,
-  HelpCircle,
-  TrendingUp,
-  MessageSquare,
   ChevronRight,
   ShieldCheck,
 } from 'lucide-react';

@@ -36,11 +36,11 @@ export const roadmapRepository = {
   },
 
   async getRoadmapById(id: string): Promise<ICareerRoadmap | null> {
-    return await CareerRoadmap.findById(id).populate('createdBy', 'name role respectPoints bio avatar');
+    return await CareerRoadmap.findOne({ _id: id, moderationStatus: { $nin: ['deleted', 'hidden'] } }).populate('createdBy', 'name role respectPoints bio avatar');
   },
 
   async getRoadmapBySlug(slug: string): Promise<ICareerRoadmap | null> {
-    return await CareerRoadmap.findOne({ slug }).populate('createdBy', 'name role respectPoints bio avatar');
+    return await CareerRoadmap.findOne({ slug, moderationStatus: { $nin: ['deleted', 'hidden'] } }).populate('createdBy', 'name role respectPoints bio avatar');
   },
 
   async updateRoadmap(id: string, updateData: Partial<ICareerRoadmap>): Promise<ICareerRoadmap | null> {
@@ -57,9 +57,9 @@ export const roadmapRepository = {
 
   // --- Curriculum Hierarchy Retrieval ---
   async findFullRoadmapTree(idOrSlug: string) {
-    const query = mongoose.Types.ObjectId.isValid(idOrSlug)
-      ? { _id: idOrSlug }
-      : { slug: idOrSlug };
+    const query: any = mongoose.Types.ObjectId.isValid(idOrSlug)
+      ? { _id: idOrSlug, moderationStatus: { $nin: ['deleted', 'hidden'] } }
+      : { slug: idOrSlug, moderationStatus: { $nin: ['deleted', 'hidden'] } };
 
     const roadmap = await CareerRoadmap.findOne(query).populate('createdBy', 'name role respectPoints bio avatar');
     if (!roadmap) return null;
@@ -152,11 +152,14 @@ export const roadmapRepository = {
   },
 
   async findUserActiveProgress(userId: string): Promise<IUserProgress[]> {
-    return await UserProgress.find({ userId })
+    const progress = await UserProgress.find({ userId })
       .populate({
         path: 'roadmapId',
+        match: { moderationStatus: { $nin: ['deleted', 'hidden'] } },
         populate: { path: 'createdBy', select: 'name avatar' }
       })
       .sort({ lastActiveAt: -1 });
+
+    return progress.filter((item) => item.roadmapId);
   },
 };

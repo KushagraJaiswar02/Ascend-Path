@@ -13,6 +13,7 @@ import { ReviewReportDialog } from '../features/reviews/components/ReviewReportD
 import { RoadmapPreview } from '../features/guides/components/RoadmapPreview';
 import { PingGuideDialog } from '../features/guides/components/PingGuideDialog';
 import { BookSessionDialog } from '../features/guides/components/BookSessionDialog';
+import { useAuthStore } from '../store/useAuthStore';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -20,9 +21,12 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertCircle, ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, MessageSquareQuote } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { ReportModal } from '@/features/moderation/components/ReportModal';
 
 export const ProfileDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuthStore();
+  const [reportOpen, setReportOpen] = useState(false);
   const guideId = id || '';
 
   // Core guide profile aggregates
@@ -134,8 +138,8 @@ export const ProfileDetail: React.FC = () => {
 
   return (
     <PageContainer size="default" className="space-y-lg py-10 select-text">
-      {/* Back to Discovery Link */}
-      <div className="select-none mb-xs">
+      {/* Back to Discovery Link & Report */}
+      <div className="select-none mb-xs flex justify-between items-center">
         <Link
           to="/explore"
           className="inline-flex items-center gap-xxs text-body-xs font-bold text-muted-foreground hover:text-primary transition-colors"
@@ -143,6 +147,16 @@ export const ProfileDetail: React.FC = () => {
           <ArrowLeft className="h-4 w-4 shrink-0" />
           <span>Back to Explore Guides</span>
         </Link>
+
+        {user && user._id !== guide?._id && (
+          <Button
+            onClick={() => setReportOpen(true)}
+            variant="ghost"
+            className="text-xs font-semibold text-muted-foreground hover:text-red-400 h-8 px-2"
+          >
+            Report User
+          </Button>
+        )}
       </div>
 
       {/* 1. Main Header */}
@@ -280,6 +294,14 @@ export const ProfileDetail: React.FC = () => {
           onClose={() => setReportingReviewId(null)}
         />
       )}
+
+      <ReportModal
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        targetType="user"
+        targetId={guide._id}
+        targetName={guide.name}
+      />
     </PageContainer>
   );
 };

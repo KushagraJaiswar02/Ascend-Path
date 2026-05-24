@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { pingController } from './ping.controller';
 import { authMiddleware } from '../../middleware/auth.middleware';
+import { checkSuspended } from '../../middleware/suspension.middleware';
 import { createPingSchema, respondPingSchema, ratePingSchema } from './ping.validation';
 import { Request, Response, NextFunction } from 'express';
 import { pingLimiter } from '../../middleware/rateLimiter';
@@ -26,14 +27,14 @@ const validate = (schema: any) => (req: Request, res: Response, next: NextFuncti
 router.use(authMiddleware);
 
 // Create a new ping
-router.post('/', pingLimiter, validate(createPingSchema), pingController.createPing);
+router.post('/', checkSuspended, pingLimiter, validate(createPingSchema), pingController.createPing);
 
 // Get pings
 router.get('/sent', pingController.getSentPings);
 router.get('/inbox', pingController.getInboxPings);
 
 // Actions on specific pings
-router.post('/:id/respond', validate(respondPingSchema), pingController.respondPing);
+router.post('/:id/respond', checkSuspended, validate(respondPingSchema), pingController.respondPing);
 router.post('/:id/rate', validate(ratePingSchema), pingController.ratePing);
 router.post('/:id/close', pingController.closePing);
 

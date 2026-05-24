@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { usePosts, type ResolutionFilter } from '../features/posts/hooks/usePosts';
+import { usePosts, type PostScopeFilter, type ResolutionFilter } from '../features/posts/hooks/usePosts';
 import { PostCard } from '../features/posts/components/PostCard';
 import { CreatePostForm } from '../features/posts/components/CreatePostForm';
 import { useAuthStore } from '../store/useAuthStore';
@@ -13,8 +13,10 @@ import { Link } from 'react-router-dom';
 
 export const Forum: React.FC = () => {
   const [resolution, setResolution] = useState<ResolutionFilter>('all');
-  const { data, isLoading, isError } = usePosts(1, 10, undefined, resolution);
+  const [scope, setScope] = useState<PostScopeFilter>('all');
   const { isAuthenticated } = useAuthStore();
+  const effectiveScope = isAuthenticated ? scope : 'all';
+  const { data, isLoading, isError } = usePosts(1, 10, undefined, resolution, effectiveScope);
 
   return (
     <PageContainer size="tight" className="py-lg">
@@ -51,20 +53,40 @@ export const Forum: React.FC = () => {
 
       <div className="space-y-md">
         <div className="flex items-center justify-between pb-xs border-b border-border/65">
-          <h2 className="text-body-md font-bold text-foreground">Recent Discussions</h2>
-          <div className="flex items-center gap-xs">
-            {(['all', 'resolved', 'unresolved'] as ResolutionFilter[]).map((value) => (
-              <Button
-                key={value}
-                type="button"
-                variant={resolution === value ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setResolution(value)}
-                className="h-7 px-2 text-[10px] capitalize"
-              >
-                {value === 'all' ? 'All' : value === 'resolved' ? 'Solved' : 'Open'}
-              </Button>
-            ))}
+          <h2 className="text-body-md font-bold text-foreground">
+            {effectiveScope === 'mine' ? 'Your Discussions' : 'Recent Discussions'}
+          </h2>
+          <div className="flex flex-wrap items-center justify-end gap-xs">
+            {isAuthenticated && (
+              <div className="flex items-center rounded-md border border-border bg-card p-0.5">
+                {(['all', 'mine'] as PostScopeFilter[]).map((value) => (
+                  <Button
+                    key={value}
+                    type="button"
+                    variant={scope === value ? 'secondary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setScope(value)}
+                    className="h-6 px-2 text-[10px]"
+                  >
+                    {value === 'all' ? 'All posts' : 'My posts'}
+                  </Button>
+                ))}
+              </div>
+            )}
+            <div className="flex items-center gap-xs">
+              {(['all', 'resolved', 'unresolved'] as ResolutionFilter[]).map((value) => (
+                <Button
+                  key={value}
+                  type="button"
+                  variant={resolution === value ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setResolution(value)}
+                  className="h-7 px-2 text-[10px] capitalize"
+                >
+                  {value === 'all' ? 'All' : value === 'resolved' ? 'Solved' : 'Open'}
+                </Button>
+              ))}
+            </div>
             <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground bg-muted px-2 py-0.5 rounded">
               {data?.posts?.length || 0} posts
             </span>
@@ -102,8 +124,12 @@ export const Forum: React.FC = () => {
         {!isLoading && !isError && (!data?.posts || data.posts.length === 0) && (
           <EmptyState 
             icon={MessageSquare}
-            title="No discussions yet"
-            description="The community forum is currently empty. Be the first to start a conversation and share with the network!"
+            title={effectiveScope === 'mine' ? 'No posts from you yet' : 'No discussions yet'}
+            description={
+              effectiveScope === 'mine'
+                ? 'Your forum posts will appear here once you start a discussion.'
+                : 'The community forum is currently empty. Be the first to start a conversation and share with the network!'
+            }
             action={
               isAuthenticated 
                 ? undefined 
