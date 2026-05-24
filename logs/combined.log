@@ -3322,3 +3322,7 @@
 {"durationMs":55,"level":"info","message":"request_completed","method":"GET","path":"/api/v1/notifications/unread","requestId":"ed4a7481-4d31-477f-b86f-ee58d81554cb","service":"ascendpath-api","statusCode":304,"timestamp":"2026-05-24 16:47:48","userId":"6a11e52b842934fffbf6322c"}
 {"durationMs":63,"level":"info","message":"request_completed","method":"GET","path":"/api/v1/notifications?page=1&limit=20","requestId":"4822a681-be51-4e8c-9f89-21b0ba4c3f5e","service":"ascendpath-api","statusCode":304,"timestamp":"2026-05-24 16:47:48","userId":"6a11e52b842934fffbf6322c"}
 {"durationMs":37,"level":"info","message":"request_completed","method":"GET","path":"/api/v1/guides?search=&page=1&sortBy=fameScore","requestId":"a0ec65c0-d791-4c5e-ac5b-eb87cba2138e","service":"ascendpath-api","statusCode":200,"timestamp":"2026-05-24 16:47:48"}
+{"level":"info","message":"🔔 [NotificationListener] Central domain event subscribers registered successfully","service":"ascendpath-api","timestamp":"2026-05-24 17:11:34"}
+{"level":"info","message":"[MentorApplicationEvents] Domain event subscribers registered successfully","service":"ascendpath-api","timestamp":"2026-05-24 17:11:34"}
+{"level":"info","message":"🔔 [NotificationListener] Central domain event subscribers registered successfully","service":"ascendpath-api","timestamp":"2026-05-24 17:12:40"}
+{"level":"info","message":"[MentorApplicationEvents] Domain event subscribers registered successfully","service":"ascendpath-api","timestamp":"2026-05-24 17:12:40"}
