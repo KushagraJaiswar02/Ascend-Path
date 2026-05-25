@@ -21,9 +21,11 @@ const PublicSessionDiscovery = lazy(() => import('../pages/PublicSessionDiscover
 const SessionDetail = lazy(() => import('../pages/SessionDetail').then(m => ({ default: m.SessionDetail })));
 const Explore      = lazy(() => import('../pages/Explore').then(m => ({ default: m.Explore })));
 const Pings        = lazy(() => import('../pages/Pings').then(m => ({ default: m.Pings })));
+const MentorshipInboxPage = lazy(() => import('../pages/MentorshipInboxPage').then(m => ({ default: m.MentorshipInboxPage })));
 const ProfileDetail = lazy(() => import('../pages/ProfileDetail').then(m => ({ default: m.ProfileDetail })));
 const RoadmapDetail = lazy(() => import('../pages/RoadmapDetail').then(m => ({ default: m.RoadmapDetail })));
 const RoadmapBuilder = lazy(() => import('../pages/RoadmapBuilder').then(m => ({ default: m.RoadmapBuilder })));
+const DomainHub = lazy(() => import('../pages/DomainHub').then(m => ({ default: m.DomainHub })));
 const MentorApplication = lazy(() => import('../pages/MentorApplication').then(m => ({ default: m.MentorApplication })));
 const Onboarding = lazy(() => import('../pages/Onboarding').then(m => ({ default: m.Onboarding })));
 const Admin = lazy(() => import('../pages/Admin').then(m => ({ default: m.Admin })));
@@ -32,6 +34,8 @@ const AdminUsers = lazy(() => import('../pages/AdminUsers').then(m => ({ default
 const AdminAudit = lazy(() => import('../pages/AdminAudit').then(m => ({ default: m.AdminAudit })));
 const AdminHealth = lazy(() => import('../pages/AdminHealth').then(m => ({ default: m.AdminHealth })));
 const AdminMentorApplications = lazy(() => import('../pages/AdminMentorApplications').then(m => ({ default: m.AdminMentorApplications })));
+const Opportunities = lazy(() => import('../pages/Opportunities').then(m => ({ default: m.Opportunities })));
+const PublicGrowthShowcase = lazy(() => import('../pages/PublicGrowthShowcase').then(m => ({ default: m.PublicGrowthShowcase })));
 
 // Thin Suspense wrapper so every lazy route gets the same fallback treatment
 const Lazy = ({ children }: { children: React.ReactNode }) => (
@@ -69,6 +73,10 @@ export const router = createBrowserRouter([
         element: <Lazy><ProfileDetail /></Lazy>,
       },
       {
+        path: '/u/:username',
+        element: <Lazy><PublicGrowthShowcase /></Lazy>,
+      },
+      {
         // Protected Routes Wrapper
         element: <ProtectedRoute />,
         children: [
@@ -77,8 +85,16 @@ export const router = createBrowserRouter([
             element: <Lazy><Dashboard /></Lazy>,
           },
           {
+            path: '/opportunities',
+            element: <Lazy><Opportunities /></Lazy>,
+          },
+          {
             path: '/pings',
             element: <Lazy><Pings /></Lazy>,
+          },
+          {
+            path: '/messages',
+            element: <Lazy><MentorshipInboxPage /></Lazy>,
           },
           {
             path: '/sessions',
@@ -95,6 +111,10 @@ export const router = createBrowserRouter([
           {
             path: '/explore',
             element: <Lazy><Explore /></Lazy>,
+          },
+          {
+            path: '/domains/:slug',
+            element: <Lazy><DomainHub /></Lazy>,
           },
           {
             path: '/roadmaps/:id',

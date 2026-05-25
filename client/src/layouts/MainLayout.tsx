@@ -27,6 +27,8 @@ export const MainLayout: React.FC = () => {
     if (['moderator', 'sentinel'].includes(role)) {
       return [
         { name: 'Dashboard', to: '/dashboard', privateOnly: true },
+        { name: 'Messages', to: '/messages', privateOnly: true },
+        { name: 'Opportunities', to: '/opportunities', privateOnly: true },
         { name: 'Moderation Queue', to: '/admin/moderation', privateOnly: true },
         { name: 'Audit Logs', to: '/admin/audit', privateOnly: true },
         { name: 'Users Center', to: '/admin/users', privateOnly: true },
@@ -37,6 +39,8 @@ export const MainLayout: React.FC = () => {
     if (['admin', 'architect', 'super_admin'].includes(role)) {
       return [
         { name: 'Dashboard', to: '/dashboard', privateOnly: true },
+        { name: 'Messages', to: '/messages', privateOnly: true },
+        { name: 'Opportunities', to: '/opportunities', privateOnly: true },
         { name: 'Platform Control', to: '/admin', privateOnly: true },
         { name: 'System Health', to: '/admin/health', privateOnly: true },
         { name: 'Users Center', to: '/admin/users', privateOnly: true },
@@ -47,6 +51,8 @@ export const MainLayout: React.FC = () => {
     if (role === 'guide') {
       return [
         { name: 'Dashboard', to: '/dashboard', privateOnly: true },
+        { name: 'Messages', to: '/messages', privateOnly: true },
+        { name: 'Opportunities', to: '/opportunities', privateOnly: true },
         { name: 'Mentorship Hub', to: '/sessions', privateOnly: true },
         { name: 'Explore Paths', to: '/explore', privateOnly: true },
         { name: 'Discussion Forum', to: '/forum', privateOnly: false },
@@ -56,6 +62,8 @@ export const MainLayout: React.FC = () => {
     // Default Learner
     return [
       { name: 'Dashboard', to: '/dashboard', privateOnly: true },
+      { name: 'Messages', to: '/messages', privateOnly: true },
+      { name: 'Opportunities', to: '/opportunities', privateOnly: true },
       { name: 'Sessions Hub', to: '/sessions', privateOnly: true },
       { name: 'Explore Paths', to: '/explore', privateOnly: true },
       { name: 'Discussion Forum', to: '/forum', privateOnly: false },

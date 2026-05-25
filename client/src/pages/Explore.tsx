@@ -11,6 +11,8 @@ import { DiscoveryPostCard } from '../features/discovery/components/DiscoveryPos
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, X, ArrowUpDown, ShieldAlert, Sparkles } from 'lucide-react';
+import { useRecommendations } from '@/features/recommendations/hooks/useRecommendations';
+import { RecommendationRail } from '@/features/recommendations/components/RecommendationRail';
 
 type TabType = 'guides' | 'roadmaps' | 'posts';
 
@@ -22,6 +24,7 @@ export const Explore: React.FC = () => {
   const [page, setPage] = useState(1);
   
   const debouncedSearch = useDebounce(searchQuery, 300);
+  const recommendations = useRecommendations('explore', 4);
 
   // Reset pagination when search, filter or tab changes
   useEffect(() => {
@@ -263,6 +266,29 @@ export const Explore: React.FC = () => {
             {/* Rendered filter badges if any are active */}
             {activeTab === 'guides' && renderActiveFilterBadges()}
           </div>
+
+          {recommendations.data && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-md">
+              <RecommendationRail
+                title="Recommended For You"
+                subtitle={recommendations.data.contextLabel}
+                items={[
+                  ...recommendations.data.rails.roadmaps.slice(0, 2),
+                  ...recommendations.data.rails.mentors.slice(0, 2),
+                ]}
+                context="explore"
+              />
+              <RecommendationRail
+                title="Because You Are Exploring"
+                subtitle="Sessions and discussions matched to your goals"
+                items={[
+                  ...recommendations.data.rails.sessions.slice(0, 2),
+                  ...recommendations.data.rails.forum.slice(0, 2),
+                ]}
+                context="explore-context"
+              />
+            </div>
+          )}
 
           {/* Results Area */}
           <div>

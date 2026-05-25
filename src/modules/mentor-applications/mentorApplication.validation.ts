@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { MentorApplicationStatus } from './mentorApplication.model';
 
 const urlField = z.string().url('Must be a valid URL').or(z.literal('')).optional();
+const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid ObjectId');
 
 const uploadSchema = z.object({
   url: z.string().url('Upload must include a valid asset URL'),
@@ -27,7 +28,12 @@ const availabilitySchema = z.object({
 const applicationBody = z.object({
   bio: z.string().min(80).max(2000),
   domains: z.array(z.string().min(2).max(80)).min(1).max(12),
+  careerDomains: z.array(objectId).max(12).default([]),
+  mentorshipFocus: z.array(objectId).max(12).default([]),
   skills: z.array(z.string().min(2).max(80)).min(3).max(40),
+  specializations: z.array(z.string().min(2).max(120)).max(30).default([]),
+  industries: z.array(z.string().min(2).max(120)).max(20).default([]),
+  languages: z.array(z.string().min(2).max(40)).max(12).default([]),
   experienceYears: z.number().int().min(0).max(60),
   currentRole: z.string().max(120).optional(),
   company: z.string().max(120).optional(),
@@ -42,6 +48,9 @@ const applicationBody = z.object({
   }).optional(),
   motivation: z.string().min(80).max(2000),
   expertiseSummary: z.string().min(80).max(1600),
+  educationBackground: z.string().max(600).optional(),
+  certifications: z.array(z.string().min(2).max(160)).max(30).default([]),
+  examExpertise: z.array(z.string().min(2).max(120)).max(30).default([]),
   availability: availabilitySchema,
 });
 

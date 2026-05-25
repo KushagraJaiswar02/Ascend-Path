@@ -3,6 +3,8 @@ import { CareerRoadmap } from '../roadmaps/roadmap.model';
 import { Post } from '../posts/post.model';
 import { Session, SessionStatus } from '../sessions/session.model';
 import { userRepository } from '../users/user.repository';
+import { taxonomyService } from '../taxonomy/taxonomy.service';
+import mongoose from 'mongoose';
 
 export const searchService = {
   async searchGuides(q: string, filters: any, sort: string, page: number, limit: number) {
@@ -30,8 +32,17 @@ export const searchService = {
 
     // Filters
     if (filters.domain) {
-      // Assuming 'skills' array acts as the domain for a user
-      query.skills = { $regex: new RegExp(filters.domain, 'i') };
+      const resolved = mongoose.Types.ObjectId.isValid(filters.domain)
+        ? { id: filters.domain }
+        : await taxonomyService.resolveDomain(filters.domain);
+      const regex = new RegExp(filters.domain, 'i');
+      query.$and.push({
+        $or: [
+          ...(resolved?.id ? [{ careerDomains: new mongoose.Types.ObjectId(resolved.id) }] : []),
+          { domains: { $regex: regex } },
+          { 'skills.name': { $regex: regex } },
+        ],
+      });
     }
 
     if (filters.minFameScore) {
@@ -65,6 +76,8 @@ export const searchService = {
     const preferences = user?.onboarding;
     if (preferences?.interestedDomains?.length && !filters.domain) {
       filters.domain = preferences.interestedDomains[0];
+    } else if (preferences?.careerDomains?.length && !filters.domain) {
+      filters.domain = preferences.careerDomains[0].toString();
     }
     return await this.searchGuides(q, filters, sort, page, limit);
   },
@@ -83,7 +96,20 @@ export const searchService = {
 
     // Filters
     if (filters.domain) {
-      query.domain = { $regex: new RegExp(filters.domain, 'i') };
+      const resolved = mongoose.Types.ObjectId.isValid(filters.domain)
+        ? { id: filters.domain }
+        : await taxonomyService.resolveDomain(filters.domain);
+      const regex = new RegExp(filters.domain, 'i');
+      query.$and = [
+        ...(query.$and || []),
+        {
+          $or: [
+            ...(resolved?.id ? [{ careerDomains: new mongoose.Types.ObjectId(resolved.id) }] : []),
+            { domains: { $regex: regex } },
+            { domain: { $regex: regex } },
+          ],
+        },
+      ];
     }
 
     if (filters.maxEstimatedWeeks) {

@@ -14,6 +14,7 @@ import {
 } from './roadmap.validation';
 import { eventEmitter } from '../../utils/eventEmitter';
 import mongoose from 'mongoose';
+import { taxonomyService } from '../taxonomy/taxonomy.service';
 
 // Helper to generate unique, SEO-friendly URL slugs
 async function generateUniqueSlug(title: string): Promise<string> {
@@ -58,9 +59,23 @@ export const roadmapService = {
     }
 
     const slug = await generateUniqueSlug(data.title);
+    const careerDomains = data.careerDomains?.length
+      ? await taxonomyService.assertActiveDomains(data.careerDomains)
+      : [];
+    const careerGoals = data.careerGoals?.length
+      ? await taxonomyService.assertActiveGoals(data.careerGoals)
+      : [];
+    const nextRoadmaps = (data.nextRoadmaps || []).map((id) => new mongoose.Types.ObjectId(id));
+    const prerequisiteRoadmaps = (data.prerequisiteRoadmaps || []).map((id) => new mongoose.Types.ObjectId(id));
+    const recommendedSequence = (data.recommendedSequence || []).map((id) => new mongoose.Types.ObjectId(id));
 
     return await roadmapRepository.createRoadmap({
       ...data,
+      careerDomains: careerDomains as any,
+      careerGoals: careerGoals as any,
+      nextRoadmaps: nextRoadmaps as any,
+      prerequisiteRoadmaps: prerequisiteRoadmaps as any,
+      recommendedSequence: recommendedSequence as any,
       slug,
       createdBy: new mongoose.Types.ObjectId(userId) as any,
       // Backward compatibility fields
@@ -80,6 +95,15 @@ export const roadmapService = {
     if (data.domains) {
       updateData.domain = data.domains[0];
     }
+    if (data.careerDomains) {
+      updateData.careerDomains = await taxonomyService.assertActiveDomains(data.careerDomains);
+    }
+    if (data.careerGoals) {
+      updateData.careerGoals = await taxonomyService.assertActiveGoals(data.careerGoals);
+    }
+    if (data.nextRoadmaps) updateData.nextRoadmaps = data.nextRoadmaps.map((id) => new mongoose.Types.ObjectId(id));
+    if (data.prerequisiteRoadmaps) updateData.prerequisiteRoadmaps = data.prerequisiteRoadmaps.map((id) => new mongoose.Types.ObjectId(id));
+    if (data.recommendedSequence) updateData.recommendedSequence = data.recommendedSequence.map((id) => new mongoose.Types.ObjectId(id));
     if (data.isPublished !== undefined) {
       updateData.isPublic = data.isPublished;
     }
@@ -98,7 +122,21 @@ export const roadmapService = {
     const filters: any = { visibility: 'public', isPublished: true, moderationStatus: { $nin: ['deleted', 'hidden'] } };
 
     if (domain) {
-      filters.domains = { $regex: new RegExp(domain.trim(), 'i') };
+      const resolved = mongoose.Types.ObjectId.isValid(domain)
+        ? { id: domain }
+        : await taxonomyService.resolveDomain(domain);
+      if (resolved?.id) {
+        filters.$or = [
+          { careerDomains: new mongoose.Types.ObjectId(resolved.id) },
+          { domains: { $regex: new RegExp(domain.trim(), 'i') } },
+          { domain: { $regex: new RegExp(domain.trim(), 'i') } },
+        ];
+      } else {
+        filters.$or = [
+          { domains: { $regex: new RegExp(domain.trim(), 'i') } },
+          { domain: { $regex: new RegExp(domain.trim(), 'i') } },
+        ];
+      }
     }
     if (difficulty) {
       filters.difficulty = difficulty.toLowerCase().trim();

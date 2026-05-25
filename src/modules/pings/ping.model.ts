@@ -15,6 +15,7 @@ export interface IPingRequest extends Document {
   status: PingStatus;
   response?: string;
   responseRating?: number;
+  conversationId?: mongoose.Types.ObjectId;
   expiresAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -33,6 +34,7 @@ const pingSchema = new Schema<IPingRequest>(
     },
     response: { type: String },
     responseRating: { type: Number, min: 1, max: 5 },
+    conversationId: { type: Schema.Types.ObjectId, ref: 'MentorshipConversation' },
     expiresAt: {
       type: Date,
       default: () => new Date(Date.now() + 48 * 60 * 60 * 1000), // Default 48 hours

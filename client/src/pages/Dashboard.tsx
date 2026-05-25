@@ -6,10 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, RefreshCw } from 'lucide-react';
-import { PersonalizedWelcomeBanner } from '../features/onboarding/components/PersonalizedWelcomeBanner';
-import { RecommendationPreview } from '../features/onboarding/components/RecommendationPreview';
-import { useOnboardingRecommendations } from '../features/onboarding/hooks/useOnboarding';
-import { MenteeDashboard } from '../features/dashboard/components/MenteeDashboard';
+import { AdaptiveDashboardRouter } from '../features/dashboard/components/AdaptiveDashboardRouter';
 import { MentorDashboard } from '../features/dashboard/components/MentorDashboard';
 import { ModeratorDashboard } from '../features/dashboard/components/ModeratorDashboard';
 import { AdminDashboard } from '../features/dashboard/components/AdminDashboard';
@@ -17,7 +14,6 @@ import { AdminDashboard } from '../features/dashboard/components/AdminDashboard'
 export const Dashboard: React.FC = () => {
   const { user } = useAuthStore();
   const { data, isLoading, isError, refetch } = useDashboardData();
-  const onboardingRecommendations = useOnboardingRecommendations();
 
   // 1. High-fidelity Loading Skeleton Grid specific to Mentor / Mentee/ Admin roles
   if (isLoading) {
@@ -177,27 +173,9 @@ export const Dashboard: React.FC = () => {
 
   const role = user?.role || 'user';
   const isMentor = role === 'guide';
-  const isOperator = ['admin', 'architect', 'super_admin', 'moderator', 'sentinel'].includes(role);
 
   return (
     <PageContainer size="default">
-      {/* Mentee Onboarding Recommendation Banners (hidden for mentors & administrators) */}
-      {!isMentor && !isOperator && (
-        <>
-          <PersonalizedWelcomeBanner
-            recommendations={onboardingRecommendations.data}
-            isLoading={onboardingRecommendations.isLoading}
-          />
-
-          {onboardingRecommendations.data?.onboardingCompleted && (
-            <div className="mb-6">
-              <RecommendationPreview recommendations={onboardingRecommendations.data} />
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Render the role-appropriate simplified dashboard */}
       {['admin', 'architect', 'super_admin'].includes(role) ? (
         <AdminDashboard />
       ) : ['moderator', 'sentinel'].includes(role) ? (
@@ -205,7 +183,7 @@ export const Dashboard: React.FC = () => {
       ) : isMentor ? (
         <MentorDashboard data={data!} user={user!} />
       ) : (
-        <MenteeDashboard data={data!} user={user!} />
+        <AdaptiveDashboardRouter data={data!} user={user!} />
       )}
     </PageContainer>
   );

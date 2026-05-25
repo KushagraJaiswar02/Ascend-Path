@@ -69,6 +69,15 @@ import { reviewRoutes } from './modules/reviews/review.routes';
 import { adminRoutes } from './modules/admin/admin.routes';
 import { mentorApplicationRoutes, adminMentorApplicationRoutes } from './modules/mentor-applications/mentorApplication.routes';
 import { onboardingRoutes } from './modules/onboarding/onboarding.routes';
+import { adminTaxonomyRoutes, taxonomyRoutes } from './modules/taxonomy/taxonomy.routes';
+import { adminRecommendationRoutes, recommendationRoutes } from './modules/recommendations/recommendation.routes';
+import { adminPathwayRoutes, pathwayRoutes } from './modules/pathways/pathway.routes';
+import { adminCompanionRoutes, companionRoutes } from './modules/companion/companion.routes';
+import { opportunityRoutes, adminOpportunityRoutes } from './modules/opportunities/opportunity.routes';
+import { portfolioRoutes } from './modules/portfolio/portfolio.routes';
+import { achievementRoutes } from './modules/achievements/achievement.routes';
+import { endorsementRoutes } from './modules/endorsements/endorsement.routes';
+import { mentorshipRoutes } from './modules/mentorship/mentorship.routes';
 import { sessionReflectionController } from './modules/sessions/sessionReflection.controller';
 import { authMiddleware } from './middleware/auth.middleware';
 
@@ -90,8 +99,22 @@ app.use('/api/v1/guides', guideRoutes);
 app.use('/api/v1/reviews', reviewRoutes);
 app.use('/api/v1/mentor-applications', mentorApplicationRoutes);
 app.use('/api/v1/onboarding', onboardingRoutes);
+app.use('/api/v1/taxonomy', taxonomyRoutes);
+app.use('/api/v1/recommendations', recommendationRoutes);
+app.use('/api/v1/pathways', pathwayRoutes);
+app.use('/api/v1/companion', companionRoutes);
+app.use('/api/v1/opportunities', opportunityRoutes);
+app.use('/api/v1/mentorship', mentorshipRoutes);
+app.use('/api/v1/admin/opportunities', adminOpportunityRoutes);
 app.use('/api/v1/admin/mentor-applications', adminMentorApplicationRoutes);
+app.use('/api/v1/admin/taxonomy', adminTaxonomyRoutes);
+app.use('/api/v1/admin/recommendations', adminRecommendationRoutes);
+app.use('/api/v1/admin/pathways', adminPathwayRoutes);
+app.use('/api/v1/admin/companion', adminCompanionRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/portfolio', portfolioRoutes);
+app.use('/api/v1/achievements', achievementRoutes);
+app.use('/api/v1/endorsements', endorsementRoutes);
 
 // Global Error Handler
 app.use(errorHandler);
@@ -99,5 +122,8 @@ app.use(errorHandler);
 // Bootstrap Notification Listeners
 import './modules/notifications/notification.listener';
 import './modules/mentor-applications/mentorApplication.events';
+import './modules/mentorship/mentorship.events';
+import './modules/companion/careerCompanion.service';
+import './modules/achievements/achievement.listener';
 
 export default app;

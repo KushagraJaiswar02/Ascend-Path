@@ -10,6 +10,7 @@ import { fameService } from '../users/fame.service';
 import { eventEmitter } from '../../utils/eventEmitter';
 import { logger } from '../../utils/logger';
 import { sessionExecutionService } from './sessionExecution.service';
+import { taxonomyService } from '../taxonomy/taxonomy.service';
 
 const getId = (value: any) => value?._id?.toString?.() || value?.toString?.() || '';
 const createHttpError = (statusCode: number, message: string) => ({ statusCode, message });
@@ -30,6 +31,8 @@ export const sessionService = {
 
     const createData: any = {
       ...data,
+      careerDomains: data.careerDomains?.length ? await taxonomyService.assertActiveDomains(data.careerDomains) : [],
+      careerGoals: data.careerGoals?.length ? await taxonomyService.assertActiveGoals(data.careerGoals) : [],
       scheduledAt: new Date(data.scheduledAt),
       roadmapId: data.roadmapId ? new mongoose.Types.ObjectId(data.roadmapId) as any : undefined,
       guideId: userId as any,
@@ -60,6 +63,12 @@ export const sessionService = {
     if (data.scheduledAt) {
       updateData.scheduledAt = new Date(data.scheduledAt);
     }
+    if (data.careerDomains) {
+      updateData.careerDomains = await taxonomyService.assertActiveDomains(data.careerDomains);
+    }
+    if (data.careerGoals) {
+      updateData.careerGoals = await taxonomyService.assertActiveGoals(data.careerGoals);
+    }
 
     return await sessionRepository.updateSession(sessionId, updateData);
   },
@@ -84,6 +93,10 @@ export const sessionService = {
   },
 
   async getPublicWorkshops(filters: { domain?: string; difficulty?: string; guideId?: string }, page: number, limit: number) {
+    if (filters.domain && !mongoose.Types.ObjectId.isValid(filters.domain)) {
+      const resolved = await taxonomyService.resolveDomain(filters.domain);
+      if (resolved?.id) filters.domain = resolved.id;
+    }
     return await sessionRepository.getPublicWorkshops(filters, page, limit);
   },
 

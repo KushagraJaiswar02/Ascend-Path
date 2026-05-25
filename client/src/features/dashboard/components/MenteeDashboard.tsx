@@ -20,6 +20,19 @@ import { EmptyStateCard } from './EmptyStateCard';
 import { StatsCard } from './StatsCard';
 import { UpcomingSessions } from './UpcomingSessions';
 import { RecentPings } from './RecentPings';
+import { ContextualWorkshopRecommendations } from '../../recommendations/components/ContextualWorkshopRecommendations';
+import { PersonalizedMentorStrip } from '../../recommendations/components/PersonalizedMentorStrip';
+import { SimilarLearnerMomentum } from '../../recommendations/components/SimilarLearnerMomentum';
+import { SmartRoadmapSuggestions } from '../../recommendations/components/SmartRoadmapSuggestions';
+import { CareerJourneyMap } from '../../pathways/components/CareerJourneyMap';
+import { AdaptiveNextStepPanel } from '../../companion/components/AdaptiveNextStepPanel';
+import { BlockerInsights } from '../../companion/components/BlockerInsights';
+import { CareerGrowthTimeline } from '../../companion/components/CareerGrowthTimeline';
+import { ConfidencePulse } from '../../companion/components/ConfidencePulse';
+import { GrowthCheckIn } from '../../companion/components/GrowthCheckIn';
+import { JourneyReflectionJournal } from '../../companion/components/JourneyReflectionJournal';
+import { MomentumTracker } from '../../companion/components/MomentumTracker';
+import { ProgressRecoveryCard } from '../../companion/components/ProgressRecoveryCard';
 import { useMyActiveRoadmaps, useRoadmap } from '../../roadmaps/hooks/useRoadmapProgress';
 import { RoadmapProgressBar } from '../../roadmaps/components/RoadmapProgressBar';
 import type { DashboardData } from '../hooks/useDashboardData';
@@ -198,6 +211,44 @@ export const MenteeDashboard: React.FC<MenteeDashboardProps> = ({ data, user }) 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* Left Column (2/3 width) - Upcoming Sessions & Pending Pings */}
         <div className="lg:col-span-2 space-y-8">
+          {data.companion && (
+            <DashboardSection
+              title="Career Companion"
+              subtitle="Your long-term growth memory, confidence, and next-step guidance"
+            >
+              <div className="space-y-6">
+                <ProgressRecoveryCard guidance={data.companion.adaptiveGuidance} />
+                <AdaptiveNextStepPanel guidance={data.companion.adaptiveGuidance} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <MomentumTracker profile={data.companion.profile} />
+                  <ConfidencePulse profile={data.companion.profile} />
+                </div>
+              </div>
+            </DashboardSection>
+          )}
+
+          {data.careerJourney && (
+            <CareerJourneyMap journey={data.careerJourney} />
+          )}
+
+          {data.contextualRecommendations && (
+            <DashboardSection
+              title="Recommended For You"
+              subtitle={data.contextualRecommendations.contextLabel || 'Contextual suggestions based on your career goals and constraints'}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <SmartRoadmapSuggestions
+                  items={data.contextualRecommendations.rails.roadmaps}
+                  contextLabel={data.contextualRecommendations.contextLabel}
+                />
+                <PersonalizedMentorStrip
+                  items={data.contextualRecommendations.rails.mentors}
+                  contextLabel={data.contextualRecommendations.contextLabel}
+                />
+              </div>
+            </DashboardSection>
+          )}
+
           <DashboardSection
             title="Upcoming Mentorship & Guidance"
             subtitle="Connect with guides, answer follow-ups, and review booked slots"
@@ -283,6 +334,25 @@ export const MenteeDashboard: React.FC<MenteeDashboardProps> = ({ data, user }) 
 
         {/* Right Column (1/3 width) - Lightweight Momentum Section */}
         <div className="space-y-6">
+          {data.companion && (
+            <>
+              <GrowthCheckIn />
+              <BlockerInsights blockers={data.companion.profile.blockers} />
+              <CareerGrowthTimeline events={data.companion.timeline} />
+              <JourneyReflectionJournal entries={data.companion.journal} />
+            </>
+          )}
+
+          {data.contextualRecommendations && (
+            <>
+              <ContextualWorkshopRecommendations
+                items={data.contextualRecommendations.rails.sessions}
+                contextLabel={data.contextualRecommendations.contextLabel}
+              />
+              <SimilarLearnerMomentum journey={data.contextualRecommendations.starterJourney} />
+            </>
+          )}
+
           <DashboardSection
             title="Your Momentum"
             subtitle="Encouraging signals on your path"

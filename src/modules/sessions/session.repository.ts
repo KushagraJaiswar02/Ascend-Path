@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Session, ISession, SessionStatus, SessionType } from './session.model';
 
 export const sessionRepository = {
@@ -115,7 +116,14 @@ export const sessionRepository = {
       scheduledAt: { $gt: new Date(Date.now() - 2 * 60 * 60 * 1000) },
     };
 
-    if (filters.domain) query.domains = { $regex: new RegExp(filters.domain, 'i') };
+    if (filters.domain) {
+      query.$or = mongoose.Types.ObjectId.isValid(filters.domain)
+        ? [
+            { careerDomains: new mongoose.Types.ObjectId(filters.domain) },
+            { domains: { $regex: new RegExp(filters.domain, 'i') } },
+          ]
+        : [{ domains: { $regex: new RegExp(filters.domain, 'i') } }];
+    }
     if (filters.difficulty) query.difficulty = filters.difficulty;
     if (filters.guideId) query.guideId = filters.guideId;
 

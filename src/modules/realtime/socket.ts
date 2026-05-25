@@ -64,6 +64,24 @@ export const socketService = {
       // Enforce user-specific isolated room subscription
       socket.join(`user_${socket.userId}`);
 
+      socket.on('MENTORSHIP_TYPING_STARTED', (payload: { recipientId?: string; conversationId: string }) => {
+        if (payload?.recipientId) {
+          this.toUser(payload.recipientId, 'MENTORSHIP_TYPING_STARTED', {
+            conversationId: payload.conversationId,
+            userId: socket.userId,
+          });
+        }
+      });
+
+      socket.on('MENTORSHIP_TYPING_STOPPED', (payload: { recipientId?: string; conversationId: string }) => {
+        if (payload?.recipientId) {
+          this.toUser(payload.recipientId, 'MENTORSHIP_TYPING_STOPPED', {
+            conversationId: payload.conversationId,
+            userId: socket.userId,
+          });
+        }
+      });
+
       socket.on('disconnect', () => {
         console.log(`🔌 [Websocket] User ${socket.userId} disconnected from connection registry`);
       });

@@ -1,10 +1,58 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, BookOpen, MessageSquare, UserRound } from 'lucide-react';
+import { ArrowRight, BookOpen, CalendarDays, MessageSquare, UserRound } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
 import type { RecommendationResponse } from '../types';
+import { SimilarLearnerMomentum } from '../../recommendations/components/SimilarLearnerMomentum';
 
 export const RecommendationPreview = ({ recommendations }: { recommendations?: RecommendationResponse }) => {
   if (!recommendations) return null;
+
+  if (recommendations.rails) {
+    return (
+      <div className="space-y-4">
+        <p className="text-sm font-medium text-muted-foreground">{recommendations.contextLabel}</p>
+        <div className="grid gap-4 lg:grid-cols-4">
+          <RecommendationColumn
+            title="Roadmaps"
+            icon={<BookOpen className="h-4 w-4" />}
+            items={recommendations.rails.roadmaps.slice(0, 3).map((entry) => ({
+              label: entry.item.title,
+              detail: entry.reasons.join(', '),
+              href: `/roadmaps/${entry.item.slug || entry.item._id}`,
+            }))}
+          />
+          <RecommendationColumn
+            title="Mentors"
+            icon={<UserRound className="h-4 w-4" />}
+            items={recommendations.rails.mentors.slice(0, 3).map((entry) => ({
+              label: entry.item.name,
+              detail: entry.reasons.join(', '),
+              href: `/profile/${entry.item._id}`,
+            }))}
+          />
+          <RecommendationColumn
+            title="Workshops"
+            icon={<CalendarDays className="h-4 w-4" />}
+            items={recommendations.rails.sessions.slice(0, 3).map((entry) => ({
+              label: entry.item.title,
+              detail: entry.reasons.join(', '),
+              href: `/sessions/${entry.item._id}`,
+            }))}
+          />
+          <RecommendationColumn
+            title="Community"
+            icon={<MessageSquare className="h-4 w-4" />}
+            items={recommendations.rails.forum.slice(0, 3).map((entry) => ({
+              label: entry.item.title,
+              detail: entry.reasons.join(', '),
+              href: `/forum/${entry.item._id}`,
+            }))}
+          />
+        </div>
+        <SimilarLearnerMomentum journey={recommendations.starterJourney} />
+      </div>
+    );
+  }
 
   return (
     <div className="grid gap-4 lg:grid-cols-3">

@@ -67,6 +67,11 @@ export interface ISession extends Document {
   topic: string;
   description?: string;
   domains?: string[];
+  careerDomains?: mongoose.Types.ObjectId[];
+  careerGoals?: mongoose.Types.ObjectId[];
+  languages?: string[];
+  audienceStages?: string[];
+  budgetRange?: string;
   tags?: string[];
   difficulty?: 'beginner' | 'intermediate' | 'advanced';
   scheduledAt: Date;
@@ -123,6 +128,11 @@ const sessionSchema = new Schema<ISession>(
     topic: { type: String, required: true },
     description: { type: String },
     domains: { type: [String], default: [] },
+    careerDomains: { type: [Schema.Types.ObjectId], ref: 'CareerDomain', default: [], index: true },
+    careerGoals: { type: [Schema.Types.ObjectId], ref: 'CareerGoal', default: [], index: true },
+    languages: { type: [String], default: [] },
+    audienceStages: { type: [String], default: [] },
+    budgetRange: { type: String, trim: true },
     tags: { type: [String], default: [] },
     difficulty: { type: String, enum: ['beginner', 'intermediate', 'advanced'] },
     scheduledAt: { type: Date, required: true },
@@ -212,6 +222,10 @@ const sessionSchema = new Schema<ISession>(
 sessionSchema.index({ guideId: 1, status: 1 });
 sessionSchema.index({ clientId: 1, status: 1 });
 sessionSchema.index({ sessionType: 1, status: 1, scheduledAt: 1 });
+sessionSchema.index({ careerDomains: 1, scheduledAt: 1 });
+sessionSchema.index({ careerGoals: 1, scheduledAt: 1 });
+sessionSchema.index({ audienceStages: 1, budgetRange: 1 });
+sessionSchema.index({ languages: 1, budgetRange: 1 });
 sessionSchema.index({ isPublic: 1, scheduledAt: 1 });
 sessionSchema.index({ scheduledAt: 1 });
 

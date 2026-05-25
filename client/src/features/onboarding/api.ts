@@ -1,5 +1,5 @@
 import { apiClient } from '../../services/apiClient';
-import type { OnboardingPayload, RecommendationResponse } from './types';
+import type { DashboardExperiencePayload, OnboardingPayload, RecommendationResponse } from './types';
 
 export const onboardingApi = {
   async submit(payload: OnboardingPayload) {
@@ -10,5 +10,10 @@ export const onboardingApi = {
   async recommendations() {
     const { data } = await apiClient.get('/onboarding/recommendations');
     return data.data as RecommendationResponse;
+  },
+
+  async dashboardExperience() {
+    const { data } = await apiClient.get('/onboarding/dashboard-experience');
+    return data.data as DashboardExperiencePayload;
   },
 };

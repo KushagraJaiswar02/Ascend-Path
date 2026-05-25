@@ -12,6 +12,7 @@ import { ReviewCard } from '../features/reviews/components/ReviewCard';
 import { ReviewReportDialog } from '../features/reviews/components/ReviewReportDialog';
 import { RoadmapPreview } from '../features/guides/components/RoadmapPreview';
 import { PingGuideDialog } from '../features/guides/components/PingGuideDialog';
+import { ProfileCredibilityPanel } from '../features/credibility/components/ProfileCredibilityPanel';
 import { BookSessionDialog } from '../features/guides/components/BookSessionDialog';
 import { useAuthStore } from '../store/useAuthStore';
 import { PageContainer } from '@/components/layout/PageContainer';
@@ -201,6 +202,12 @@ export const ProfileDetail: React.FC = () => {
                 >
                   Verified Reviews ({reviewsData.total})
                 </TabsTrigger>
+                <TabsTrigger
+                  value="credibility"
+                  className="px-md py-xs font-bold uppercase tracking-wider text-[11px] rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all"
+                >
+                  Credibility
+                </TabsTrigger>
               </TabsList>
             </div>
 
@@ -267,6 +274,14 @@ export const ProfileDetail: React.FC = () => {
                   )}
                 </div>
               )}
+            </TabsContent>
+
+            <TabsContent value="credibility" className="focus-visible:outline-none focus-visible:ring-0">
+              <ProfileCredibilityPanel
+                userId={guide._id}
+                totalSessions={guide.totalSessions}
+                averageRating={guide.averageRating}
+              />
             </TabsContent>
           </Tabs>
         </div>

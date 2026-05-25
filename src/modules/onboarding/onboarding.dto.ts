@@ -9,19 +9,20 @@ const goalLabels: Record<string, string> = {
 };
 
 export const buildPersonalizationCopy = (onboarding: any) => {
-  const role = onboarding?.targetRole || 'your career goal';
+  const role = onboarding?.targetRole || onboarding?.careerStage?.replace(/_/g, ' ') || 'your career goal';
   const domain = onboarding?.interestedDomains?.[0] || 'career growth';
-  const goal = goalLabels[onboarding?.primaryGoal] || 'move forward';
+  const goal = goalLabels[onboarding?.primaryGoal] || onboarding?.primaryGoal || 'move forward';
   return {
     headline: `Continue your ${role} journey`,
-    subheading: `Recommended ${domain} roadmaps, mentors, and discussions to help you ${goal}.`,
+    subheading: `Recommended ${domain} roadmaps, mentors, sessions, and discussions to help you ${goal}.`,
     primaryAction: onboarding?.primaryGoal === 'find_mentor_guidance' ? 'Book a mentor session' : 'Start a roadmap',
   };
 };
 
 export const scoreReason = (kind: 'roadmap' | 'mentor' | 'post', onboarding: any) => {
   const domain = onboarding?.interestedDomains?.[0];
-  if (kind === 'mentor') return domain ? `Strong match for ${domain} and your ${onboarding.experienceLevel} level.` : 'Recommended from mentor reputation signals.';
+  const stage = onboarding?.careerStage?.replace(/_/g, ' ') || onboarding?.experienceLevel || 'current';
+  if (kind === 'mentor') return domain ? `Strong match for ${domain}, your ${stage} stage, and mentor quality signals.` : 'Recommended from mentor reputation signals.';
   if (kind === 'post') return domain ? `Useful discussion for ${domain} learners.` : 'Popular beginner-friendly community thread.';
-  return domain ? `Aligned with ${domain}, ${onboarding.targetRole}, and your weekly commitment.` : 'Ranked by fit and learner momentum.';
+  return domain ? `Aligned with ${domain}, ${onboarding.targetRole || stage}, goals, and your weekly commitment.` : 'Ranked by fit and learner momentum.';
 };

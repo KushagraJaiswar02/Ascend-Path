@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid ObjectId');
+
 // --- Roadmap Validations ---
 export const createRoadmapSchema = z.object({
   body: z.object({
@@ -7,6 +9,15 @@ export const createRoadmapSchema = z.object({
     description: z.string().max(2000, 'Description cannot exceed 2000 characters').trim().optional(),
     thumbnail: z.string().url('Thumbnail must be a valid URL').or(z.literal('')).optional(),
     domains: z.array(z.string()).default([]),
+    careerDomains: z.array(objectId).default([]),
+    careerGoals: z.array(objectId).default([]),
+    targetStages: z.array(z.string().min(2).max(80).trim()).default([]),
+    languages: z.array(z.string().min(2).max(40).trim()).default([]),
+    budgetRange: z.string().max(80).trim().optional(),
+    pathType: z.enum(['exam_prep', 'career_path', 'freelancing', 'study_abroad', 'vocational', 'skill_growth']).default('career_path'),
+    nextRoadmaps: z.array(objectId).default([]),
+    prerequisiteRoadmaps: z.array(objectId).default([]),
+    recommendedSequence: z.array(objectId).default([]),
     tags: z.array(z.string()).default([]),
     difficulty: z.enum(['beginner', 'intermediate', 'advanced']).default('beginner'),
     estimatedWeeks: z.number().int().min(1).max(260).optional(),
@@ -26,6 +37,15 @@ export const updateRoadmapSchema = z.object({
     description: z.string().max(2000).trim().optional(),
     thumbnail: z.string().url('Thumbnail must be a valid URL').or(z.literal('')).optional(),
     domains: z.array(z.string()).optional(),
+    careerDomains: z.array(objectId).optional(),
+    careerGoals: z.array(objectId).optional(),
+    targetStages: z.array(z.string().min(2).max(80).trim()).optional(),
+    languages: z.array(z.string().min(2).max(40).trim()).optional(),
+    budgetRange: z.string().max(80).trim().optional(),
+    pathType: z.enum(['exam_prep', 'career_path', 'freelancing', 'study_abroad', 'vocational', 'skill_growth']).optional(),
+    nextRoadmaps: z.array(objectId).optional(),
+    prerequisiteRoadmaps: z.array(objectId).optional(),
+    recommendedSequence: z.array(objectId).optional(),
     tags: z.array(z.string()).optional(),
     difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
     estimatedWeeks: z.number().int().min(1).max(260).optional(),

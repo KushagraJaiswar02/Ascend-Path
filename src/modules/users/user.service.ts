@@ -1,6 +1,6 @@
 import { userRepository } from './user.repository';
 import { RegisterUserInput } from './user.validation';
-import { Role } from './user.model';
+import { User, IUser, Role } from './user.model';
 import { logger } from '../../utils/logger';
 
 export const userService = {
@@ -67,5 +67,46 @@ export const userService = {
     // Basic event-like logger for role upgrades
     logger.info(`[EVENT] RoleUpgrade: User ${userId} unlocked ${newRole}`);
     // Future implementation: eventEmitter.emit('roleUpgrade', { userId, newRole })
+  },
+
+  async updateProfessionalProfile(
+    userId: string,
+    data: {
+      username?: string;
+      headline?: string;
+      specialization?: string;
+      portfolioLinks?: { label: string; url: string }[];
+    }
+  ): Promise<IUser> {
+    // If username is being set, ensure it's unique
+    if (data.username) {
+      const existing = await User.findOne({ username: data.username, _id: { $ne: userId } }).lean();
+      if (existing) throw { statusCode: 409, message: 'Username is already taken. Please choose another.' };
+    }
+
+    const updated = await User.findByIdAndUpdate(
+      userId,
+      { $set: data },
+      { new: true, runValidators: true }
+    ).select('-passwordHash').lean();
+
+    if (!updated) throw { statusCode: 404, message: 'User not found' };
+    return updated as IUser;
+  },
+
+  async getPublicProfileByUsername(username: string) {
+    const user = await User.findOne({ username, profileVisibility: true })
+      .select('-passwordHash -email -falseReportStrikes -moderatorNotes -suspensionReason')
+      .lean();
+    if (!user) throw { statusCode: 404, message: 'Profile not found or not public' };
+    return user;
+  },
+
+  async getPublicProfileById(userId: string) {
+    const user = await User.findById(userId)
+      .select('-passwordHash -email -falseReportStrikes -moderatorNotes -suspensionReason')
+      .lean();
+    if (!user) throw { statusCode: 404, message: 'User not found' };
+    return user;
   },
 };

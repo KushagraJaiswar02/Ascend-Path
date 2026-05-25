@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { onboardingService } from './onboarding.service';
+import { dashboardExperienceService } from './dashboardExperience.service';
 import { submitOnboardingSchema } from './onboarding.validation';
 
 export const onboardingController = {
@@ -16,6 +17,15 @@ export const onboardingController = {
   async recommendations(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await onboardingService.getRecommendations((req as any).user._id);
+      res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async dashboardExperience(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await dashboardExperienceService.getForUser((req as any).user._id);
       res.status(200).json({ success: true, data: result });
     } catch (error) {
       next(error);

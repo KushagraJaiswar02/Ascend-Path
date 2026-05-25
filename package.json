@@ -14,7 +14,8 @@
     "seed:dummy": "node scripts/seedDummyData.js",
     "seed:bulk": "node scripts/seedBulkDemoData.js",
     "seed:coverage": "node scripts/seedCoverageDemoData.js",
-    "seed:forum": "node scripts/seedForumPosts.js"
+    "seed:forum": "node scripts/seedForumPosts.js",
+    "seed:taxonomy": "node scripts/seedCareerTaxonomy.js"
   },
   "keywords": [],
   "author": "",

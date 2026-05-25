@@ -5,6 +5,9 @@ export const createPingSchema = z.object({
     toUserId: z.string().min(1, 'Target User ID is required'),
     question: z.string().min(10, 'Question must be at least 10 characters long').max(1000, 'Question cannot exceed 1000 characters').trim(),
     context: z.string().max(2000, 'Context cannot exceed 2000 characters').trim().optional(),
+    startedFrom: z.enum(['roadmap', 'opportunity', 'mentor-profile', 'dashboard', 'domain-page']).default('mentor-profile'),
+    linkedRoadmapId: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
+    linkedOpportunityId: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
   }),
 });
 

@@ -26,6 +26,11 @@ export enum NotificationType {
   REPORT_REVIEWED = 'report_reviewed',
   USER_SUSPENDED = 'user_suspended',
   FALSE_REPORT_PENALTY_APPLIED = 'false_report_penalty_applied',
+  MENTORSHIP_REQUEST_RECEIVED = 'mentorship_request_received',
+  MENTORSHIP_MESSAGE_RECEIVED = 'mentorship_message_received',
+  SESSION_ESCALATION_REQUESTED = 'session_escalation_requested',
+  SESSION_ESCALATION_ACCEPTED = 'session_escalation_accepted',
+  SESSION_ESCALATION_DECLINED = 'session_escalation_declined',
 }
 
 export interface INotification extends Document {

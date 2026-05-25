@@ -1,20 +1,28 @@
 import { cn } from '../../../lib/utils';
-import { onboardingDomains } from '../options';
+import { ClusterAccordion } from '../../taxonomy/components/ClusterAccordion';
+import type { CareerCluster } from '../../taxonomy/types';
 
 export const DomainSelector = ({
+  clusters,
   value,
   onChange,
 }: {
+  clusters?: CareerCluster[];
   value: string[];
   onChange: (value: string[]) => void;
 }) => {
+  if (clusters?.length) {
+    return <ClusterAccordion clusters={clusters} value={value} onChange={onChange} />;
+  }
+
+  const fallbackDomains = ['Computer Science', 'Medicine', 'Finance', 'Marketing', 'Civil Services', 'UX Design', 'Psychology', 'Mechanical Engineering'];
   const toggle = (domain: string) => {
     onChange(value.includes(domain) ? value.filter((item) => item !== domain) : [...value, domain]);
   };
 
   return (
-    <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
-      {onboardingDomains.map((domain) => (
+    <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+      {fallbackDomains.map((domain) => (
         <button
           key={domain}
           type="button"

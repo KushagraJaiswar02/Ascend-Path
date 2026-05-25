@@ -19,6 +19,9 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, BookOpen, AlertCircle, Award, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { RoadmapSequenceVisualizer } from '@/features/pathways/components/RoadmapSequenceVisualizer';
+import { useRecommendations } from '@/features/recommendations/hooks/useRecommendations';
+import { RecommendationRail } from '@/features/recommendations/components/RecommendationRail';
 
 export const RoadmapDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -34,6 +37,7 @@ export const RoadmapDetail: React.FC = () => {
     data: progress,
   } = useMyRoadmapProgress(roadmap?._id || '', !!roadmap?._id);
   const { data: community } = useRoadmapCommunity(roadmap?._id);
+  const { data: recommendations } = useRecommendations('roadmaps', 3);
 
   // Mutations
   const enrollMutation = useEnrollInRoadmap();
@@ -242,6 +246,22 @@ export const RoadmapDetail: React.FC = () => {
         {/* Right Side: Curator details, target outcomes, prerequisites sidebar */}
         <div className="space-y-6">
           <CommunityProgressIndicator community={community} />
+
+          <RoadmapSequenceVisualizer
+            roadmaps={[
+              ...(roadmap.nextRoadmaps || []),
+              ...(roadmap.recommendedSequence || []),
+            ]}
+          />
+
+          {recommendations?.rails?.roadmaps?.length ? (
+            <RecommendationRail
+              title="Where This Can Lead"
+              subtitle="Suggested next paths based on your journey"
+              items={recommendations.rails.roadmaps}
+              context="roadmap-next-path"
+            />
+          ) : null}
 
           {/* Owning Curator Profile */}
           {roadmap.createdBy && (

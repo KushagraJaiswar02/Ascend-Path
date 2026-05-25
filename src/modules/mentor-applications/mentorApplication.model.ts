@@ -21,7 +21,12 @@ export interface IMentorApplication extends Document {
   userId: mongoose.Types.ObjectId;
   bio: string;
   domains: string[];
+  careerDomains: mongoose.Types.ObjectId[];
+  mentorshipFocus: mongoose.Types.ObjectId[];
   skills: string[];
+  specializations: string[];
+  industries: string[];
+  languages: string[];
   experienceYears: number;
   currentRole?: string;
   company?: string;
@@ -36,6 +41,9 @@ export interface IMentorApplication extends Document {
   };
   motivation: string;
   expertiseSummary: string;
+  educationBackground?: string;
+  certifications: string[];
+  examExpertise: string[];
   availability: {
     text: string;
     hoursPerWeek?: number;
@@ -69,7 +77,12 @@ const mentorApplicationSchema = new Schema<IMentorApplication>(
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     bio: { type: String, required: true, trim: true, maxlength: 2000 },
     domains: { type: [String], required: true, default: [] },
+    careerDomains: { type: [Schema.Types.ObjectId], ref: 'CareerDomain', default: [], index: true },
+    mentorshipFocus: { type: [Schema.Types.ObjectId], ref: 'CareerGoal', default: [] },
     skills: { type: [String], required: true, default: [] },
+    specializations: { type: [String], default: [] },
+    industries: { type: [String], default: [] },
+    languages: { type: [String], default: [] },
     experienceYears: { type: Number, required: true, min: 0, max: 60 },
     currentRole: { type: String, trim: true, maxlength: 120 },
     company: { type: String, trim: true, maxlength: 120 },
@@ -84,6 +97,9 @@ const mentorApplicationSchema = new Schema<IMentorApplication>(
     },
     motivation: { type: String, required: true, trim: true, maxlength: 2000 },
     expertiseSummary: { type: String, required: true, trim: true, maxlength: 1600 },
+    educationBackground: { type: String, trim: true, maxlength: 600 },
+    certifications: { type: [String], default: [] },
+    examExpertise: { type: [String], default: [] },
     availability: {
       text: { type: String, required: true, trim: true, maxlength: 300 },
       hoursPerWeek: { type: Number, min: 1, max: 80 },
@@ -111,5 +127,6 @@ const mentorApplicationSchema = new Schema<IMentorApplication>(
 
 mentorApplicationSchema.index({ status: 1, createdAt: -1 });
 mentorApplicationSchema.index({ userId: 1, status: 1 });
+mentorApplicationSchema.index({ careerDomains: 1, mentorshipFocus: 1 });
 
 export const MentorApplication = mongoose.model<IMentorApplication>('MentorApplication', mentorApplicationSchema);

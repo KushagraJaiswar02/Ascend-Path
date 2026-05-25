@@ -23,7 +23,7 @@ export const Login: React.FC = () => {
     onSuccess: (responseBody) => {
       const { user, accessToken } = responseBody.data;
       login(user, accessToken);
-      navigate('/dashboard');
+      navigate(learnerRoles.includes(user.role) && !user.onboardingCompleted ? '/onboarding' : '/dashboard');
     },
     onError: (error: any) => {
       setErrorMsg(error.response?.data?.error || 'Login failed. Please try again.');
@@ -103,3 +103,4 @@ export const Login: React.FC = () => {
 };
 
 
+  const learnerRoles = ['user', 'explorer', 'pathfinder'];

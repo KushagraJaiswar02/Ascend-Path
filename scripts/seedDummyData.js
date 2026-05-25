@@ -9,9 +9,12 @@ const { Post, PostCategory } = require('../src/modules/posts/post.model');
 const { Reply } = require('../src/modules/posts/reply.model');
 const { Session, SessionStatus } = require('../src/modules/sessions/session.model');
 const { PingRequest, PingStatus } = require('../src/modules/pings/ping.model');
-const { CareerRoadmap } = require('../src/modules/roadmaps/roadmap.model');
+const { CareerRoadmap, RoadmapSection, RoadmapStep } = require('../src/modules/roadmaps/roadmap.model');
 const { UserProgress } = require('../src/modules/roadmaps/userProgress.model');
 const { Notification, NotificationType } = require('../src/modules/notifications/notification.model');
+const { PortfolioProject } = require('../src/modules/portfolio/portfolioProject.model');
+const { VerifiedAchievement } = require('../src/modules/achievements/verifiedAchievement.model');
+const { Endorsement } = require('../src/modules/endorsements/endorsement.model');
 
 const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/ascendPath';
 const password = 'DemoPass123!';
@@ -29,6 +32,10 @@ const accountSeeds = [
     interests: ['web development', 'internships', 'open source'],
     respectPoints: 18,
     fameScore: 12,
+    username: 'aarav-sharma',
+    headline: 'Aspiring Full-Stack Developer | CS Student',
+    specialization: 'Frontend Development',
+    profileVisibility: true,
   },
   {
     key: 'guide',
@@ -42,6 +49,12 @@ const accountSeeds = [
     respectPoints: 740,
     fameScore: 88,
     guideRank: GuideRank.EXPERT,
+    username: 'meera-iyer',
+    headline: 'Frontend Mentor & UI Systems Specialist',
+    specialization: 'Frontend Engineering',
+    profileVisibility: true,
+    totalSessions: 28,
+    averageRating: 4.8,
     socialLinks: {
       github: 'https://github.com/meera-guide-demo',
       linkedin: 'https://linkedin.com/in/meera-guide-demo',
@@ -60,6 +73,12 @@ const accountSeeds = [
     respectPoints: 420,
     fameScore: 63,
     guideRank: GuideRank.ESTABLISHED,
+    username: 'rohan-verma',
+    headline: 'Backend Engineer & System Design Mentor',
+    specialization: 'Backend Engineering',
+    profileVisibility: true,
+    totalSessions: 15,
+    averageRating: 4.6,
   },
   {
     key: 'sentinel',
@@ -99,7 +118,7 @@ async function upsertUser(seed, passwordHash) {
         role: seed.role,
         educationLevel: seed.educationLevel,
         bio: seed.bio,
-        skills: seed.skills,
+        skills: seed.skills ? seed.skills.map(s => typeof s === 'string' ? { name: s } : s) : [],
         interests: seed.interests,
         respectPoints: seed.respectPoints,
         fameScore: seed.fameScore,
@@ -108,6 +127,12 @@ async function upsertUser(seed, passwordHash) {
         isBanned: false,
         pingAvailable: true,
         socialLinks: seed.socialLinks || {},
+        username: seed.username,
+        headline: seed.headline,
+        specialization: seed.specialization,
+        profileVisibility: seed.profileVisibility ?? true,
+        totalSessions: seed.totalSessions || 0,
+        averageRating: seed.averageRating || 0,
       },
     },
     { upsert: true, returnDocument: 'after', runValidators: true, setDefaultsOnInsert: true }
@@ -116,6 +141,17 @@ async function upsertUser(seed, passwordHash) {
 
 async function run() {
   await mongoose.connect(mongoUri);
+
+  // Drop old invalid indexes to prevent parallel array index errors
+  try {
+    await mongoose.connection.collection('sessions').dropIndexes();
+  } catch (e) {}
+  try {
+    await mongoose.connection.collection('recommendationprofiles').dropIndexes();
+  } catch (e) {}
+  try {
+    await mongoose.connection.collection('careerroadmaps').dropIndexes();
+  } catch (e) {}
 
   const passwordHash = await bcrypt.hash(password, 10);
   const users = {};
@@ -128,8 +164,14 @@ async function run() {
     Post.deleteMany({ tags: seedTag }),
     Reply.deleteMany({ content: new RegExp(seedTag) }),
     Session.deleteMany({ title: new RegExp('Demo:', 'i') }),
+    PortfolioProject.deleteMany({ projectReflections: new RegExp(seedTag) }),
+    VerifiedAchievement.deleteMany({ description: new RegExp(seedTag) }),
+    Endorsement.deleteMany({ message: new RegExp(seedTag) }),
     PingRequest.deleteMany({ context: new RegExp(seedTag) }),
     CareerRoadmap.deleteMany({ domain: seedTag }),
+    RoadmapSection.deleteMany({}),
+    RoadmapStep.deleteMany({}),
+    UserProgress.deleteMany({}),
     Notification.deleteMany({ message: new RegExp('Demo:', 'i') }),
   ]);
 
@@ -265,72 +307,235 @@ async function run() {
   const roadmap = await CareerRoadmap.create({
     createdBy: users.pathfinder._id,
     title: 'Backend Developer Starter Roadmap',
+    slug: 'backend-developer-starter-roadmap',
     description: 'A practical path from JavaScript basics to production-ready Node.js APIs.',
     targetRole: 'Junior Backend Developer',
     domain: seedTag,
     estimatedWeeks: 10,
     isPublic: true,
     followerCount: 24,
-    steps: [
-      {
-        title: 'JavaScript and TypeScript foundations',
-        description: 'Refresh async JavaScript, modules, types, and error handling.',
-        resources: ['MDN JavaScript Guide', 'TypeScript Handbook'],
-        milestoneCheck: true,
-      },
-      {
-        title: 'Build REST APIs with Express',
-        description: 'Create routes, controllers, services, validation, and central error handling.',
-        resources: ['Express documentation', 'Zod documentation'],
-        milestoneCheck: true,
-      },
-      {
-        title: 'Model data with MongoDB',
-        description: 'Practice schema design, indexes, references, and aggregation basics.',
-        resources: ['MongoDB University', 'Mongoose docs'],
-        milestoneCheck: false,
-      },
-      {
-        title: 'Authentication and deployment',
-        description: 'Add JWT auth, refresh tokens, environment config, logging, and deployment.',
-        resources: ['JWT.io introduction', 'Render deployment docs'],
-        milestoneCheck: false,
-      },
-    ],
   });
+
+  const section = await RoadmapSection.create({
+    roadmapId: roadmap._id,
+    title: 'Foundations',
+    order: 0,
+  });
+
+  const steps = await RoadmapStep.insertMany([
+    {
+      roadmapId: roadmap._id,
+      sectionId: section._id,
+      title: 'JavaScript and TypeScript foundations',
+      description: 'Refresh async JavaScript, modules, types, and error handling.',
+      type: 'external resource',
+      resources: [
+        { type: 'link', title: 'MDN JavaScript Guide', url: 'https://developer.mozilla.org' },
+        { type: 'link', title: 'TypeScript Handbook', url: 'https://typescriptlang.org' }
+      ],
+      estimatedMinutes: 120,
+      order: 0,
+      isOptional: false,
+    },
+    {
+      roadmapId: roadmap._id,
+      sectionId: section._id,
+      title: 'Build REST APIs with Express',
+      description: 'Create routes, controllers, services, validation, and central error handling.',
+      type: 'external resource',
+      resources: [
+        { type: 'link', title: 'Express documentation', url: 'https://expressjs.com' },
+        { type: 'link', title: 'Zod documentation', url: 'https://zod.dev' }
+      ],
+      estimatedMinutes: 180,
+      order: 1,
+      isOptional: false,
+    },
+    {
+      roadmapId: roadmap._id,
+      sectionId: section._id,
+      title: 'Model data with MongoDB',
+      description: 'Practice schema design, indexes, references, and aggregation basics.',
+      type: 'external resource',
+      resources: [
+        { type: 'link', title: 'MongoDB University', url: 'https://university.mongodb.com' }
+      ],
+      estimatedMinutes: 120,
+      order: 2,
+      isOptional: false,
+    },
+    {
+      roadmapId: roadmap._id,
+      sectionId: section._id,
+      title: 'Authentication and deployment',
+      description: 'Add JWT auth, refresh tokens, environment config, logging, and deployment.',
+      type: 'external resource',
+      resources: [
+        { type: 'link', title: 'JWT.io introduction', url: 'https://jwt.io' }
+      ],
+      estimatedMinutes: 150,
+      order: 3,
+      isOptional: false,
+    }
+  ]);
 
   await UserProgress.create({
     userId: users.student._id,
     roadmapId: roadmap._id,
-    completedSteps: [0, 1],
+    completedSteps: [steps[0]._id, steps[1]._id],
     progressPercentage: 50,
   });
 
   await Notification.insertMany([
     {
-      userId: users.student._id,
+      recipientId: users.student._id,
       type: NotificationType.POST_REPLY,
+      title: 'New Reply Received',
       message: 'Demo: Meera replied to your internship preparation question.',
-      link: `/posts/${posts[0]._id}`,
-      isRead: false,
+      read: false,
     },
     {
-      userId: users.guide._id,
+      recipientId: users.guide._id,
       type: NotificationType.PING_RECEIVED,
+      title: 'New Question Received',
       message: 'Demo: Aarav sent you a portfolio project question.',
-      link: '/pings',
-      isRead: true,
+      read: true,
     },
     {
-      userId: users.student._id,
+      recipientId: users.student._id,
       type: NotificationType.SESSION_BOOKED,
+      title: 'Mentorship Session Booked',
       message: 'Demo: Your backend roadmap planning session is booked.',
-      link: '/sessions',
-      isRead: false,
+      read: false,
     },
   ]);
 
-  console.log('Dummy data seeded successfully.');
+  // ── Credibility Seed Data ────────────────────────────────────────────────────
+
+  // Portfolio Projects
+  const portfolioProjects = await PortfolioProject.insertMany([
+    {
+      userId: users.student._id,
+      title: 'PathTracker — Learning Progress Dashboard',
+      description:
+        'A full-stack React + Express app that lets learners track their roadmap progress, set weekly goals, and visualize growth trends with interactive charts.',
+      images: [],
+      githubLink: 'https://github.com/aarav-demo/pathtracker',
+      demoLink: 'https://pathtracker-demo.vercel.app',
+      technologies: ['React', 'TypeScript', 'Express', 'MongoDB', 'Chart.js'],
+      domains: ['web development', 'full-stack'],
+      isMentorReviewed: true,
+      reviewedBy: users.guide._id,
+      mentorReviewNotes:
+        'Clean architecture with proper separation of concerns. README is excellent and recruiter-ready. Suggested adding error boundaries and loading skeletons.',
+      projectReflections:
+        'This project taught me how to structure a real full-stack app from scratch. I learned the importance of API design and responsive data visualization. demo-seed',
+      learningOutcomes: [
+        'REST API design with Express',
+        'React state management patterns',
+        'MongoDB schema design for analytics',
+        'Deployment to Vercel + Render',
+      ],
+    },
+    {
+      userId: users.student._id,
+      title: 'QuickPoll — Real-time Polling App',
+      description:
+        'A lightweight polling app with WebSocket support for live vote counts. Built to practice real-time data patterns.',
+      images: [],
+      githubLink: 'https://github.com/aarav-demo/quickpoll',
+      technologies: ['React', 'Socket.io', 'Node.js'],
+      domains: ['web development'],
+      isMentorReviewed: false,
+      projectReflections:
+        'Learned WebSocket basics and how to handle concurrency in real-time apps. Still needs polish before portfolio-ready. demo-seed',
+      learningOutcomes: [
+        'WebSocket communication patterns',
+        'Optimistic UI updates',
+      ],
+    },
+  ]);
+
+  // Verified Achievements
+  const crypto = require('crypto');
+  const makeCredentialId = (userId, category, idx) => {
+    const raw = `${userId}-${category}-${Date.now()}-${idx}`;
+    return crypto.createHash('sha256').update(raw).digest('hex').slice(0, 16);
+  };
+
+  await VerifiedAchievement.insertMany([
+    {
+      userId: users.student._id,
+      type: 'certificate',
+      category: 'roadmap_completion',
+      title: 'Backend Developer Starter Roadmap — Completed',
+      description:
+        'Verified completion of the Backend Developer Starter Roadmap covering JavaScript/TS foundations, REST APIs, MongoDB, and deployment. demo-seed',
+      issuedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
+      credentialId: makeCredentialId(users.student._id, 'roadmap_completion', 1),
+      metadata: { roadmapTitle: 'Backend Developer Starter Roadmap' },
+    },
+    {
+      userId: users.student._id,
+      type: 'badge',
+      category: 'learning_streak',
+      title: '30-Day Learning Streak',
+      description:
+        'Maintained consistent daily learning activity for 30 consecutive days across roadmaps and sessions. demo-seed',
+      issuedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+      credentialId: makeCredentialId(users.student._id, 'learning_streak', 2),
+    },
+    {
+      userId: users.student._id,
+      type: 'badge',
+      category: 'mentorship_milestone',
+      title: 'First Mentor Session Completed',
+      description:
+        'Completed the first one-on-one mentorship session, receiving structured career guidance and feedback. demo-seed',
+      issuedAt: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000),
+      credentialId: makeCredentialId(users.student._id, 'mentorship_milestone', 3),
+    },
+    {
+      userId: users.guide._id,
+      type: 'certificate',
+      category: 'specialization',
+      title: 'Frontend Engineering Specialization',
+      description:
+        'Recognized specialization in frontend engineering based on mentorship contributions, roadmap authoring, and community impact. demo-seed',
+      issuedAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
+      credentialId: makeCredentialId(users.guide._id, 'specialization', 4),
+    },
+  ]);
+
+  // Endorsements (mentor → learner)
+  await Endorsement.insertMany([
+    {
+      endorserId: users.guide._id,
+      recipientId: users.student._id,
+      type: 'project',
+      projectId: portfolioProjects[0]._id,
+      message:
+        'Aarav demonstrated exceptional growth during our portfolio review sessions. His PathTracker project shows strong architectural thinking and clean code. Ready for internship-level work. demo-seed',
+      moderationStatus: 'approved',
+    },
+    {
+      endorserId: users.pathfinder._id,
+      recipientId: users.student._id,
+      type: 'skill',
+      skillName: 'API Design',
+      message:
+        'Aarav grasped REST API patterns quickly and applied them independently in his projects. Good understanding of error handling and validation. demo-seed',
+      moderationStatus: 'approved',
+    },
+  ]);
+
+  console.log('\n── Credibility Data ─────────────────────────────────────────');
+  console.log(`  Portfolio projects: ${portfolioProjects.length}`);
+  console.log(`  Verified achievements: 4`);
+  console.log(`  Endorsements: 2`);
+  console.log(`  Public profiles: /u/aarav-sharma, /u/meera-iyer, /u/rohan-verma`);
+
+  console.log('\nDummy data seeded successfully.');
   console.log(`MongoDB: ${mongoUri.replace(/\/\/.*@/, '//***:***@')}`);
   console.log('\nLogin credentials:');
   for (const seed of accountSeeds) {
