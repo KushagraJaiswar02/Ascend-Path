@@ -93,12 +93,11 @@ export const Opportunities: React.FC = () => {
   // Fetch opportunity details for SkillGapPanel
   const { data: detailData, isLoading: isDetailLoading } = useOpportunity(selectedOppId || '', !!selectedOppId);
 
-  // Admin moderation fetcher
   const isAdmin = ['admin', 'architect', 'super_admin', 'moderator', 'sentinel'].includes(user?.role || '');
   const {
     data: adminOppsData,
     refetch: refetchAdminOpps,
-  } = useAdminOpportunities(1, 40);
+  } = useAdminOpportunities(1, 40, isAdmin);
 
   // Load taxonomy domains & roadmaps for form selectors
   useEffect(() => {
@@ -531,7 +530,7 @@ export const Opportunities: React.FC = () => {
       {/* Selected Opportunity Skill Gap Dialog */}
       {selectedOppId && (
         <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-          <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-3xl border border-border bg-card">
+          <DialogContent className="max-w-2xl p-0 rounded-3xl border border-border bg-card max-h-[85vh] overflow-y-auto">
             {isDetailLoading ? (
               <div className="flex flex-col items-center justify-center p-12 gap-3 animate-pulse text-muted-foreground">
                 <RefreshCw className="h-7 w-7 animate-spin shrink-0" />

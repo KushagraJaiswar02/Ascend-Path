@@ -119,13 +119,14 @@ export const useAddReminder = () => {
   });
 };
 
-export const useAdminOpportunities = (page = 1, limit = 20) => {
+export const useAdminOpportunities = (page = 1, limit = 20, enabled = true) => {
   return useQuery({
     queryKey: ['adminOpportunities', page, limit],
     queryFn: async (): Promise<{ opportunities: Opportunity[]; total: number }> => {
       const response = await apiClient.get('/admin/opportunities', { params: { page, limit } });
       return response.data.data;
     },
+    enabled,
   });
 };
 
