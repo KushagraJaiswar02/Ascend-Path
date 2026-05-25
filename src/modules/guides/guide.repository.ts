@@ -48,9 +48,13 @@ export const guideRepository = {
 
     // Domain filtering (match any specified domains)
     if (filters.domains && filters.domains.length > 0) {
-      query.domains = {
-        $in: filters.domains.map(d => new RegExp(`^${d.trim()}$`, 'i')),
-      };
+      const objectIds = filters.domains.filter((domain) => mongoose.Types.ObjectId.isValid(domain)).map((domain) => new mongoose.Types.ObjectId(domain));
+      query.$and.push({
+        $or: [
+          ...(objectIds.length ? [{ careerDomains: { $in: objectIds } }] : []),
+          { domains: { $in: filters.domains.map(d => new RegExp(`^${d.trim()}$`, 'i')) } },
+        ],
+      });
     }
 
     // Skill filtering (match any specified skills)

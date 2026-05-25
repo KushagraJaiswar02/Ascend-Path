@@ -43,4 +43,34 @@ exports.userController = {
             next(error);
         }
     },
+    async updateProfessionalProfile(req, res, next) {
+        try {
+            const userId = req.user._id.toString();
+            const user = await user_service_1.userService.updateProfessionalProfile(userId, req.body);
+            res.status(200).json({ success: true, data: { user } });
+        }
+        catch (error) {
+            next(error);
+        }
+    },
+    async getPublicProfileByUsername(req, res, next) {
+        try {
+            const { username } = req.params;
+            const user = await user_service_1.userService.getPublicProfileByUsername(username);
+            res.status(200).json({ success: true, data: { user } });
+        }
+        catch (error) {
+            next(error);
+        }
+    },
+    async getMyProfile(req, res, next) {
+        try {
+            const userId = req.user._id.toString();
+            const user = await user_service_1.userService.getPublicProfileById(userId);
+            res.status(200).json({ success: true, data: { user } });
+        }
+        catch (error) {
+            next(error);
+        }
+    },
 };

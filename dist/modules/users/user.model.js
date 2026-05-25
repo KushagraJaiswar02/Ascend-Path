@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = exports.GuideRank = exports.EducationLevel = exports.Role = void 0;
+exports.User = exports.GuideRank = exports.CareerStage = exports.EducationLevel = exports.Role = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 var Role;
 (function (Role) {
@@ -53,6 +53,17 @@ var EducationLevel;
     EducationLevel["COLLEGE"] = "college";
     EducationLevel["PROFESSIONAL"] = "professional";
 })(EducationLevel || (exports.EducationLevel = EducationLevel = {}));
+var CareerStage;
+(function (CareerStage) {
+    CareerStage["SCHOOL_STUDENT"] = "school_student";
+    CareerStage["COLLEGE_STUDENT"] = "college_student";
+    CareerStage["GRADUATE"] = "graduate";
+    CareerStage["WORKING_PROFESSIONAL"] = "working_professional";
+    CareerStage["CAREER_SWITCHER"] = "career_switcher";
+    CareerStage["EXAM_ASPIRANT"] = "exam_aspirant";
+    CareerStage["FREELANCER"] = "freelancer";
+    CareerStage["VOCATIONAL_LEARNER"] = "vocational_learner";
+})(CareerStage || (exports.CareerStage = CareerStage = {}));
 var GuideRank;
 (function (GuideRank) {
     GuideRank["RISING"] = "Rising Guide";
@@ -99,6 +110,12 @@ const userSchema = new mongoose_1.Schema({
     },
     bio: { type: String },
     domains: { type: [String], default: [] },
+    careerDomains: { type: [mongoose_1.Schema.Types.ObjectId], ref: 'CareerDomain', default: [], index: true },
+    careerGoals: { type: [mongoose_1.Schema.Types.ObjectId], ref: 'CareerGoal', default: [], index: true },
+    careerStage: { type: String, enum: Object.values(CareerStage) },
+    weeklyCommitment: { type: String, trim: true },
+    budgetRange: { type: String, trim: true },
+    preferredLanguages: { type: [String], default: [] },
     skills: [
         {
             name: { type: String, required: true },
@@ -140,25 +157,62 @@ const userSchema = new mongoose_1.Schema({
     showRoadmapActivity: { type: Boolean, default: true },
     anonymousRoadmapParticipation: { type: Boolean, default: false },
     onboardingCompleted: { type: Boolean, default: false },
+    username: { type: String, unique: true, sparse: true, lowercase: true, trim: true },
+    headline: { type: String, trim: true },
+    specialization: { type: String, trim: true },
+    portfolioLinks: [
+        {
+            label: { type: String, required: true },
+            url: { type: String, required: true },
+        }
+    ],
     onboarding: {
         primaryGoal: { type: String, trim: true },
+        careerGoals: { type: [mongoose_1.Schema.Types.ObjectId], ref: 'CareerGoal', default: [] },
         experienceLevel: { type: String, trim: true },
+        careerStage: { type: String, enum: Object.values(CareerStage) },
         targetRole: { type: String, trim: true },
         interestedDomains: { type: [String], default: [] },
+        careerDomains: { type: [mongoose_1.Schema.Types.ObjectId], ref: 'CareerDomain', default: [] },
         preferredLearningStyle: { type: String, trim: true },
+        mentorshipPreference: { type: String, trim: true },
+        directionClarity: { type: String, trim: true },
+        weeklyCommitment: { type: String, trim: true },
         weeklyCommitmentHours: { type: Number, min: 1, max: 80 },
+        budgetRange: { type: String, trim: true },
+        preferredLanguages: { type: [String], default: [] },
+    },
+    mentorProfile: {
+        specializations: { type: [String], default: [] },
+        industries: { type: [String], default: [] },
+        languages: { type: [String], default: [] },
+        experienceYears: { type: Number, min: 0, max: 80 },
+        educationBackground: { type: String, trim: true },
+        certifications: { type: [String], default: [] },
+        mentorshipFocus: { type: [mongoose_1.Schema.Types.ObjectId], ref: 'CareerGoal', default: [] },
+        examExpertise: { type: [String], default: [] },
+        menteeOutcomes: { type: [String], default: [] },
+        roadmapImpact: { type: Number, default: 0 },
+        sessionQuality: { type: Number, default: 5 },
+        completionRate: { type: Number, default: 100 },
     },
 }, { timestamps: true });
 // High-performance production indexes
+userSchema.index({ username: 1 }, { unique: true, sparse: true });
 userSchema.index({ role: 1, profileVisibility: 1 });
 userSchema.index({ roles: 1, profileVisibility: 1 });
 userSchema.index({ capabilities: 1, mentorProfileStatus: 1 });
 userSchema.index({ isBanned: 1, suspendedUntil: 1 });
 userSchema.index({ domains: 1 });
+userSchema.index({ careerDomains: 1, careerStage: 1 });
+userSchema.index({ careerGoals: 1, careerStage: 1 });
+userSchema.index({ preferredLanguages: 1, budgetRange: 1 });
 userSchema.index({ 'skills.name': 1 });
 userSchema.index({ averageRating: -1 });
 userSchema.index({ fameScore: -1 });
 userSchema.index({ createdAt: -1 });
 userSchema.index({ onboardingCompleted: 1, 'onboarding.interestedDomains': 1 });
+userSchema.index({ onboardingCompleted: 1, 'onboarding.careerDomains': 1 });
+userSchema.index({ onboardingCompleted: 1, 'onboarding.careerGoals': 1 });
 userSchema.index({ 'onboarding.targetRole': 1, 'onboarding.experienceLevel': 1 });
 exports.User = mongoose_1.default.model('User', userSchema);

@@ -1,30 +1,13 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Star, LayoutGrid, Calendar, Sliders, CheckCircle2, UserCheck, Flame } from 'lucide-react';
+import { useTaxonomyExplorer } from '@/features/taxonomy/hooks/useTaxonomy';
 
 interface FilterPanelProps {
   activeTab: 'guides' | 'roadmaps' | 'posts';
   filters: any;
   onFilterChange: (newFilters: any) => void;
 }
-
-const AVAILABLE_DOMAINS = [
-  'Frontend Development',
-  'Backend Development',
-  'DevOps',
-  'System Design',
-  'UI/UX Design',
-];
-
-const AVAILABLE_SKILLS = [
-  'React',
-  'Node.js',
-  'MongoDB',
-  'Docker',
-  'Kubernetes',
-  'Figma',
-  'TailwindCSS',
-];
 
 const DAYS_OF_WEEK = [
   'Monday',
@@ -37,6 +20,10 @@ const DAYS_OF_WEEK = [
 ];
 
 export const FilterPanel: React.FC<FilterPanelProps> = ({ activeTab, filters, onFilterChange }) => {
+  const taxonomy = useTaxonomyExplorer();
+  const availableDomains = taxonomy.data?.clusters.flatMap((cluster) => cluster.domains || []) || [];
+  const availableSkills = ['Portfolio', 'Exam prep', 'Interview prep', 'Freelancing', 'Study abroad', 'Research', 'Leadership'];
+
   const handleChange = (name: string, value: any) => {
     onFilterChange({ ...filters, [name]: value });
   };
@@ -67,17 +54,17 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ activeTab, filters, on
               <span>Expert Domains</span>
             </label>
             <div className="flex flex-col gap-1.5 pt-1">
-              {AVAILABLE_DOMAINS.map((domain) => {
-                const isSelected = (filters.domains || []).includes(domain);
+              {availableDomains.slice(0, 16).map((domain) => {
+                const isSelected = (filters.domains || []).includes(domain.id);
                 return (
-                  <label key={domain} className="flex items-center gap-2 cursor-pointer text-metadata font-semibold text-foreground/80 hover:text-foreground">
+                  <label key={domain.id} className="flex items-center gap-2 cursor-pointer text-metadata font-semibold text-foreground/80 hover:text-foreground">
                     <input
                       type="checkbox"
                       className="w-4 h-4 rounded text-primary focus:ring-primary/20 border-border bg-background cursor-pointer accent-primary"
                       checked={isSelected}
-                      onChange={() => handleArrayToggle('domains', domain)}
+                      onChange={() => handleArrayToggle('domains', domain.id)}
                     />
-                    <span>{domain}</span>
+                    <span>{domain.name}</span>
                   </label>
                 );
               })}
@@ -88,10 +75,10 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ activeTab, filters, on
           <div className="space-y-2 border-t border-border/40 pt-4">
             <label className="block text-label-lbl font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
-              <span>Granular Technologies</span>
+              <span>Focus Areas</span>
             </label>
             <div className="flex flex-wrap gap-1.5 pt-1">
-              {AVAILABLE_SKILLS.map((skill) => {
+              {availableSkills.map((skill) => {
                 const isSelected = (filters.skills || []).includes(skill);
                 return (
                   <Badge
@@ -227,9 +214,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ activeTab, filters, on
               onChange={(e) => handleChange('domain', e.target.value)}
             >
               <option value="">All Domains</option>
-              <option value="Frontend">Frontend</option>
-              <option value="Backend">Backend</option>
-              <option value="Mobile">Mobile</option>
+              {availableDomains.slice(0, 30).map((domain) => (
+                <option key={domain.id} value={domain.id}>{domain.name}</option>
+              ))}
             </select>
           </div>
 
@@ -286,4 +273,3 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ activeTab, filters, on
     </div>
   );
 };
-

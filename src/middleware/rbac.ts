@@ -11,7 +11,8 @@ export type Permission =
   | 'analytics:read'
   | 'audit:read'
   | 'mentor_applications:read'
-  | 'mentor_applications:review';
+  | 'mentor_applications:review'
+  | 'taxonomy:manage';
 
 const roleRank: Record<string, number> = {
   [Role.USER]: 10,
@@ -42,6 +43,7 @@ const rolePermissions: Record<string, Permission[]> = {
     'audit:read',
     'mentor_applications:read',
     'mentor_applications:review',
+    'taxonomy:manage',
   ],
   [Role.ARCHITECT]: [
     'reports:read',
@@ -54,6 +56,7 @@ const rolePermissions: Record<string, Permission[]> = {
     'audit:read',
     'mentor_applications:read',
     'mentor_applications:review',
+    'taxonomy:manage',
   ],
   [Role.SUPER_ADMIN]: [
     'reports:read',
@@ -66,6 +69,7 @@ const rolePermissions: Record<string, Permission[]> = {
     'audit:read',
     'mentor_applications:read',
     'mentor_applications:review',
+    'taxonomy:manage',
   ],
 };
 

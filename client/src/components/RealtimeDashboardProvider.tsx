@@ -117,7 +117,25 @@ export const RealtimeDashboardProvider: React.FC<{ children: React.ReactNode }> 
       } else if (domain === 'forums') {
         queryClient.invalidateQueries({ queryKey: ['posts'] });
         queryClient.invalidateQueries({ queryKey: ['replies'] });
+      } else if (domain === 'mentorship') {
+        queryClient.invalidateQueries({ queryKey: ['mentorship'] });
       }
+    });
+
+    [
+      'MENTORSHIP_MESSAGE_SENT',
+      'MENTORSHIP_MESSAGE_READ',
+      'MENTORSHIP_REQUEST_CREATED',
+      'MENTORSHIP_REQUEST_ACCEPTED',
+      'MENTORSHIP_REQUEST_DECLINED',
+      'SESSION_ESCALATION_REQUESTED',
+      'SESSION_ESCALATION_ACCEPTED',
+      'SESSION_ESCALATION_DECLINED',
+    ].forEach((eventName) => {
+      socket.on(eventName, () => {
+        queryClient.invalidateQueries({ queryKey: ['mentorship'] });
+        queryClient.invalidateQueries({ queryKey: ['dashboardData'] });
+      });
     });
 
     socket.on('roadmap_community_updated', (payload: { roadmapId: string }) => {

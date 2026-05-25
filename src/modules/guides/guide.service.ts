@@ -4,6 +4,7 @@ import { userRepository } from '../users/user.repository';
 import { GetGuidesQueryInput, UpdateGuideProfileInput } from './guide.validation';
 import { fameService } from '../users/fame.service';
 import { canActAsGuide } from '../users/userCapabilities';
+import { taxonomyService } from '../taxonomy/taxonomy.service';
 
 export const guideService = {
   /**
@@ -102,6 +103,18 @@ export const guideService = {
     const updateData: any = {};
     if (data.bio !== undefined) updateData.bio = data.bio;
     if (data.domains !== undefined) updateData.domains = data.domains;
+    if (data.careerDomains !== undefined) updateData.careerDomains = await taxonomyService.assertActiveDomains(data.careerDomains);
+    if (data.careerGoals !== undefined) updateData.careerGoals = await taxonomyService.assertActiveGoals(data.careerGoals);
+    if (data.preferredLanguages !== undefined) updateData.preferredLanguages = data.preferredLanguages;
+    if (data.mentorProfile !== undefined) {
+      updateData.mentorProfile = {
+        ...user.mentorProfile,
+        ...data.mentorProfile,
+        mentorshipFocus: data.mentorProfile.mentorshipFocus
+          ? await taxonomyService.assertActiveGoals(data.mentorProfile.mentorshipFocus)
+          : user.mentorProfile?.mentorshipFocus || [],
+      };
+    }
     if (data.skills !== undefined) updateData.skills = data.skills;
     if (data.interests !== undefined) updateData.interests = data.interests;
     if (data.profileVisibility !== undefined) updateData.profileVisibility = data.profileVisibility;

@@ -40,6 +40,11 @@ export interface ISessionReflection extends Document {
     recommendedRoadmapSteps: IRecommendedRoadmapStep[];
     recommendedResources: IRecommendedResource[];
     recommendedProjects: IRecommendedProject[];
+    recommendedOpportunities?: {
+      opportunityId: mongoose.Types.ObjectId;
+      title: string;
+      reason?: string;
+    }[];
     mentorNotes?: string;
     nextSessionSuggestion?: string;
     submittedAt?: Date;
@@ -93,6 +98,16 @@ const sessionReflectionSchema = new Schema<ISessionReflection>(
             title: { type: String, required: true, trim: true },
             description: { type: String, trim: true, maxlength: 1000 },
             difficulty: { type: String, enum: ['beginner', 'intermediate', 'advanced'] },
+          },
+        ],
+        default: [],
+      },
+      recommendedOpportunities: {
+        type: [
+          {
+            opportunityId: { type: Schema.Types.ObjectId, ref: 'Opportunity', required: true },
+            title: { type: String, required: true },
+            reason: { type: String, trim: true },
           },
         ],
         default: [],

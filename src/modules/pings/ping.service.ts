@@ -8,6 +8,7 @@ import { RespectReason } from '../respect/respectVote.model';
 import { fameService } from '../users/fame.service';
 import { eventEmitter } from '../../utils/eventEmitter';
 import { logger } from '../../utils/logger';
+import { mentorshipService } from '../mentorship/mentorship.service';
 
 export const pingService = {
   async createPing(fromUserId: string, data: CreatePingInput) {
@@ -23,17 +24,27 @@ export const pingService = {
       throw new Error('Target user must be a Pathfinder or Guide');
     }
 
+    const conversation = await mentorshipService.startConversation(fromUserIdStr, {
+      mentorId: data.toUserId,
+      message: `${data.question}${data.context ? `\n\nContext: ${data.context}` : ''}`,
+      startedFrom: (data.startedFrom as any) || 'mentor-profile',
+      linkedRoadmapId: data.linkedRoadmapId,
+      linkedOpportunityId: data.linkedOpportunityId,
+    });
+
     const newPing = await pingRepository.createPing({
       fromUserId: fromUserIdStr as any,
       toUserId: data.toUserId as any,
       question: data.question,
       context: data.context,
+      conversationId: conversation.conversation._id as any,
     });
 
     // Notify the recipient asynchronously by emitting a domain event
     userRepository.findUserById(fromUserIdStr).then((sender) => {
       eventEmitter.emit('PING_RECEIVED', {
         pingId: newPing._id.toString(),
+        conversationId: conversation.conversation._id.toString(),
         senderId: fromUserIdStr,
         recipientId: data.toUserId,
         message: data.question,

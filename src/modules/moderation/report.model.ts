@@ -8,6 +8,9 @@ export enum TargetType {
   ROADMAP = 'roadmap',
   SESSION = 'session',
   GUIDE_PROFILE = 'guide_profile',
+  PORTFOLIO_PROJECT = 'portfolio_project',
+  ENDORSEMENT = 'endorsement',
+  VERIFIED_ACHIEVEMENT = 'verified_achievement',
 }
 
 export enum ReportReason {

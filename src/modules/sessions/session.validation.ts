@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid ObjectId');
+
 export const createSessionSchema = z.object({
   body: z.object({
     sessionType: z.enum(['private_mentorship', 'public_workshop']).default('private_mentorship'),
@@ -7,6 +9,11 @@ export const createSessionSchema = z.object({
     topic: z.string().min(2, 'Topic is required').max(50).trim(),
     description: z.string().max(1000).trim().optional(),
     domains: z.array(z.string().trim()).max(8).optional(),
+    careerDomains: z.array(objectId).max(8).optional(),
+    careerGoals: z.array(objectId).max(8).optional(),
+    languages: z.array(z.string().min(2).max(40).trim()).max(8).optional(),
+    audienceStages: z.array(z.string().min(2).max(80).trim()).max(8).optional(),
+    budgetRange: z.string().max(80).trim().optional(),
     tags: z.array(z.string().trim()).max(10).optional(),
     difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
     scheduledAt: z.string().refine((date) => !isNaN(Date.parse(date)), { message: 'Invalid date format' }),
@@ -34,6 +41,11 @@ export const updateSessionSchema = z.object({
     topic: z.string().min(2).max(50).trim().optional(),
     description: z.string().max(1000).trim().optional(),
     domains: z.array(z.string().trim()).max(8).optional(),
+    careerDomains: z.array(objectId).max(8).optional(),
+    careerGoals: z.array(objectId).max(8).optional(),
+    languages: z.array(z.string().min(2).max(40).trim()).max(8).optional(),
+    audienceStages: z.array(z.string().min(2).max(80).trim()).max(8).optional(),
+    budgetRange: z.string().max(80).trim().optional(),
     tags: z.array(z.string().trim()).max(10).optional(),
     difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
     scheduledAt: z.string().refine((date) => !isNaN(Date.parse(date)), { message: 'Invalid date format' }).optional(),

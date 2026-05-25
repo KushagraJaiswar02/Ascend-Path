@@ -7,6 +7,15 @@ export interface ICareerRoadmap extends Document {
   description?: string;
   thumbnail?: string;
   domains: string[];
+  careerDomains: mongoose.Types.ObjectId[];
+  careerGoals: mongoose.Types.ObjectId[];
+  targetStages: string[];
+  languages: string[];
+  budgetRange?: string;
+  pathType?: 'exam_prep' | 'career_path' | 'freelancing' | 'study_abroad' | 'vocational' | 'skill_growth';
+  nextRoadmaps: mongoose.Types.ObjectId[];
+  prerequisiteRoadmaps: mongoose.Types.ObjectId[];
+  recommendedSequence: mongoose.Types.ObjectId[];
   tags: string[];
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   estimatedWeeks?: number;
@@ -36,6 +45,19 @@ const careerRoadmapSchema = new Schema<ICareerRoadmap>(
     description: { type: String },
     thumbnail: { type: String },
     domains: { type: [String], default: [] },
+    careerDomains: { type: [Schema.Types.ObjectId], ref: 'CareerDomain', default: [], index: true },
+    careerGoals: { type: [Schema.Types.ObjectId], ref: 'CareerGoal', default: [], index: true },
+    targetStages: { type: [String], default: [] },
+    languages: { type: [String], default: [] },
+    budgetRange: { type: String, trim: true },
+    pathType: {
+      type: String,
+      enum: ['exam_prep', 'career_path', 'freelancing', 'study_abroad', 'vocational', 'skill_growth'],
+      default: 'career_path',
+    },
+    nextRoadmaps: { type: [Schema.Types.ObjectId], ref: 'CareerRoadmap', default: [] },
+    prerequisiteRoadmaps: { type: [Schema.Types.ObjectId], ref: 'CareerRoadmap', default: [] },
+    recommendedSequence: { type: [Schema.Types.ObjectId], ref: 'CareerRoadmap', default: [] },
     tags: { type: [String], default: [] },
     difficulty: { type: String, enum: ['beginner', 'intermediate', 'advanced'], default: 'beginner' },
     estimatedWeeks: { type: Number },
@@ -60,6 +82,13 @@ const careerRoadmapSchema = new Schema<ICareerRoadmap>(
 
 // High performance indexes
 careerRoadmapSchema.index({ domains: 1, difficulty: 1, isPublished: 1 });
+careerRoadmapSchema.index({ careerDomains: 1, difficulty: 1, isPublished: 1 });
+careerRoadmapSchema.index({ careerGoals: 1, difficulty: 1, isPublished: 1 });
+careerRoadmapSchema.index({ targetStages: 1, budgetRange: 1 });
+careerRoadmapSchema.index({ languages: 1, budgetRange: 1 });
+careerRoadmapSchema.index({ nextRoadmaps: 1 });
+careerRoadmapSchema.index({ prerequisiteRoadmaps: 1 });
+careerRoadmapSchema.index({ recommendedSequence: 1 });
 careerRoadmapSchema.index({ createdBy: 1 });
 careerRoadmapSchema.index({ moderationStatus: 1, createdAt: -1 });
 

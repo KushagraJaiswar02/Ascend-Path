@@ -3,6 +3,9 @@ import { apiClient } from '../../../services/apiClient';
 import type { SessionReflection } from '../../sessions/types';
 import type { RoadmapMomentumItem, TrendingRoadmapSignal } from '../../roadmaps/types';
 import { safeParsePings } from '../../pings/types';
+import type { RecommendationResponseV2 } from '../../recommendations/types';
+import type { UserJourney } from '../../pathways/types';
+import type { CompanionHome } from '../../companion/types';
 
 
 export interface DashboardData {
@@ -13,6 +16,9 @@ export interface DashboardData {
   pendingReflections: SessionReflection[];
   roadmapMomentum: RoadmapMomentumItem[];
   trendingRoadmaps: TrendingRoadmapSignal[];
+  contextualRecommendations?: RecommendationResponseV2;
+  careerJourney?: UserJourney;
+  companion?: CompanionHome;
 }
 
 export const useDashboardData = () => {
@@ -20,13 +26,16 @@ export const useDashboardData = () => {
     queryKey: ['dashboardData'],
     queryFn: async (): Promise<DashboardData> => {
       // Execute all requests in parallel
-      const [postsRes, pingsRes, sessionsRes, reflectionsRes, momentumRes, trendingRes] = await Promise.allSettled([
+      const [postsRes, pingsRes, sessionsRes, reflectionsRes, momentumRes, trendingRes, recommendationRes, journeyRes, companionRes] = await Promise.allSettled([
         apiClient.get('/posts?limit=3'),
         apiClient.get('/pings/inbox'),
         apiClient.get('/sessions/me'),
         apiClient.get('/me/reflections?limit=8'),
         apiClient.get('/me/roadmaps/momentum'),
-        apiClient.get('/roadmaps/trending?limit=4')
+        apiClient.get('/roadmaps/trending?limit=4'),
+        apiClient.get('/recommendations/me', { params: { context: 'dashboard', limit: 4 } }),
+        apiClient.get('/pathways/me/journey'),
+        apiClient.get('/companion/me')
       ]);
 
       // Safely extract data, falling back to empty arrays if endpoints fail
@@ -52,6 +61,9 @@ export const useDashboardData = () => {
       const pendingReflections = reflections.filter((r: SessionReflection) => !r.menteeReflection?.submittedAt).slice(0, 3);
       const roadmapMomentum = momentumRes.status === 'fulfilled' ? momentumRes.value.data.data.momentum : [];
       const trendingRoadmaps = trendingRes.status === 'fulfilled' ? trendingRes.value.data.data.roadmaps : [];
+      const contextualRecommendations = recommendationRes.status === 'fulfilled' ? recommendationRes.value.data.data : undefined;
+      const careerJourney = journeyRes.status === 'fulfilled' ? journeyRes.value.data.data : undefined;
+      const companion = companionRes.status === 'fulfilled' ? companionRes.value.data.data : undefined;
 
       return {
         recentPosts: recentPosts.slice(0, 3), // Ensure max 3
@@ -60,7 +72,10 @@ export const useDashboardData = () => {
         mentorRecommendations,
         pendingReflections,
         roadmapMomentum,
-        trendingRoadmaps
+        trendingRoadmaps,
+        contextualRecommendations,
+        careerJourney,
+        companion
       };
     },
     // Cache for 5 minutes since dashboard data is a summary

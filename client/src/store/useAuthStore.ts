@@ -17,6 +17,8 @@ export interface User {
     targetRole?: string;
     interestedDomains?: string[];
     preferredLearningStyle?: string;
+    mentorshipPreference?: string;
+    directionClarity?: string;
     weeklyCommitmentHours?: number;
   };
 }
@@ -26,6 +28,7 @@ interface AuthState {
   accessToken: string | null;
   isAuthenticated: boolean;
   login: (userData: User, token: string) => void;
+  updateUser: (userData: Partial<User>) => void;
   logout: () => void;
   setAccessToken: (token: string) => void;
 }
@@ -38,6 +41,9 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       login: (userData, token) => {
         set({ user: userData, accessToken: token, isAuthenticated: true });
+      },
+      updateUser: (userData) => {
+        set((state) => ({ user: state.user ? { ...state.user, ...userData } : state.user }));
       },
       logout: () => {
         set({ user: null, accessToken: null, isAuthenticated: false });

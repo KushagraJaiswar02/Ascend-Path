@@ -3,36 +3,46 @@ import { userRepository } from '../users/user.repository';
 import { onboardingRepository } from './onboarding.repository';
 import { buildPersonalizationCopy, scoreReason } from './onboarding.dto';
 import { SubmitOnboardingInput } from './onboarding.validation';
+import { taxonomyService } from '../taxonomy/taxonomy.service';
+import { recommendationEngineService } from '../recommendations/recommendationEngine.service';
 
-const fallbackDomainRoadmaps: Record<string, string[]> = {
-  'AI/ML': ['Python foundations', 'Machine learning basics', 'ML portfolio projects'],
-  Backend: ['Node.js APIs', 'Database design', 'Authentication and deployment'],
-  Frontend: ['React foundations', 'TypeScript UI systems', 'Frontend portfolio projects'],
-  DevOps: ['Linux basics', 'Cloud deployment', 'CI/CD fundamentals'],
-  DSA: ['Data structures basics', 'Problem solving patterns', 'Interview practice'],
-};
+const fallbackClusterRoadmaps = [
+  'Foundation and orientation path',
+  'Mentor-guided next steps',
+  'Portfolio, exam, or application readiness',
+];
 
 export const onboardingService = {
   async submit(userId: string, input: SubmitOnboardingInput) {
     const user = await userRepository.findUserById(userId);
     if (!user) throw { statusCode: 404, message: 'User not found' };
 
-    const updated = await onboardingRepository.saveUserOnboarding(userId, input);
+    const domainIds = input.careerDomains.length
+      ? input.careerDomains
+      : await taxonomyService.normalizeDomainIds(input.interestedDomains);
+    const normalized = {
+      careerDomains: await taxonomyService.assertActiveDomains(domainIds),
+      careerGoals: await taxonomyService.assertActiveGoals(input.careerGoals),
+    };
+
+    const updated = await onboardingRepository.saveUserOnboarding(userId, input, normalized);
     eventEmitter.emit('ONBOARDING_COMPLETED', {
       userId,
       primaryGoal: input.primaryGoal,
+      careerStage: input.careerStage,
       domains: input.interestedDomains,
+      careerDomains: domainIds,
       targetRole: input.targetRole,
     });
 
-    const recommendations = await this.getRecommendations(userId);
+    const recommendations = await recommendationEngineService.getRecommendations(userId, 'onboarding', 4, true);
     return { user: updated, recommendations };
   },
 
   async getRecommendations(userId: string) {
     const user = await userRepository.findUserById(userId);
     if (!user) throw { statusCode: 404, message: 'User not found' };
-    if (!user.onboarding?.primaryGoal || !user.onboarding?.experienceLevel || !user.onboarding?.targetRole) {
+    if (!user.onboarding?.careerStage || (!user.onboarding?.careerDomains?.length && !user.onboarding?.interestedDomains?.length)) {
       return {
         onboardingCompleted: false,
         personalization: buildPersonalizationCopy(null),
@@ -45,7 +55,8 @@ export const onboardingService = {
       };
     }
 
-    const preferences = user.onboarding as SubmitOnboardingInput;
+    const preferences = user.onboarding as unknown as SubmitOnboardingInput;
+    const contextual = await recommendationEngineService.getRecommendations(userId, 'dashboard', 4);
     const [roadmaps, mentors, posts] = await Promise.all([
       onboardingRepository.findRecommendedRoadmaps(preferences, 3),
       onboardingRepository.findRecommendedMentors(preferences, 3),
@@ -58,6 +69,7 @@ export const onboardingService = {
       onboardingCompleted: user.onboardingCompleted,
       personalization: buildPersonalizationCopy(preferences),
       preferences,
+      contextual,
       roadmaps: roadmaps.map((roadmap) => ({
         item: roadmap,
         score: 80,
@@ -80,19 +92,20 @@ export const onboardingService = {
 
   buildFallbackRoadmaps(preferences: SubmitOnboardingInput) {
     const domain = preferences.interestedDomains[0];
-    return (fallbackDomainRoadmaps[domain] || [`${preferences.targetRole} fundamentals`, 'Portfolio project path', 'Interview readiness path']).slice(0, 3).map((title, index) => ({
+    const target = preferences.targetRole || preferences.careerStage || 'career';
+    return ([`${target} fundamentals`, ...fallbackClusterRoadmaps]).slice(0, 3).map((title, index) => ({
       title,
-      domain,
-      difficulty: preferences.experienceLevel,
-      reason: `Suggested from your ${domain} interest while matching catalog content is still growing.`,
+      domain: domain || 'Career exploration',
+      difficulty: preferences.experienceLevel || 'beginner',
+      reason: `Suggested from your ${domain || 'career'} interest while matching catalog content is still growing.`,
       priority: index + 1,
     }));
   },
 
   buildQuickActions(preferences: SubmitOnboardingInput) {
     const actions = [
-      { label: 'Explore matched roadmaps', href: `/explore?domain=${encodeURIComponent(preferences.interestedDomains[0])}`, priority: 1 },
-      { label: 'Find matched mentors', href: `/explore?tab=guides&domain=${encodeURIComponent(preferences.interestedDomains[0])}`, priority: 2 },
+      { label: 'Explore matched roadmaps', href: `/explore?domain=${encodeURIComponent(preferences.interestedDomains?.[0] || '')}`, priority: 1 },
+      { label: 'Find matched mentors', href: `/explore?tab=guides&domain=${encodeURIComponent(preferences.interestedDomains?.[0] || '')}`, priority: 2 },
       { label: 'Ask the community', href: '/forum', priority: 3 },
     ];
 

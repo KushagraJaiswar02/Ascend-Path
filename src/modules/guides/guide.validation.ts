@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid ObjectId');
+
 export const getGuidesQuerySchema = z.object({
   query: z.object({
     search: z.string().optional(),
@@ -22,6 +24,19 @@ export const updateGuideProfileSchema = z.object({
   body: z.object({
     bio: z.string().max(1000, 'Bio cannot exceed 1000 characters').optional(),
     domains: z.array(z.string()).optional(),
+    careerDomains: z.array(objectId).optional(),
+    careerGoals: z.array(objectId).optional(),
+    preferredLanguages: z.array(z.string().min(2).max(40)).optional(),
+    mentorProfile: z.object({
+      specializations: z.array(z.string().min(2).max(120)).optional(),
+      industries: z.array(z.string().min(2).max(120)).optional(),
+      languages: z.array(z.string().min(2).max(40)).optional(),
+      experienceYears: z.number().int().min(0).max(80).optional(),
+      educationBackground: z.string().max(600).optional(),
+      certifications: z.array(z.string().min(2).max(160)).optional(),
+      mentorshipFocus: z.array(objectId).optional(),
+      examExpertise: z.array(z.string().min(2).max(120)).optional(),
+    }).optional(),
     skills: z.array(
       z.object({
         name: z.string().min(1, 'Skill name is required'),

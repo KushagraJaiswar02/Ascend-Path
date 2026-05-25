@@ -7,6 +7,7 @@ import { AuditAction, AuditSeverity } from '../moderation/auditLog.model';
 import { Role } from '../users/user.model';
 import { userRepository } from '../users/user.repository';
 import { guideCapabilities } from '../users/userCapabilities';
+import { taxonomyService } from '../taxonomy/taxonomy.service';
 import { mentorApplicationRepository } from './mentorApplication.repository';
 import { MentorApplicationStatus } from './mentorApplication.model';
 import {
@@ -81,8 +82,17 @@ export const mentorApplicationService = {
       throw { statusCode: 409, message: 'You already have an active mentor application under review' };
     }
 
+    const careerDomains = data.careerDomains?.length
+      ? await taxonomyService.assertActiveDomains(data.careerDomains)
+      : await taxonomyService.assertActiveDomains(await taxonomyService.normalizeDomainIds(data.domains));
+    const mentorshipFocus = data.mentorshipFocus?.length
+      ? await taxonomyService.assertActiveGoals(data.mentorshipFocus)
+      : [];
+
     const application = await mentorApplicationRepository.create({
       ...blankToUndefined(data),
+      careerDomains: careerDomains as any,
+      mentorshipFocus: mentorshipFocus as any,
       userId: new mongoose.Types.ObjectId(userId) as any,
       status: MentorApplicationStatus.PENDING,
       rejectionReason: undefined,
@@ -126,8 +136,18 @@ export const mentorApplicationService = {
       ? MentorApplicationStatus.PENDING
       : latest.status;
 
+    const updateData: any = { ...blankToUndefined(data) };
+    if (data.careerDomains) {
+      updateData.careerDomains = await taxonomyService.assertActiveDomains(data.careerDomains);
+    } else if (data.domains) {
+      updateData.careerDomains = await taxonomyService.assertActiveDomains(await taxonomyService.normalizeDomainIds(data.domains));
+    }
+    if (data.mentorshipFocus) {
+      updateData.mentorshipFocus = await taxonomyService.assertActiveGoals(data.mentorshipFocus);
+    }
+
     const updated = await mentorApplicationRepository.updateById(latest._id.toString(), {
-      ...blankToUndefined(data),
+      ...updateData,
       status: nextStatus,
       rejectionReason: undefined,
       changeRequest: undefined,
@@ -235,7 +255,19 @@ export const mentorApplicationService = {
       isVerified: true,
       bio: application.bio,
       domains: application.domains,
+      careerDomains: application.careerDomains || [],
+      preferredLanguages: application.languages || [],
       skills: application.skills.map((skill: string) => ({ name: skill })),
+      mentorProfile: {
+        specializations: application.specializations || [],
+        industries: application.industries || [],
+        languages: application.languages || [],
+        experienceYears: application.experienceYears,
+        educationBackground: application.educationBackground,
+        certifications: application.certifications || [],
+        mentorshipFocus: application.mentorshipFocus || [],
+        examExpertise: application.examExpertise || [],
+      },
       socialLinks: {
         ...user.socialLinks,
         github: application.githubUrl || user.socialLinks?.github,

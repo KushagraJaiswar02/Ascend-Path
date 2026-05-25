@@ -10,6 +10,14 @@ export const useOnboardingRecommendations = () => {
   });
 };
 
+export const useDashboardExperience = () => {
+  return useQuery({
+    queryKey: ['onboarding', 'dashboard-experience'],
+    queryFn: onboardingApi.dashboardExperience,
+    retry: 1,
+  });
+};
+
 export const useSubmitOnboarding = () => {
   const queryClient = useQueryClient();
   return useMutation({
